@@ -7,7 +7,7 @@ from dash import dcc, html, Input, Output, State
 import plotly.express as px
 from dash import dash_table
 from backtester.strat_creator import (
-    SMAVectorBacktester, LRVectorBacktester, MomVectorBacktester, MRVectorBacktester,
+    SMAVectorBacktester, LRVectorBacktester, MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester,
 ScikitVectorBacktester)
 from backtester.strat_comparator import StrategyRunner
 
@@ -55,7 +55,7 @@ class DashboardApp:
             try:
                 strategies = {
                     'SMA': SMAVectorBacktester, 'MOM': MomVectorBacktester,
-                    'MeanRev': MRVectorBacktester, 'LinearReg': LRVectorBacktester}
+                    'MeanRev': MRVectorBacktester, 'Turtle': TurtleVectorBacktester, 'LinearReg': LRVectorBacktester}
                     # 'ScikitReg':ScikitVectorBacktester}
 
                 # 'LinearReg': LRVectorBacktester,
@@ -64,6 +64,7 @@ class DashboardApp:
                     'SMA': {'sma_short': (5, 30), 'sma_long': (31, 100)},
                     'MOM': {'momentum': (10, 100)},
                     'MeanRev': {'sma': (5, 50), 'threshold': (0.3, 0.7)},
+                    'Turtle': {'window_size': (20, 50)},
                     'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)},
                     # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}
                 }

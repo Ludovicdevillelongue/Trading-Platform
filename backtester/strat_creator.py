@@ -143,6 +143,9 @@ class StrategyCreator:
         # Placeholder for strategy execution method
         raise NotImplementedError("Should implement method in subclass!")
 
+    def generate_signal(self):
+        raise NotImplementedError("Should implement method in subclass!")
+
 # Now define specific strategy backtesters
 class SMAVectorBacktester(StrategyCreator):
     def __init__(self, data, symbol, start_date, end_date, sma_short, sma_long, amount, transaction_costs):
@@ -189,21 +192,13 @@ class SMAVectorBacktester(StrategyCreator):
         self.set_parameters(int(self.sma_short), int(self.sma_long))
         data = self.data.copy().dropna()
         data['position'] = np.where(data['SMA1'] > data['SMA2'], 1, -1)
+        self.data_signal=data['position'][-1]
         self.analyse_strategy(data)
         return self.calculate_performance(data)
 
     def generate_signal(self):
-        self.data['short_sma'] = self.data['price'].rolling(window=self.sma_short).mean()
-        self.data['long_sma'] = self.data['price'].rolling(window=self.sma_long).mean()
-
-        # Buy if short SMA crosses above long SMA
-        if self.data['short_sma'][-1] > self.data['long_sma'][-1] and self.data['short_sma'][-2] <= self.data['long_sma'][-2]:
-            return 1
-        # Sell if short SMA crosses below long SMA
-        elif self.data['short_sma'][-1] < self.data['long_sma'][-1] and self.data['short_sma'][-2] >= self.data['long_sma'][-2]:
-            return -1
-        else:
-            return 0
+        self.run_strategy()
+        return self.data_signal
 
 
 class MomVectorBacktester(StrategyCreator):
@@ -233,21 +228,13 @@ class MomVectorBacktester(StrategyCreator):
         '''
         data = self.data.copy().dropna()
         data['position'] = np.sign(data['return'].rolling(self.momentum).mean())
+        self.data_signal=data['position'][-1]
         self.analyse_strategy(data)
         return self.calculate_performance(data)
 
     def generate_signal(self):
-        self.data['momentum'] = self.data['price'].diff(self.momentum)
-
-        # Buy if the momentum is positive
-        if self.data['momentum'][-1] > 0:
-            return 1
-        # Sell if the momentum is negative
-        elif self.data['momentum'][-1] < 0:
-            return -1
-        else:
-            return 0
-
+        self.run_strategy()
+        return self.data_signal
 
 class MRVectorBacktester(StrategyCreator):
     def __init__(self, data, symbol, start_date, end_date, sma, threshold, amount, transaction_costs):
@@ -259,6 +246,23 @@ class MRVectorBacktester(StrategyCreator):
     def set_parameters(self, SMA=None):
         if SMA is not None:
             self.data['sma'] = self.data['price'].rolling(SMA).mean()
+
+    def analyse_strategy(self, data):
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["sma"].plot(ax=ax1, color='b', lw=2.)
+        ax1.plot(data.loc[data.orders == 1.0].index,
+                 data["price"][data.orders == 1],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders == -1.0].index,
+                 data["price"][data.orders == -1],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "SMA", "Buy", "Sell"])
+        plt.title("Mean Reversion Trading Strategy")
+        # plt.show()
 
     def run_strategy(self):
         self.set_parameters(int(self.sma))
@@ -275,20 +279,78 @@ class MRVectorBacktester(StrategyCreator):
                                     data['distance'].shift(1) < 0,
                                     0, data['position'])
         data['position'] = data['position'].ffill().fillna(0)
+        self.data_signal=data['position'][-1]
+        self.analyse_strategy(data)
         return self.calculate_performance(data)
 
     def generate_signal(self):
-        self.data['sma'] = self.data['price'].rolling(window=self.sma).mean()
-        self.data['distance'] = self.data['price'] - self.data['sma']
+        self.run_strategy()
+        return self.data_signal
 
-        # Buy if the price is significantly below the mean
-        if self.data['distance'][-1] < -self.threshold:
-            return 1
-        # Sell if the price is significantly above the mean
-        elif self.data['distance'][-1] > self.threshold:
-            return -1
-        else:
-            return 0
+
+class TurtleVectorBacktester(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, window_size, amount, transaction_costs):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data=data
+        self.window_size=window_size
+
+
+    def analyse_strategy(self, data):
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["high"].plot(ax=ax1, color='g', lw=2.)
+        data["low"].plot(ax=ax1, color='r', lw=2.)
+        data["avg"].plot(ax=ax1, color='b', lw=2.)
+        ax1.plot(data.loc[data.orders == 1.0].index,
+                 data["price"][data.orders == 1],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders == -1.0].index,
+                 data["price"][data.orders == -1],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Highs", "Lows", "Average", "Buy", "Sell"])
+        plt.title("Turtle Trading Strategy")
+        # plt.show()
+
+    def run_strategy(self):
+        data = self.data.copy().dropna()
+        # window_size-days high
+        data['high'] = data['price'].shift(1). \
+        rolling(window=self.window_size).max()
+        # window_size-days low
+        data['low'] = data['price'].shift(1). \
+        rolling(window=self.window_size).min()
+        # window_size-days mean
+        data['avg'] = data['price'].shift(1). \
+        rolling(window=self.window_size).mean()
+        data['long_entry'] = data['price'] > data.high
+        data['short_entry'] = data['price'] < data.low
+        data['long_exit'] = data['price'] < data.avg
+        data['short_exit'] = data['price'] > data.avg
+        data["position"] = 0
+        data["orders"]=0
+        for k in range(1, len(data)):
+            if data['long_entry'][k] and data['position'][k-1] == 0:
+                data.orders.values[k] = 1
+                data.position.values[k] = 1
+            elif data['short_entry'][k] and data['position'][k-1] == 0:
+                data.orders.values[k] = -1
+                data.position.values[k] = -1
+            elif data['short_exit'][k] and data['position'][k-1] > 0:
+                data.orders.values[k] = -1
+                data.position.values[k] = 0
+            elif data['long_exit'][k] and data['position'][k-1] < 0:
+                data.orders.values[k] = 1
+                data.position.values[k] = 0
+            else:
+                data.orders.values[k] = 0
+        self.data_signal=data['position'][-1]
+        # self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        self.run_strategy()
+        return self.data_signal
 
 class LRVectorBacktester(StrategyCreator):
 
@@ -303,6 +365,23 @@ class LRVectorBacktester(StrategyCreator):
         self.train_end = None
         self.test_start = None
         self.test_end = None
+
+    def analyse_strategy(self, data):
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        ax1.plot(data.loc[data.orders == 2.0].index,
+                 data["price"][data.orders == 2],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders == -2.0].index,
+                 data["price"][data.orders == -2],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Buy", "Sell"])
+        plt.title("Linear Regression Prediction Trading Strategy")
+        # plt.show()
+
 
     def run_strategy(self):
         ''' Backtests the trading strategy. '''
@@ -320,6 +399,7 @@ class LRVectorBacktester(StrategyCreator):
         self.results['position'] = 0
         # Fill in predictions where we have enough lagged data
         self.results.loc[self.lagged_data.index, 'position'] = prediction
+        self.analyse_strategy(self.results)
         # Call calculate_performance from parent class
         aperf, operf, sharpe_ratio = self.calculate_performance(self.results)
 

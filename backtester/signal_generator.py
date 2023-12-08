@@ -40,7 +40,7 @@ class LiveStrategyRunner:
     def fetch_and_update_real_time_data(self):
         while self.running:
             self.real_time_data = DataRetriever(self.start_date, self.end_date).yfinance_latest_data(self.symbol)['price'].to_frame()
-            self.real_time_data['return'] = self.real_time_data['price'].diff().apply(lambda x: np.log(1 + x))
+            self.real_time_data['return'] = np.log(self.real_time_data['price'] / self.real_time_data['price'].shift(1))
             self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
             time.sleep(60)
 
