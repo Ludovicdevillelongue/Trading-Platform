@@ -6,7 +6,6 @@ import pytz
 from dash import dcc, html, Input, Output, State
 import plotly.express as px
 from dash import dash_table
-import dash_table
 from backtester.strat_creator import (
     SMAVectorBacktester, LRVectorBacktester, MomVectorBacktester, MRVectorBacktester,
 ScikitVectorBacktester)
@@ -56,8 +55,8 @@ class DashboardApp:
             try:
                 strategies = {
                     'SMA': SMAVectorBacktester, 'MOM': MomVectorBacktester,
-                    'MeanRev': MRVectorBacktester, 'LinearReg': LRVectorBacktester}
-                    # 'ScikitReg':ScikitVectorBacktester}
+                    'MeanRev': MRVectorBacktester, 'LinearReg': LRVectorBacktester,
+                    'ScikitReg':ScikitVectorBacktester}
 
                 # 'LinearReg': LRVectorBacktester,
                 #     'ScikitReg': ScikitVectorBacktester}
@@ -65,8 +64,8 @@ class DashboardApp:
                     'SMA': {'sma_short': (5, 30), 'sma_long': (31, 100)},
                     'MOM': {'momentum': (10, 100)},
                     'MeanRev': {'sma': (5, 50), 'threshold': (0.3, 0.7)},
-                    'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)}
-                    # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}
+                    'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)},
+                    'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}
                 }
                 symbol = 'SYM'
                 start_date = '2023-11-15 00:00:00'
