@@ -105,7 +105,7 @@ class StrategyCreator:
         data = data.dropna(axis=0)
 
         # Subtract transaction costs from return when trade takes place
-        data.loc[data['orders']!=0, 'strategy'] -= self.transaction_costs*data['orders']
+        data.loc[data['orders']!=0, 'strategy'] -= self.transaction_costs*abs(data['orders'])
 
         # Annualize the mean log return
         data['an_mean_log_returns'] = data[['return', 'strategy']].mean() * 252
