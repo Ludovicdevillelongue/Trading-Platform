@@ -155,8 +155,6 @@ class SMAVectorBacktester(StrategyCreator):
         self.sma_long = sma_long
 
     def set_parameters(self, SMA1=None, SMA2=None):
-        ''' Updates SMA parameters and resp. time series.
-         '''
         if SMA1 is not None:
             self.SMA1 = SMA1
             self.data['SMA1'] = self.data['price'].rolling(self.SMA1).mean()
@@ -172,11 +170,11 @@ class SMAVectorBacktester(StrategyCreator):
         data["price"].plot(ax=ax1, color='g', lw=.5)
         data["SMA1"].plot(ax=ax1, color='r', lw=2.)
         data["SMA2"].plot(ax=ax1, color='b', lw=2.)
-        ax1.plot(data.loc[data.orders == 2.0].index,
-                 data["price"][data.orders == 2.0],
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders == -2.0].index,
-                 data["price"][data.orders == -2.0],
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Short mavg", "Long mavg", "Buy", "Sell"])
         plt.title("Simple Moving Average Trading Strategy")
@@ -201,6 +199,126 @@ class SMAVectorBacktester(StrategyCreator):
         return self.data_signal
 
 
+class BollingerBandsBacktester(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, window_size, num_std_dev, amount, transaction_costs):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.window_size = window_size
+        self.num_std_dev = num_std_dev
+
+    def set_parameters(self, window_size=None, num_std_dev=None):
+        ''' Updates Bollinger Bands parameters and respective time series. '''
+        if window_size is not None:
+            self.window_size = window_size
+        if num_std_dev is not None:
+            self.num_std_dev = num_std_dev
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["lower_band"].plot(ax=ax1, color='r', lw=2.)
+        data["upper_band"].plot(ax=ax1, color='g', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
+        plt.title("Bollinger Bands Trading Strategy")
+        # plt.show()
+
+    def run_strategy(self):
+        ''' Backtests the trading strategy. '''
+        self.set_parameters(self.window_size, self.num_std_dev)
+        data = self.data.copy().dropna()
+
+        # Define the trading signals
+        data['middle_band'] = data['price'].rolling(self.window_size).mean()
+        data['std_dev'] = data['price'].rolling(self.window_size).std()
+        data['upper_band'] = data['middle_band'] + (data['std_dev'] * self.num_std_dev)
+        data['lower_band'] = data['middle_band'] - (data['std_dev'] * self.num_std_dev)
+        data['position'] = np.where(data['price'] < data['lower_band'], 1, np.nan)  # buy signal
+        data['position'] = np.where(data['price'] > data['upper_band'], -1, data['position'])  # sell signal
+        data['position'] = data['position'].ffill().fillna(0)
+
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+class RSIVectorBacktester(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, RSI_period, overbought_threshold, oversold_threshold,
+                 amount, transaction_costs):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.RSI_period = RSI_period
+        self.overbought_threshold = overbought_threshold
+        self.oversold_threshold = oversold_threshold
+
+    def set_parameters(self, RSI_period=None, overbought_threshold=None, oversold_threshold=None):
+        if RSI_period is not None:
+            self.RSI_period = RSI_period
+        if overbought_threshold is not None:
+            self.overbought_threshold = overbought_threshold
+        if oversold_threshold is not None:
+            self.oversold_threshold = oversold_threshold
+
+
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["RSI"].plot(ax=ax1, color='b', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "RSI", "Buy", "Sell"])
+        plt.title("RSI Trading Strategy")
+        # plt.show()
+
+    def run_strategy(self):
+        self.set_parameters(self.RSI_period, self.overbought_threshold, self.oversold_threshold)
+        data = self.data.copy().dropna()
+
+        # Calculate RSI
+        delta = data['price'].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=self.RSI_period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=self.RSI_period).mean()
+
+        rs = gain / loss
+        data['RSI'] = 100 - (100 / (1 + rs))
+
+        # Define trading signals
+        data['position'] = np.where(data['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
+        data['position'] = np.where(data['RSI'] > self.overbought_threshold, -1, data['position'])  # sell signal
+
+        # Implement the rest of the strategy logic
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        self.run_strategy()
+        return self.data_signal
+
+
 class MomVectorBacktester(StrategyCreator):
     def __init__(self, data, symbol, start_date, end_date, momentum, amount, transaction_costs):
         super().__init__(symbol, start_date, end_date, amount, transaction_costs)
@@ -213,11 +331,11 @@ class MomVectorBacktester(StrategyCreator):
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
         data["price"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders == 2.0].index,
-                 data["price"][data.orders == 2],
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders == -2.0].index,
-                 data["price"][data.orders == -2],
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Buy", "Sell"])
         plt.title("Momentum Trading Strategy")
@@ -254,11 +372,11 @@ class MRVectorBacktester(StrategyCreator):
         data=data.dropna(axis=0)
         data["price"].plot(ax=ax1, color='g', lw=.5)
         data["sma"].plot(ax=ax1, color='b', lw=2.)
-        ax1.plot(data.loc[data.orders == 1.0].index,
-                 data["price"][data.orders == 1],
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders == -1.0].index,
-                 data["price"][data.orders == -1],
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "SMA", "Buy", "Sell"])
         plt.title("Mean Reversion Trading Strategy")
@@ -302,11 +420,11 @@ class TurtleVectorBacktester(StrategyCreator):
         data["high"].plot(ax=ax1, color='g', lw=2.)
         data["low"].plot(ax=ax1, color='r', lw=2.)
         data["avg"].plot(ax=ax1, color='b', lw=2.)
-        ax1.plot(data.loc[data.orders == 1.0].index,
-                 data["price"][data.orders == 1],
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders == -1.0].index,
-                 data["price"][data.orders == -1],
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Highs", "Lows", "Average", "Buy", "Sell"])
         plt.title("Turtle Trading Strategy")
@@ -352,6 +470,154 @@ class TurtleVectorBacktester(StrategyCreator):
         self.run_strategy()
         return self.data_signal
 
+
+class ParabolicSARBacktester(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, SAR_step=0.02, SAR_max=0.2, amount=10000,
+                 transaction_costs=0):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.SAR_step = SAR_step
+        self.SAR_max = SAR_max
+
+    def calculate_parabolic_sar(self):
+        data = self.data.copy()
+        data['SAR'] = data['price'].iloc[0]
+        data['EP'] = data['price'].iloc[0]
+        data['trend'] = 1
+        data['AF'] = self.SAR_step
+
+        for i in range(1, len(data)):
+            if data['trend'][i - 1] == 1:  # Uptrend
+                data['SAR'][i] = data['SAR'][i - 1] + data['AF'][i - 1] * (data['EP'][i - 1] - data['SAR'][i - 1])
+                data['SAR'][i] = min(data['SAR'][i], data['price'].iloc[i - 1], data['price'].iloc[i - 2])
+
+                if data['price'][i] > data['EP'][i - 1]:
+                    data['EP'][i] = data['price'][i]
+                    data['AF'][i] = min(data['AF'][i - 1] + self.SAR_step, self.SAR_max)
+                else:
+                    data['EP'][i] = data['EP'][i - 1]
+                    data['AF'][i] = data['AF'][i - 1]
+
+                if data['price'][i] < data['SAR'][i]:
+                    data['trend'][i] = -1  # Switch to downtrend
+                    data['SAR'][i] = data['EP'][i - 1]
+                    data['EP'][i] = data['price'][i]
+                    data['AF'][i] = self.SAR_step
+
+            else:  # Downtrend
+                data['SAR'][i] = data['SAR'][i - 1] + data['AF'][i - 1] * (data['EP'][i - 1] - data['SAR'][i - 1])
+                data['SAR'][i] = max(data['SAR'][i], data['price'].iloc[i - 1], data['price'].iloc[i - 2])
+
+                if data['price'][i] < data['EP'][i - 1]:
+                    data['EP'][i] = data['price'][i]
+                    data['AF'][i] = min(data['AF'][i - 1] + self.SAR_step, self.SAR_max)
+                else:
+                    data['EP'][i] = data['EP'][i - 1]
+                    data['AF'][i] = data['AF'][i - 1]
+
+                if data['price'][i] > data['SAR'][i]:
+                    data['trend'][i] = 1  # Switch to uptrend
+                    data['SAR'][i] = data['EP'][i - 1]
+                    data['EP'][i] = data['price'][i]
+                    data['AF'][i] = self.SAR_step
+
+        return data
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["SAR"].plot(ax=ax1, color='b', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "SAR", "Buy", "Sell"])
+        plt.title("Parabolic SAR Trading Strategy")
+        # plt.show()
+
+
+    def run_strategy(self):
+        ''' Backtests the trading strategy. '''
+        data = self.calculate_parabolic_sar()
+
+        # Define trading signals
+        data['position'] = np.where(data['trend'] == 1, 1, -1)  # Long when trend is up, short when trend is down
+
+        # Implement the rest of the strategy logic
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)  # Implement this method to visualize the strategy
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+class VolatilityBreakoutBacktester(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, volatility_window, breakout_factor, amount, transaction_costs):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.volatility_window = volatility_window
+        self.breakout_factor = breakout_factor
+        self.set_parameters(volatility_window, breakout_factor)
+
+    def set_parameters(self, volatility_window=None, breakout_factor=None):
+        if volatility_window is not None:
+            self.volatility_window = volatility_window
+        if breakout_factor is not None:
+            self.breakout_factor = breakout_factor
+
+
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["lower_band"].plot(ax=ax1, color='r', lw=2.)
+        data["upper_band"].plot(ax=ax1, color='g', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
+        plt.title("Volatility Breakout Trading Strategy")
+        # plt.show()
+
+    def run_strategy(self):
+        ''' Backtests the trading strategy. '''
+        data = self.data.copy().dropna()
+
+        # Calculate ATR and bands
+        data['ATR'] = self.data['price'].rolling(self.volatility_window).std()
+        data['upper_band'] = data['price'] + data['ATR'] * self.breakout_factor
+        data['lower_band'] = data['price'] - data['ATR'] * self.breakout_factor
+
+        # Define trading signals
+        data['position'] = np.where(data['price'] > data['upper_band'], 1, np.nan)
+        data['position'] = np.where(data['price'] < data['lower_band'], -1, data['position'])
+        data['position'] = data['position'].ffill().fillna(0)
+
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+
 class LRVectorBacktester(StrategyCreator):
 
     def __init__(self, data, symbol, start_date, end_date, lags, train_percent, amount, transaction_costs):
@@ -372,11 +638,11 @@ class LRVectorBacktester(StrategyCreator):
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
         data["price"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders == 2.0].index,
-                 data["price"][data.orders == 2],
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["price"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders == -2.0].index,
-                 data["price"][data.orders == -2],
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["price"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Buy", "Sell"])
         plt.title("Linear Regression Prediction Trading Strategy")
@@ -414,7 +680,6 @@ class LRVectorBacktester(StrategyCreator):
             return int(np.sign(prediction))
         else:
             return 0  # Return neutral signal if data is insufficient
-
 
 class ScikitVectorBacktester(StrategyCreator):
     def __init__(self, data, symbol, start_date, end_date, lags, train_percent, model, amount, transaction_costs):

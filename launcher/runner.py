@@ -3,9 +3,9 @@ from datetime import timedelta, datetime
 
 import pytz
 
-from backtester.strat_creator import SMAVectorBacktester, MomVectorBacktester, \
-    MRVectorBacktester, TurtleVectorBacktester, \
-    LRVectorBacktester, ScikitVectorBacktester
+from backtester.strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester,\
+    MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester, \
+    VolatilityBreakoutBacktester,LRVectorBacktester, ScikitVectorBacktester
 from backtester.strat_comparator import StrategyRunner
 from backtester.signal_generator import LiveStrategyRunner
 
@@ -13,21 +13,29 @@ if __name__ == '__main__':
     # Main execution logic with comparison of SMA and MOM strategies
     strategies = {
         # 'SMA': SMAVectorBacktester,
+        # 'BB': BollingerBandsBacktester,
+        # 'RSI': RSIVectorBacktester,
         # 'MOM': MomVectorBacktester,
-        # 'MeanRev': MRVectorBacktester}
+        # 'MeanRev': MRVectorBacktester,
         # 'Turtle': TurtleVectorBacktester,
-        'LinearReg': LRVectorBacktester}
+        # 'ParabolicSAR': ParabolicSARBacktester,
+        'VolBreakout':VolatilityBreakoutBacktester}
+        # 'LinearReg': LRVectorBacktester,
         # 'ScikitReg': ScikitVectorBacktester}
 
     param_grids = {
         # 'SMA': {'sma_short': (5,30), 'sma_long': (31,100)},
+        # 'BB': {'window_size': (20, 50), 'num_std_dev':(0.5, 2)},
+        # 'RSI': {'RSI_period': (20, 50), 'overbought_threshold': (60, 80), 'oversold_threshold': (20, 40)},
         # 'MOM': {'momentum':(10, 100)},
         # 'MeanRev': {'sma': (5,50), 'threshold': (0.3,0.7)},
         # 'Turtle': {'window_size': (20, 50)},
-        'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)}}
+        # 'ParabolicSAR':{'SAR_step': (0.02, 0.06), 'SAR_max': (0.2, 0.6)},
+        'VolBreakout': {'volatility_window': (1, 50), 'breakout_factor': (0.2, 1.4)}}
+        # 'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)}}
         # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}}
 
-    symbol = 'IBM'
+    symbol = 'PLTR'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern'))-timedelta(minutes=2)).replace(second=0)).strftime("%Y-%m-%d %H:%M:%S")
     amount = 10000
