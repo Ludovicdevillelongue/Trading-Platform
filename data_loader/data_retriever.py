@@ -37,7 +37,7 @@ class DataRetriever(object):
         return data_quandl
 
     def yfinance_download(self, symbol:str):
-        data_yfinance = yf.download(symbol, period="5d", interval="1m")
+        data_yfinance = yf.download(symbol, period="1y", interval="1d")
         data_yfinance.rename(columns={'Close': 'price'}, inplace=True)
         return data_yfinance
 
@@ -67,7 +67,7 @@ class DataRetriever(object):
             return None
 
     def yfinance_latest_data(self,symbol:str):
-        latest_data = yf.download(symbol, period="1d", interval="1m")
+        latest_data = yf.download(symbol, period="1y", interval="1d")
         latest_data.rename(columns={'Close': 'price'}, inplace=True)
         return latest_data
 

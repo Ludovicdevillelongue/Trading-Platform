@@ -55,8 +55,8 @@ class DashboardApp:
             try:
                 strategies = {
                     'SMA': SMAVectorBacktester, 'MOM': MomVectorBacktester,
-                    'MeanRev': MRVectorBacktester, 'LinearReg': LRVectorBacktester,
-                    'ScikitReg':ScikitVectorBacktester}
+                    'MeanRev': MRVectorBacktester, 'LinearReg': LRVectorBacktester}
+                    # 'ScikitReg':ScikitVectorBacktester}
 
                 # 'LinearReg': LRVectorBacktester,
                 #     'ScikitReg': ScikitVectorBacktester}
@@ -65,7 +65,7 @@ class DashboardApp:
                     'MOM': {'momentum': (10, 100)},
                     'MeanRev': {'sma': (5, 50), 'threshold': (0.3, 0.7)},
                     'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)},
-                    'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}
+                    # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}
                 }
                 symbol = 'SYM'
                 start_date = '2023-11-15 00:00:00'

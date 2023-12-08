@@ -93,22 +93,19 @@ class StrategyCreator:
                                        rcond=None)[0]
             return latest_row
         else:
-            model.fit(latest_data[cols], np.sign(latest_data['return']))
+            model.fit(latest_row[cols], np.sign(latest_row['return']))
             return latest_row
 
 
     def calculate_performance(self, data):
         """ Calculate performance and return a DataFrame with results. """
 
-        # determine when a trade takes place
-        trades = data['position'].diff().fillna(0) != 0
-
         # Calculate strategy return
         data['strategy'] = data['position'].shift(1) * data['return']
         data = data.dropna(axis=0)
 
         # Subtract transaction costs from return when trade takes place
-        data.loc[trades, 'strategy'] -= self.transaction_costs
+        data.loc[data['orders']!=0, 'strategy'] -= self.transaction_costs*data['orders']
 
         # Annualize the mean log return
         data['an_mean_log_returns'] = data[['return', 'strategy']].mean() * 252
@@ -138,6 +135,9 @@ class StrategyCreator:
             sharpe_ratio=0
         return round(aperf, 2), round(operf, 2), round(sharpe_ratio, 2)
 
+    def analyse_strategy(self, data):
+        # Placeholder for strategy analysis method
+        raise NotImplementedError("Should implement method in subclass!")
 
     def run_strategy(self):
         # Placeholder for strategy execution method
@@ -161,6 +161,25 @@ class SMAVectorBacktester(StrategyCreator):
             self.SMA2 = SMA2
             self.data['SMA2'] = self.data['price'].rolling(self.SMA2).mean()
 
+    def analyse_strategy(self, data):
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["SMA1"].plot(ax=ax1, color='r', lw=2.)
+        data["SMA2"].plot(ax=ax1, color='b', lw=2.)
+        ax1.plot(data.loc[data.orders == 2.0].index,
+                 data["price"][data.orders == 2.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders == -2.0].index,
+                 data["price"][data.orders == -2.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Short mavg", "Long mavg", "Buy", "Sell"])
+        plt.title("Simple Moving Average Trading Strategy")
+        # plt.show()
+
+
 
     def run_strategy(self):
 
@@ -170,6 +189,7 @@ class SMAVectorBacktester(StrategyCreator):
         self.set_parameters(int(self.sma_short), int(self.sma_long))
         data = self.data.copy().dropna()
         data['position'] = np.where(data['SMA1'] > data['SMA2'], 1, -1)
+        self.analyse_strategy(data)
         return self.calculate_performance(data)
 
     def generate_signal(self):
@@ -192,12 +212,28 @@ class MomVectorBacktester(StrategyCreator):
         self.data=data
         self.momentum = momentum
 
+    def analyse_strategy(self, data):
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["price"].plot(ax=ax1, color='g', lw=.5)
+        ax1.plot(data.loc[data.orders == 2.0].index,
+                 data["price"][data.orders == 2],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders == -2.0].index,
+                 data["price"][data.orders == -2],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Buy", "Sell"])
+        plt.title("Momentum Trading Strategy")
+        # plt.show()
 
     def run_strategy(self):
         ''' Backtests the trading strategy.
         '''
         data = self.data.copy().dropna()
         data['position'] = np.sign(data['return'].rolling(self.momentum).mean())
+        self.analyse_strategy(data)
         return self.calculate_performance(data)
 
     def generate_signal(self):
