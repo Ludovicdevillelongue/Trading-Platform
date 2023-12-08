@@ -7,8 +7,11 @@ from dash import dcc, html, Input, Output, State
 import plotly.express as px
 from dash import dash_table
 from backtester.strat_creator import (
-    SMAVectorBacktester, LRVectorBacktester, MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester,
-ScikitVectorBacktester)
+    SMAVectorBacktester, BollingerBandsBacktester,
+    RSIVectorBacktester,
+    MomVectorBacktester,MRVectorBacktester,
+    TurtleVectorBacktester, ParabolicSARBacktester, VolatilityBreakoutBacktester,
+    LRVectorBacktester,ScikitVectorBacktester)
 from backtester.strat_comparator import StrategyRunner
 
 class DashboardApp:
@@ -54,21 +57,29 @@ class DashboardApp:
         def generate_dashboard(n_clicks, symbol, start_date, end_date):
             try:
                 strategies = {
-                    'SMA': SMAVectorBacktester, 'MOM': MomVectorBacktester,
-                    'MeanRev': MRVectorBacktester, 'Turtle': TurtleVectorBacktester, 'LinearReg': LRVectorBacktester}
+                    'SMA': SMAVectorBacktester,
+                    'BB': BollingerBandsBacktester,
+                    'RSI': RSIVectorBacktester,
+                    'MOM': MomVectorBacktester,
+                    'MeanRev': MRVectorBacktester,
+                    'Turtle': TurtleVectorBacktester,
+                    'ParabolicSAR': ParabolicSARBacktester,
+                    'VolBreakout': VolatilityBreakoutBacktester,
+                    'LinearReg': LRVectorBacktester}
                     # 'ScikitReg':ScikitVectorBacktester}
-
-                # 'LinearReg': LRVectorBacktester,
-                #     'ScikitReg': ScikitVectorBacktester}
                 param_grids = {
                     'SMA': {'sma_short': (5, 30), 'sma_long': (31, 100)},
+                    'BB': {'window_size': (20, 50), 'num_std_dev': (0.5, 2)},
+                    'RSI': {'RSI_period': (20, 50), 'overbought_threshold': (60, 80), 'oversold_threshold': (20, 40)},
                     'MOM': {'momentum': (10, 100)},
                     'MeanRev': {'sma': (5, 50), 'threshold': (0.3, 0.7)},
                     'Turtle': {'window_size': (20, 50)},
+                    'ParabolicSAR': {'SAR_step': (0.02, 0.06), 'SAR_max': (0.2, 0.6)},
+                    'VolBreakout': {'volatility_window': (50, 100), 'breakout_factor': (0.2, 2.0)},
                     'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)},
                     # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}
                 }
-                symbol = 'SYM'
+                symbol = 'INTS'
                 start_date = '2023-11-15 00:00:00'
                 end_date = (
                     (datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
@@ -141,6 +152,7 @@ class Dashboard:
                 'over_perf': strategy_result['operf'],
                 'sharpe_ratio': strategy_result['sharpe_ratio']
             })
+        table_data.sort(key=lambda x: x['sharpe_ratio'], reverse=True)
         return table_data
 
 
