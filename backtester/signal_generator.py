@@ -22,7 +22,7 @@ class LiveStrategyRunner:
 
     def place_order(self, strategy_name, signal):
         current_position = self.current_positions[strategy_name]
-        self.logger_monitor(f'Position: {current_position}\nSignal: {signal}', False)
+        self.logger_monitor(f'\nPosition: {current_position}\nSignal: {signal}', False)
 
         if current_position == signal:
             self.logger_monitor('*** NO TRADE PLACED ***')

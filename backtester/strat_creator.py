@@ -77,7 +77,7 @@ class StrategyCreator:
 
     def prepare_lags_for_signal(self, lags):
         ''' Prepares the lagged data for the most recent data point for signal generation. '''
-        latest_data = self.data.tail(lags + 1).copy()  # Get enough rows for lags
+        latest_data = self.data.tail(2*lags + 1).copy()  # Get enough rows for lags
         cols = [f'lag_{lag}' for lag in range(1, lags + 1)]
         for lag in range(1, lags + 1):
             latest_data[f'lag_{lag}'] = latest_data['return'].shift(lag)
@@ -93,7 +93,7 @@ class StrategyCreator:
                                        rcond=None)[0]
             return latest_row
         else:
-            model.fit(latest_row[cols], latest_row['return'])
+            model.fit(latest_data[cols], np.sign(latest_data['return']))
             return latest_row
 
 

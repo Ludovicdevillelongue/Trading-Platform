@@ -14,15 +14,15 @@ if __name__ == '__main__':
         'SMA': SMAVectorBacktester,
         'MOM': MomVectorBacktester,
         'MeanRev': MRVectorBacktester,
-        'LinearReg': LRVectorBacktester}
-        # 'ScikitReg': ScikitVectorBacktester}
+        'LinearReg': LRVectorBacktester,
+        'ScikitReg': ScikitVectorBacktester}
 
     param_grids = {
         'SMA': {'sma_short': (5,30), 'sma_long': (31,100)},
         'MOM': {'momentum':(10, 100)},
         'MeanRev': {'sma': (5,50), 'threshold': (0.3,0.7)},
-        'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)}}
-        # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}}
+        'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)},
+        'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}}
 
     symbol = 'IBM'
     start_date = '2023-11-15 00:00:00'
