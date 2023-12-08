@@ -1,0 +1,6 @@
+2023-11-20 21:11:25,354 - LiveStrategyRunner - INFO - Data fetched until 2023-11-20 15:11:00-05:00
+2023-11-20 21:11:25,354 - LiveStrategyRunner - INFO - Strategy: MOM
+2023-11-20 21:11:25,354 - LiveStrategyRunner - INFO - Strategy SMA signals completion
+2023-11-20 21:11:25,354 - LiveStrategyRunner - INFO - Position: 0, Signal: 1
+2023-11-20 21:11:25,354 - LiveStrategyRunner - INFO - Trade executed on TSLA following the MOM strategy: buy 1 units
+2023-11-20 21:11:25,354 - LiveStrategyRunner - INFO - Strategy MeanRev signals completion
