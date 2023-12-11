@@ -135,6 +135,29 @@ class StrategyCreator:
             sharpe_ratio=0
         return round(aperf, 2), round(operf, 2), round(sharpe_ratio, 2)
 
+    def position_holding_time(self, data):
+        position_holding_times = []
+        current_pos = 0
+        current_pos_start = 0
+        for i in range(0, len(data)):
+            pos = data['position'].iloc[i]
+            # flat and starting a new position
+            if current_pos == 0:
+                if pos != 0:
+                    current_pos = pos
+                    current_pos_start = i
+                continue
+            # going from long position to flat or short position or
+            # going from short position to flat or long position
+            if current_pos * pos <= 0:
+                current_pos = pos
+                position_holding_times.append(i - current_pos_start)
+                current_pos_start = i
+        print(position_holding_times)
+        plt.hist(position_holding_times, 100)
+        plt.gca().set(title='Position Holding Time Distribution', xlabel='Holding time days', ylabel='Frequency')
+        # plt.show()
+
     def analyse_strategy(self, data):
         # Placeholder for strategy analysis method
         raise NotImplementedError("Should implement method in subclass!")
