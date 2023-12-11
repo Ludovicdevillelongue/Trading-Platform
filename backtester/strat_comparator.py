@@ -8,13 +8,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class StrategyRunner:
-    def __init__(self, strategies, symbol, start_date, end_date, param_grids, amount, transaction_costs,
+    def __init__(self, strategies, data_provider, symbol, start_date, end_date, param_grids, amount, transaction_costs,
                  iterations):
         """
         Initialize the StrategyRunner with given parameters.
 
         :param strategies: Dictionary of strategy names and their corresponding classes.
         :param symbol: The symbol for which the strategies will be run.
+        :param data_provider: source of data
         :param start_date: The starting date for the strategies.
         :param end_date: The ending date for the strategies.
         :param param_grids: Parameter grids for optimizing the strategies.
@@ -22,6 +23,7 @@ class StrategyRunner:
         :param transaction_costs: Costs per transaction (default: 0.0).
         """
         self.strategies = strategies
+        self.data_provider=data_provider
         self.symbol = symbol
         self.start_date = start_date
         self.end_date = end_date
@@ -32,7 +34,8 @@ class StrategyRunner:
         self.iterations=iterations
 
         # Load data once and reuse, improving efficiency
-        self.data = StrategyCreator(self.symbol, self.start_date, self.end_date, self.amount, self.transaction_costs).get_data()
+        self.data = StrategyCreator(self.symbol, self.start_date,
+                                    self.end_date, self.amount, self.transaction_costs).get_data(self.data_provider)
 
     def _optimize_strategy(self, strategy_name, strategy_class, search_type):
         """

@@ -30,11 +30,10 @@ class AlpacaTradingBot:
         try:
             positions = self.api.list_positions()
             if not positions:
-                print("No open positions.")
-            if positions.empty:
-                print("No open positions.")
+                pass
+            if len(positions)==0:
+                pass
             else:
                 return positions
-
         except Exception as e:
             print(f"An error occurred: {e}")

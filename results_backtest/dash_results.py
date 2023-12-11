@@ -1,21 +1,19 @@
 import logging
-from datetime import datetime, timedelta
 import traceback
 import dash
-import pytz
 from dash import dcc, html, Input, Output, State
 import plotly.express as px
+from waitress import serve
 from dash import dash_table
-from backtester.strat_creator import (
-    SMAVectorBacktester, BollingerBandsBacktester,
-    RSIVectorBacktester,
-    MomVectorBacktester,MRVectorBacktester,
-    TurtleVectorBacktester, ParabolicSARBacktester, VolatilityBreakoutBacktester,
-    LRVectorBacktester,ScikitVectorBacktester)
-from backtester.strat_comparator import StrategyRunner
+import webbrowser
+from time import sleep
 
 class DashboardApp:
-    def __init__(self):
+    def __init__(self,best_parameters_strats, comparison_data, symbol):
+        self.best_parameters_strats=best_parameters_strats
+        self.comparison_data=comparison_data
+        self.symbol=symbol
+
         self.app = dash.Dash(__name__, suppress_callback_exceptions=True)
         self.create_layout()
         self.register_callbacks()
@@ -25,13 +23,13 @@ class DashboardApp:
             html.H1("Strategy Dashboard"),
 
             html.Label("Symbol"),
-            dcc.Input(id="symbol", type="text", value="IBM"),
+            dcc.Input(id="symbol", type="text", value=f"{self.symbol}"),
 
             html.Label("Start Date"),
-            dcc.DatePickerSingle(id="start-date", date="2020-01-01"),
+            dcc.DatePickerSingle(id="start-date", date=self.comparison_data['returns'].index[0]),
 
             html.Label("End Date"),
-            dcc.DatePickerSingle(id="end-date", date="2022-12-31"),
+            dcc.DatePickerSingle(id="end-date", date=self.comparison_data['returns'].index[1]),
 
             html.Button("Generate Dashboard", id="generate-dashboard"),
 
@@ -56,50 +54,10 @@ class DashboardApp:
         )
         def generate_dashboard(n_clicks, symbol, start_date, end_date):
             try:
-                strategies = {
-                    'SMA': SMAVectorBacktester,
-                    'BB': BollingerBandsBacktester,
-                    'RSI': RSIVectorBacktester,
-                    'MOM': MomVectorBacktester,
-                    'MeanRev': MRVectorBacktester,
-                    'Turtle': TurtleVectorBacktester,
-                    'ParabolicSAR': ParabolicSARBacktester,
-                    'VolBreakout': VolatilityBreakoutBacktester,
-                    'LinearReg': LRVectorBacktester}
-                    # 'ScikitReg':ScikitVectorBacktester}
-                param_grids = {
-                    'SMA': {'sma_short': (5, 30), 'sma_long': (31, 100)},
-                    'BB': {'window_size': (20, 50), 'num_std_dev': (0.5, 2)},
-                    'RSI': {'RSI_period': (20, 50), 'overbought_threshold': (60, 80), 'oversold_threshold': (20, 40)},
-                    'MOM': {'momentum': (10, 100)},
-                    'MeanRev': {'sma': (5, 50), 'threshold': (0.3, 0.7)},
-                    'Turtle': {'window_size': (20, 50)},
-                    'ParabolicSAR': {'SAR_step': (0.02, 0.06), 'SAR_max': (0.2, 0.6)},
-                    'VolBreakout': {'volatility_window': (50, 100), 'breakout_factor': (0.2, 2.0)},
-                    'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)},
-                    # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}
-                }
-                symbol = 'INTS'
-                start_date = '2023-11-15 00:00:00'
-                end_date = (
-                    (datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
-                    "%Y-%m-%d %H:%M:%S")
-                amount = 10000
-                transaction_costs = 0.01
-                iterations = 10
-
-                # Run the comparison and optimization
-                runner = StrategyRunner(strategies, symbol, start_date, end_date, param_grids, amount,
-                                        transaction_costs, iterations)
-                logging.info("Optimizing strategies...")
-                optimization_results = runner.test_all_search_types()
-                logging.info("Optimized results: %s", optimization_results)
-                logging.info("\nRunning and comparing strategies...")
-                best_strat_recap, comparison_data = runner.run_and_compare_strategies()
                 dashboard = Dashboard()
-                cumulative_returns_fig = Dashboard.plot_cumulative_returns(comparison_data['returns'])
-                positions_figs = Dashboard.plot_positions(comparison_data['positions'])
-                table_data = Dashboard.create_table(best_strat_recap)
+                cumulative_returns_fig = Dashboard.plot_cumulative_returns(self.comparison_data['returns'])
+                positions_figs = Dashboard.plot_positions(self.comparison_data['positions'])
+                table_data = Dashboard.create_table(self.best_parameters_strats)
 
                 # Convert each figure to a Graph component and store in a list
                 positions_plots = [dcc.Graph(figure=fig) for fig in positions_figs]
@@ -113,8 +71,13 @@ class DashboardApp:
                 # Log specific error message
                 return {}, []
 
-    def run(self):
-        self.app.run_server(debug=True)
+
+    def run_server(self):
+        serve(self.app.server, host='0.0.0.0', port=8080)
+
+    def open_browser(self):
+        sleep(1)  # Short delay before opening the browser
+        webbrowser.open("http://127.0.0.1:8080")
 
 
 class Dashboard:
@@ -156,11 +119,6 @@ class Dashboard:
         return table_data
 
 
-if __name__ == '__main__':
-    # Configure logging level (INFO for normal operation)
-    logging.basicConfig(level=logging.INFO)
 
-    app = DashboardApp()
-    app.run()
 
 
