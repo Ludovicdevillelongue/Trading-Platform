@@ -22,7 +22,7 @@ class LiveStrategyRunner:
         self.running = True
         self.units = 1
         self.real_time_data = None
-        self.config_file = os.path.join(os.path.dirname(__file__), '../broker_interaction/broker_config.yml')
+        self.config_file = os.path.join(os.path.dirname(__file__), '../config/broker_config.yml')
         if self.trading_platform == 'Alpaca':
             self.broker = AlpacaTradingBot(config_file=self.config_file)
 
