@@ -99,7 +99,7 @@ class StrategyRunner:
         :return: A tuple containing a summary of the best strategy results and a DataFrame for comparison.
         """
         comparison_data = defaultdict(pd.DataFrame)
-        best_strat_recap = {}
+        best_parameters_strats = {}
 
         for strategy_name, optimization_result in self.optimization_results.items():
             strategy_params = optimization_result['params']
@@ -107,8 +107,8 @@ class StrategyRunner:
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
                                                              **strategy_params)
             aperf, operf, sharpe = strategy_tester.run_strategy()
-            best_strat_recap[strategy_name] = {'aperf': aperf, 'operf': operf, 'sharpe_ratio': sharpe}
+            best_parameters_strats[strategy_name] = {'aperf': aperf, 'operf': operf, 'sharpe_ratio': sharpe}
             comparison_data = self._append_strategy_results(comparison_data, strategy_name, strategy_tester)
 
-        return best_strat_recap, comparison_data
+        return best_parameters_strats, comparison_data
 
