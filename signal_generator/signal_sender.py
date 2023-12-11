@@ -7,7 +7,8 @@ import os
 
 
 class LiveStrategyRunner:
-    def __init__(self, strategy_name, strategy_class, optimization_results, symbol, start_date, end_date, amount, transaction_costs, data_provider, trading_platform):
+    def __init__(self, strategy_name, strategy_class, optimization_results, symbol, start_date, end_date,
+                 amount, transaction_costs, data_provider, trading_platform):
         self.strategy_name = strategy_name
         self.strategy_class= strategy_class
         self.optimization_results = optimization_results
@@ -30,7 +31,13 @@ class LiveStrategyRunner:
         while self.running:
             try:
                 # Fetch and update data
-                self.real_time_data = DataRetriever(self.start_date, self.end_date).yfinance_latest_data(self.symbol)['price'].to_frame()
+                if self.data_provider=='yfinance':
+                    self.real_time_data = DataRetriever(self.start_date, self.end_date)\
+                        .yfinance_latest_data(self.symbol)['price'].to_frame()
+                else:
+                    self.real_time_data = \
+                    DataRetriever(self.start_date, self.end_date).yfinance_latest_data(self.symbol)['price'].to_frame()
+
                 self.real_time_data['return'] = np.log(self.real_time_data['price'] / self.real_time_data['price'].shift(1))
                 self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
             except Exception as e:
@@ -43,7 +50,8 @@ class LiveStrategyRunner:
                 if self.real_time_data is None:
                     continue
                 opti_results_strategy = self.optimization_results[strategy_name]['params']
-                self.signal = strategy_class(self.real_time_data, self.symbol, self.start_date, self.end_date, amount=self.amount, transaction_costs=self.transaction_costs, **opti_results_strategy).generate_signal()
+                self.signal = strategy_class(self.real_time_data, self.symbol, self.start_date, self.end_date,
+                amount=self.amount, transaction_costs=self.transaction_costs, **opti_results_strategy).generate_signal()
 
                 if self.signal != 0:
                     self.execute_trade(strategy_name, self.signal)
@@ -53,28 +61,28 @@ class LiveStrategyRunner:
             time.sleep(5)
 
     def execute_trade(self, strategy_name, signal):
-        current_position = self.current_positions[strategy_name]
         broker_positions = self.broker.get_positions()
-        for i in range(len(broker_positions)):
-            if signal != current_position and signal!=float(broker_positions[i]._raw['qty']['symbol'==self.symbol]):
-                self.place_order(strategy_name, signal)
+        current_position = 0
+        if broker_positions is None:
+            self.place_order(strategy_name, signal, current_position)
+        else:
+            for i in range(len(broker_positions)):
+                if broker_positions[i]._raw['symbol']==self.symbol:
+                    current_position=float(broker_positions[i]._raw['qty'])
+                    if signal!=current_position:
+                        self.place_order(strategy_name, signal, current_position)
 
-    def place_order(self, strategy_name, signal):
-        current_position = self.current_positions[strategy_name]
+    def place_order(self, strategy_name, signal, current_position):
         self.logger_monitor(f'\nPosition: {current_position}\nSignal: {signal}', False)
 
-        if current_position == signal:
-            self.logger_monitor('*** NO TRADE PLACED ***')
-            return
-
-        qty = (1 - 2 * current_position) * self.units
+        qty = float(abs(signal) * self.units)
         side = 'buy' if signal == 1 else 'sell'
-        self.report_trade(self.symbol, strategy_name, side, qty)
-        self.current_positions[strategy_name] = signal
-        qty=abs(signal)
 
         #Alpaca order placement
         self.broker.submit_order(self.symbol, qty, side)
+
+
+        self.report_trade(self.symbol, strategy_name, side, qty)
 
     def logger_monitor(self, message, *args, **kwargs):
         print(message)

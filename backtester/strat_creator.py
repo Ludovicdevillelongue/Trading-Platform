@@ -20,14 +20,15 @@ class StrategyCreator:
         self.data = None  # Will hold historical price data
         self.results = None  # Will hold backtest results
 
-    def get_data(self):
+    def get_data(self, data_provider):
         ''' Retrieves and prepares the data'''
-        # raw = pd.read_hdf(DataRetriever(self.start_date, self.end_date).read_data())
-        raw=DataRetriever(self.start_date, self.end_date).yfinance_download(self.symbol)['price'].to_frame()
-        # DataRetriever(self.start_date, self.end_date).write_data(raw)
-        # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
-        raw['return'] = np.log(raw / raw.shift(1))
-        return raw
+        if data_provider=='yfinance':
+            # raw = pd.read_hdf(DataRetriever(self.start_date, self.end_date).read_data())
+            raw=DataRetriever(self.start_date, self.end_date).yfinance_download(self.symbol)['price'].to_frame()
+            # DataRetriever(self.start_date, self.end_date).write_data(raw)
+            # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
+            raw['return'] = np.log(raw / raw.shift(1))
+            return raw
 
     def select_data(self, start, end):
         ''' Selects sub-sets of the financial data.
