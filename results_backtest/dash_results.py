@@ -110,6 +110,7 @@ class Dashboard:
         table_data = []
         for strategy_name, strategy_result in best_strat_recap.items():
             table_data.append({'strategy_name': strategy_name,
+                               'search_type':str(strategy_result['search_type']),
                                'params': str(strategy_result['params']),
                                **strategy_result['results']})
             table_data = sorted(table_data, key=lambda x: x['sharpe_ratio'], reverse=True)

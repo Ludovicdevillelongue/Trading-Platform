@@ -48,12 +48,13 @@ class StrategyRunner:
         return optimizer.optimize()
 
 
-    def _update_optimization_results(self, strategy_name, best_params, best_performance, best_sharpe):
+    def _update_optimization_results(self, strategy_name, search_type, best_params, best_performance, best_sharpe):
         """
         Private method to update the optimization results.
         """
         if strategy_name not in self.optimization_results or best_sharpe > self.optimization_results[strategy_name]['sharpe_ratio']:
             self.optimization_results[strategy_name] = {
+                'search_type':str(type(search_type)).split(".")[2].split("'")[0],
                 'params': best_params,
                 'performance': best_performance,
                 'sharpe_ratio': best_sharpe
@@ -78,7 +79,7 @@ class StrategyRunner:
         """
         for strategy_name, strategy_class in self.strategies.items():
             best_params, best_performance, best_sharpe = self._optimize_strategy(strategy_name, strategy_class, search_type)
-            self._update_optimization_results(strategy_name, best_params, best_performance, best_sharpe)
+            self._update_optimization_results(strategy_name, search_type, best_params, best_performance, best_sharpe)
         return self.optimization_results
 
 
@@ -113,7 +114,8 @@ class StrategyRunner:
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
                                                              **strategy_params)
             aperf, operf, sharpe = strategy_tester.run_strategy()
-            best_strats[strategy_name] = {'params':optimization_result['params'], 'results':
+            best_strats[strategy_name] = {'search_type':optimization_result['search_type'],
+                                          'params':optimization_result['params'], 'results':
                 {'aperf': aperf, 'operf': operf, 'sharpe_ratio': sharpe}}
             comparison_data = self._append_strategy_results(comparison_data, strategy_name, strategy_tester)
 

@@ -46,7 +46,7 @@ if __name__ == '__main__':
     end_date = ((datetime.now(pytz.timezone('US/Eastern'))-timedelta(minutes=2)).replace(second=0)).strftime("%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations=100
+    iterations=2
 
 
     # Run the comparison and optimization
