@@ -9,8 +9,9 @@ import webbrowser
 from time import sleep
 
 class DashboardApp:
-    def __init__(self,best_parameters_strats, comparison_data, symbol):
-        self.best_parameters_strats=best_parameters_strats
+    def __init__(self,best_strats, comparison_data, symbol):
+
+        self.best_strats=best_strats
         self.comparison_data=comparison_data
         self.symbol=symbol
 
@@ -37,7 +38,7 @@ class DashboardApp:
                         type="circle",
                         children=[
                             dcc.Graph(id="cumulative-returns-plot"),
-                            dash_table.DataTable(id="strategy-table")  # Use DataTable from dash_table
+                            dash_table.DataTable(id="strategy-table")
                         ]),
             html.Div(id="strategy-plots-container")
         ])
@@ -57,7 +58,7 @@ class DashboardApp:
                 dashboard = Dashboard()
                 cumulative_returns_fig = Dashboard.plot_cumulative_returns(self.comparison_data['returns'])
                 positions_figs = Dashboard.plot_positions(self.comparison_data['positions'])
-                table_data = Dashboard.create_table(self.best_parameters_strats)
+                table_data = Dashboard.create_table(self.best_strats)
 
                 # Convert each figure to a Graph component and store in a list
                 positions_plots = [dcc.Graph(figure=fig) for fig in positions_figs]
@@ -78,7 +79,6 @@ class DashboardApp:
     def open_browser(self):
         sleep(1)  # Short delay before opening the browser
         webbrowser.open("http://127.0.0.1:8080")
-
 
 class Dashboard:
     @staticmethod
@@ -109,13 +109,10 @@ class Dashboard:
     def create_table(best_strat_recap):
         table_data = []
         for strategy_name, strategy_result in best_strat_recap.items():
-            table_data.append({
-                'strategy': strategy_name,
-                'absolute_perf': strategy_result['aperf'],
-                'over_perf': strategy_result['operf'],
-                'sharpe_ratio': strategy_result['sharpe_ratio']
-            })
-        table_data.sort(key=lambda x: x['sharpe_ratio'], reverse=True)
+            table_data.append({'strategy_name': strategy_name,
+                               'params': str(strategy_result['params']),
+                               **strategy_result['results']})
+            table_data = sorted(table_data, key=lambda x: x['sharpe_ratio'], reverse=True)
         return table_data
 
 

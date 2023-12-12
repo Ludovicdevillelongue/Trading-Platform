@@ -1,7 +1,11 @@
+
 import logging
 from datetime import timedelta, datetime
 import threading
 import pytz
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backtester.strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
     MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester
 from backtester.strat_comparator import StrategyRunner
@@ -10,6 +14,7 @@ from signal_generator.signal_sender import LiveStrategyRunner
 from waitress import serve
 
 if __name__ == '__main__':
+
     # Main execution logic with comparison of SMA and MOM strategies
     strategies = {
         'SMA': SMAVectorBacktester,
@@ -51,14 +56,14 @@ if __name__ == '__main__':
     optimization_results = runner.test_all_search_types()
     logging.info("Optimized results: %s", optimization_results)
     logging.info("\nRunning and comparing strategies...")
-    best_parameters_strats, comparison_data = runner.run_and_compare_strategies()
+    best_strats, comparison_data = runner.run_and_compare_strategies()
     #show results of bactkest in dashboard
-    app = DashboardApp(best_parameters_strats, comparison_data, symbol)
+    app = DashboardApp(best_strats, comparison_data, symbol)
     threading.Thread(target= app.run_server).start()
     threading.Thread(target=app.open_browser).start()
 
-    best_strat = max(best_parameters_strats, key=lambda k: best_parameters_strats[k]['sharpe_ratio'])
-    print(best_parameters_strats)
+    best_strat = max(best_strats, key=lambda k: best_strats[k]['results']['sharpe_ratio'])
+    print(best_strats)
 
 
     #run live strategies

@@ -1,7 +1,8 @@
 # Compare and Run Strategies
 import pandas as pd
-from backtester.strat_optimizer import StrategyOptimizer, RandomSearchAlgorithm, GridSearchAlgorithm
-from backtester.strat_creator import StrategyCreator
+from .strat_optimizer import StrategyOptimizer, RandomSearchAlgorithm, GridSearchAlgorithm, \
+    SimulatedAnnealingAlgorithm, GeneticAlgorithm
+from .strat_creator import StrategyCreator
 from collections import defaultdict
 import warnings
 # To deactivate all warnings:
@@ -87,7 +88,7 @@ class StrategyRunner:
 
         :return: The best optimization results across all search types.
         """
-        all_search_types = [RandomSearchAlgorithm(), GridSearchAlgorithm()]
+        all_search_types = [RandomSearchAlgorithm()]
         for search_type in all_search_types:
             print(f"Testing with search type: {search_type}")
             self.optimize_strategies(search_type)
@@ -102,7 +103,8 @@ class StrategyRunner:
         :return: A tuple containing a summary of the best strategy results and a DataFrame for comparison.
         """
         comparison_data = defaultdict(pd.DataFrame)
-        best_parameters_strats = {}
+        best_strats = {}
+
 
         for strategy_name, optimization_result in self.optimization_results.items():
             strategy_params = optimization_result['params']
@@ -110,8 +112,9 @@ class StrategyRunner:
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
                                                              **strategy_params)
             aperf, operf, sharpe = strategy_tester.run_strategy()
-            best_parameters_strats[strategy_name] = {'aperf': aperf, 'operf': operf, 'sharpe_ratio': sharpe}
+            best_strats[strategy_name] = {'params':optimization_result['params'], 'results':
+                {'aperf': aperf, 'operf': operf, 'sharpe_ratio': sharpe}}
             comparison_data = self._append_strategy_results(comparison_data, strategy_name, strategy_tester)
 
-        return best_parameters_strats, comparison_data
+        return best_strats, comparison_data
 
