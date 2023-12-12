@@ -134,7 +134,7 @@ class StrategyCreator:
             sharpe_ratio = (data['excess_return'].mean() / data['excess_return'].std()) * np.sqrt(252)
         except Exception as e:
             sharpe_ratio=0
-        return round(aperf, 2), round(operf, 2), round(sharpe_ratio, 2)
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2)
 
     def position_holding_time(self, data):
         position_holding_times = []
@@ -693,7 +693,7 @@ class LRVectorBacktester(StrategyCreator):
         # Call calculate_performance from parent class
         aperf, operf, sharpe_ratio = self.calculate_performance(self.results)
 
-        return round(aperf, 2), round(operf, 2), round(sharpe_ratio, 2)
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2)
 
 
     def generate_signal(self):
@@ -748,7 +748,7 @@ class ScikitVectorBacktester(StrategyCreator):
         # Call calculate_performance from parent class
         aperf, operf, sharpe_ratio = self.calculate_performance(self.results)
 
-        return round(aperf, 2), round(operf, 2), round(sharpe_ratio, 2)
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2)
 
 
     def generate_signal(self):

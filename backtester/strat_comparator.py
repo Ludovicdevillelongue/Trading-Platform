@@ -88,7 +88,8 @@ class StrategyRunner:
 
         :return: The best optimization results across all search types.
         """
-        all_search_types = [RandomSearchAlgorithm()]
+        all_search_types = [RandomSearchAlgorithm(),GridSearchAlgorithm(),
+                            SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
         for search_type in all_search_types:
             print(f"Testing with search type: {search_type}")
             self.optimize_strategies(search_type)

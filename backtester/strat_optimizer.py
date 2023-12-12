@@ -26,7 +26,7 @@ class OptimizationAlgorithm(ABC):
                 best_performance = aperf
                 best_params = params
                 best_sharpe_ratio = sharpe_ratio
-
+        best_params={key:round(value,2) for key,value in best_params.items()}
         return best_params, best_performance, best_sharpe_ratio
 
 
@@ -36,7 +36,9 @@ class RandomSearchAlgorithm(OptimizationAlgorithm):
 
     def random_evaluation(self, optimizer):
         for _ in range(optimizer.iterations):
-            yield optimizer.generate_random_params()
+            params=optimizer.generate_random_params()
+            # print(params)
+            yield params
 
 
 class GridSearchAlgorithm(OptimizationAlgorithm):
@@ -61,6 +63,7 @@ class GridSearchAlgorithm(OptimizationAlgorithm):
         limited_combinations = itertools.islice(all_combinations, optimizer.iterations)
 
         for combination in limited_combinations:
+            # print(combination)
             yield dict(zip(optimizer.param_grids.keys(), combination))
 
 
@@ -72,25 +75,22 @@ class SimulatedAnnealingAlgorithm(OptimizationAlgorithm):
         current_params = optimizer.generate_random_params()
         current_score = optimizer.test_strategy(current_params)[-1]
         temp = 1.0
-        temp_min = 0.4
         cooling_rate = 0.9
 
         for _ in range(optimizer.iterations):
             try:
-                while temp > temp_min:
-                    new_params = optimizer.generate_random_params()
-                    new_score = optimizer.test_strategy(new_params)[-1]
+                new_params = optimizer.generate_random_params()
+                new_score = optimizer.test_strategy(new_params)[-1]
 
-                    exponent = (current_score - new_score) / temp
-                    exponent = max(exponent, -700)  # Clamp to prevent overflow
-                    if new_score > current_score or math.exp(exponent) > random.random():
-                        current_score = new_score
-                        current_params = new_params
-                        yield current_params
+                exponent = (current_score - new_score) / temp
+                exponent = max(exponent, -700)  # Clamp to prevent overflow
+                if new_score > current_score or math.exp(exponent) > random.random():
+                    current_score = new_score
+                    current_params = new_params
+                    # print(current_params)
+                    yield current_params
 
-                    temp *= cooling_rate
-                if temp < temp_min:
-                    break
+                temp *= cooling_rate
             except Exception as e:
                 print(current_params)
 
@@ -100,28 +100,38 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         return self.find_best_params(optimizer, self.genetic_algorithm_evaluation)
 
     def genetic_algorithm_evaluation(self, optimizer):
-        population_size = 50
+        population_size = optimizer.iterations
         mutation_rate = 0.1
         population = [optimizer.generate_random_params() for _ in range(population_size)]
 
-        for generation in range(optimizer.iterations):
-            scores = np.array([optimizer.test_strategy(params)[-1] for params in population])
+        scores = np.array([optimizer.test_strategy(params)[-1] for params in population])
+        try:
             new_population = self.evolve_population(population, scores, mutation_rate)
             population = new_population
-
+            # print(population)
             best_index = np.argmax(scores)
             yield population[best_index]
+        except Exception as e:
+            print(population)
+
 
     def evolve_population(self, population, scores, mutation_rate):
         new_population = []
         for _ in range(len(population) // 2):
             parent1, parent2 = self.select_parents(population, scores)
-            child1, child2 = self.crossover(parent1, parent2)
-            new_population.extend([self.mutate(child1, mutation_rate), self.mutate(child2, mutation_rate)])
+            try:
+                child1, child2 = self.crossover(parent1, parent2)
+                new_population.extend([self.mutate(child1, mutation_rate), self.mutate(child2, mutation_rate)])
+            except Exception as e:
+                new_population.extend([parent1, parent2])
         return new_population
 
+    def softmax(self,x):
+        e_x = np.exp(x - np.max(x))
+        return e_x / e_x.sum(axis=0)
+
     def select_parents(self, population, scores):
-        probabilities = scores / np.sum(scores)
+        probabilities = self.softmax(scores)
         parent_indices = np.random.choice(len(population), size=2, p=probabilities, replace=False)
         return population[parent_indices[0]], population[parent_indices[1]]
 
