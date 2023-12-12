@@ -39,7 +39,7 @@ if __name__ == '__main__':
     symbol = 'TSLA'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern'))-timedelta(minutes=2)).replace(second=0)).strftime("%Y-%m-%d %H:%M:%S")
-    amount = 10000
+    amount = 100000
     transaction_costs = 0.01
     iterations=10
 
