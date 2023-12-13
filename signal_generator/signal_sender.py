@@ -8,7 +8,7 @@ import os
 
 class LiveStrategyRunner:
     def __init__(self, strategy_name, strategy_class, optimization_results, symbol, start_date, end_date,
-                 amount, transaction_costs, data_provider, trading_platform):
+                 amount, transaction_costs, data_provider, trading_platform, broker_config):
         self.strategy_name = strategy_name
         self.strategy_class= strategy_class
         self.optimization_results = optimization_results
@@ -19,13 +19,13 @@ class LiveStrategyRunner:
         self.transaction_costs = transaction_costs
         self.data_provider = data_provider
         self.trading_platform = trading_platform
+        self.broker_config=broker_config
         self.current_positions = {name: 0 for name in optimization_results}
         self.running = True
         self.units = 1
         self.real_time_data = None
-        self.config_file = os.path.join(os.path.dirname(__file__), '../config/broker_config.yml')
         if self.trading_platform == 'Alpaca':
-            self.broker = AlpacaTradingBot(config_file=self.config_file)
+            self.broker = AlpacaTradingBot(broker_config)
 
     def fetch_and_update_real_time_data(self):
         while self.running:

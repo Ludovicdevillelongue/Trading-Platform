@@ -8,7 +8,7 @@ from dash import dash_table
 import webbrowser
 from time import sleep
 
-class DashboardApp:
+class BacktestApp:
     def __init__(self,best_strats, comparison_data, symbol):
 
         self.best_strats=best_strats
