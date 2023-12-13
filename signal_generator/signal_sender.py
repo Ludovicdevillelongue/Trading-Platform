@@ -1,6 +1,6 @@
 import threading
 import time
-from broker_interaction.broker_interaction import AlpacaTradingBot
+from broker_interaction.broker_order import AlpacaTradingBot
 from data_loader.data_retriever import DataRetriever
 import numpy as np
 import os
