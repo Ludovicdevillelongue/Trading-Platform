@@ -4,10 +4,13 @@ import threading
 import pytz
 import sys
 import os
-from broker_interaction.broker_interaction import GetBrokersConfig
-from positions_pnl_tracker.trading_platform_recap import AlpacaPlatform
-from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
+
+
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from broker_interaction.broker_order import GetBrokersConfig
+from broker_interaction.borker_metrics import AlpacaPlatform
+from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
 from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from backtester.strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
@@ -100,29 +103,29 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------------------------------------------------
     # """
 
-    # alpaca = AlpacaPlatform(config)
-    #
-    # alpaca.get_api_connection()
-    # alpaca.get_account_info()
-    # alpaca.get_orders()
-    # alpaca.get_positions()
-    # alpaca.get_assets()
-    # alpaca.get_positions_history()
+    alpaca = AlpacaPlatform(config)
 
-    # portfolio_manager_app = PortfolioManagementApp(alpaca)
-    # portfolio_manager_app.run_server()
-    # portfolio_manager_app.open_browser()
-    # # Start the PortfolioManagementApp server thread
-    # portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
-    # portfolio_server_thread.start()
-    # threads.append(portfolio_server_thread)
-    #
-    # # Start the PortfolioManagementApp browser thread
-    # portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
-    # portfolio_browser_thread.start()
-    # threads.append(portfolio_browser_thread)
+    alpaca.get_api_connection()
+    alpaca.get_account_info()
+    alpaca.get_orders()
+    alpaca.get_positions()
+    alpaca.get_assets()
+    alpaca.get_positions_history()
 
-    # # Wait for all threads to complete
-    # for thread in threads:
-    #     thread.join()
+    portfolio_manager_app = PortfolioManagementApp(alpaca)
+    portfolio_manager_app.run_server()
+    portfolio_manager_app.open_browser()
+    # Start the PortfolioManagementApp server thread
+    portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
+    portfolio_server_thread.start()
+    threads.append(portfolio_server_thread)
+
+    # Start the PortfolioManagementApp browser thread
+    portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
+    portfolio_browser_thread.start()
+    threads.append(portfolio_browser_thread)
+
+    # Wait for all threads to complete
+    for thread in threads:
+        thread.join()
 
