@@ -34,3 +34,14 @@ class AlpacaTradingBot:
         except Exception as e:
             print(f"An error occurred: {e}")
 
+    def get_positions(self):
+        try:
+            positions = self.api.list_positions()
+            if not positions:
+                pass
+            if len(positions)==0:
+                pass
+            else:
+                return positions
+        except Exception as e:
+            print(f"An error occurred: {e}")
