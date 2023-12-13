@@ -1,15 +1,16 @@
 # Compare and Run Strategies
 import pandas as pd
-from .strat_optimizer import StrategyOptimizer, RandomSearchAlgorithm, GridSearchAlgorithm, \
-    SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from .strat_creator import StrategyCreator
 from collections import defaultdict
 import warnings
 # To deactivate all warnings:
+from .strat_optimizer import StrategyOptimizer
+
 warnings.filterwarnings('ignore')
 
 class StrategyRunner:
-    def __init__(self, strategies, data_provider, symbol, start_date, end_date, param_grids, amount, transaction_costs,
+    def __init__(self, strategies, data_provider, symbol, start_date, end_date, param_grids, opti_algo,
+                 amount, transaction_costs,
                  iterations):
         """
         Initialize the StrategyRunner with given parameters.
@@ -20,6 +21,7 @@ class StrategyRunner:
         :param start_date: The starting date for the strategies.
         :param end_date: The ending date for the strategies.
         :param param_grids: Parameter grids for optimizing the strategies.
+        :param opti_algo: Optimization algorithm for optimizing the strategies.
         :param amount: Initial investment amount (default: 10000).
         :param transaction_costs: Costs per transaction (default: 0.0).
         """
@@ -31,6 +33,7 @@ class StrategyRunner:
         self.amount = amount
         self.transaction_costs = transaction_costs
         self.param_grids = param_grids
+        self.opti_algo = opti_algo
         self.optimization_results = {}
         self.iterations=iterations
 
@@ -89,8 +92,7 @@ class StrategyRunner:
 
         :return: The best optimization results across all search types.
         """
-        all_search_types = [RandomSearchAlgorithm(),GridSearchAlgorithm(),
-                            SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
+        all_search_types = self.opti_algo
         for search_type in all_search_types:
             print(f"Testing with search type: {search_type}")
             self.optimize_strategies(search_type)

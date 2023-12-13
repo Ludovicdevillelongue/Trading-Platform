@@ -1,11 +1,19 @@
+import os
+
 import alpaca_trade_api as tradeapi
 import yaml
 
-class AlpacaTradingBot:
-    def __init__(self, config_file):
+class GetBrokersConfig:
 
+    @staticmethod
+    def key_secret_url():
+        config_file = os.path.join(os.path.dirname(__file__), '../config/broker_config.yml')
         with open(config_file, 'r') as file:
             config = yaml.safe_load(file)
+        return config
+
+class AlpacaTradingBot:
+    def __init__(self, config):
 
         api_key = config['alpaca']['api_key']
         api_secret = config['alpaca']['api_secret']
