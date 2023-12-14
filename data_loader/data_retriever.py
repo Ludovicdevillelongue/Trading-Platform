@@ -38,7 +38,7 @@ class DataRetriever(object):
 
     def yfinance_download(self, symbol:str):
         data_yfinance = yf.download(symbol, period="1y", interval="1d")
-        data_yfinance.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close'}, inplace=True)
+        data_yfinance.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close', 'Volume':'volume'}, inplace=True)
         return data_yfinance
 
     def quandl_latest_data(self, symbol: str):
@@ -68,6 +68,6 @@ class DataRetriever(object):
 
     def yfinance_latest_data(self,symbol:str):
         latest_data = yf.download(symbol, period="1y", interval="1d")
-        latest_data.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close'}, inplace=True)
+        latest_data.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close','Volume':'volume'}, inplace=True)
         return latest_data
 
