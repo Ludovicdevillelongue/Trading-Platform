@@ -1,5 +1,6 @@
-import threading
 import time
+import datetime
+import pytz
 from broker_interaction.broker_order import AlpacaTradingBot
 from data_loader.data_retriever import DataRetriever
 import numpy as np
@@ -28,37 +29,35 @@ class LiveStrategyRunner:
             self.broker = AlpacaTradingBot(broker_config)
 
     def fetch_and_update_real_time_data(self):
-        while self.running:
-            try:
-                # Fetch and update data
-                if self.data_provider=='yfinance':
-                    self.real_time_data = DataRetriever(self.start_date, self.end_date)\
-                        .yfinance_latest_data(self.symbol)['price'].to_frame()
-                else:
-                    self.real_time_data = \
-                    DataRetriever(self.start_date, self.end_date).yfinance_latest_data(self.symbol)['price'].to_frame()
+        try:
+            # Fetch and update data
+            if self.data_provider=='yfinance':
+                self.real_time_data = DataRetriever(self.start_date, self.end_date)\
+                    .yfinance_latest_data(self.symbol)[['open', 'high', 'low', 'close']]
+            else:
+                self.real_time_data = \
+                DataRetriever(self.start_date, self.end_date).yfinance_latest_data(self.symbol)[['open', 'high', 'low', 'close']]
 
-                self.real_time_data['return'] = np.log(self.real_time_data['price'] / self.real_time_data['price'].shift(1))
-                self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
-            except Exception as e:
-                self.logger_monitor(f"Error in data fetching: {e}")
-            time.sleep(60)
+            self.real_time_data['return'] = np.log(self.real_time_data['close'] / self.real_time_data['close'].shift(1))
+            self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
+        except Exception as e:
+            self.logger_monitor(f"Error in data fetching: {e}")
+
 
     def apply_strategy(self, strategy_name, strategy_class):
-        while self.running:
-            try:
-                if self.real_time_data is None:
-                    continue
-                opti_results_strategy = self.optimization_results[strategy_name]['params']
-                self.signal = strategy_class(self.real_time_data, self.symbol, self.start_date, self.end_date,
-                amount=self.amount, transaction_costs=self.transaction_costs, **opti_results_strategy).generate_signal()
+        try:
+            if self.real_time_data is None:
+                pass
+            opti_results_strategy = self.optimization_results[strategy_name]['params']
+            self.signal = strategy_class(self.real_time_data, self.symbol, self.start_date, self.end_date,
+            amount=self.amount, transaction_costs=self.transaction_costs, **opti_results_strategy).generate_signal()
 
-                if self.signal != 0:
-                    self.execute_trade(strategy_name, self.signal)
-                # Removed break; now it will loop continuously
-            except Exception as e:
-                self.logger_monitor(f"Error in strategy application: {e}")
-            time.sleep(5)
+            if self.signal != 0:
+                self.execute_trade(strategy_name, self.signal)
+            # Removed break; now it will loop continuously
+        except Exception as e:
+            self.logger_monitor(f"Error in strategy application: {e}")
+        time.sleep(60)
 
     def execute_trade(self, strategy_name, signal):
         broker_positions = self.broker.get_positions()
@@ -92,20 +91,8 @@ class LiveStrategyRunner:
                             f'{symbol} following the {strategy_name} strategy: {order_type} {abs(units)} units')
 
     def run(self):
-        data_thread = threading.Thread(target=self.fetch_and_update_real_time_data)
-        data_thread.start()
-
-        threads = []
-
-        strategy_thread = threading.Thread(target=self.apply_strategy, args=(self.strategy_name, self.strategy_class))
-        threads.append(strategy_thread)
-        strategy_thread.start()
-
-        for thread in threads:
-            thread.join()
-
-        self.running = False
-        data_thread.join()
-
-    def stop(self):
-        self.running = False
+        current_time = datetime.datetime.now(pytz.timezone('Europe/Paris')).time()
+        stop_time = datetime.time(23, 59, 0)
+        while current_time<stop_time:
+            self.fetch_and_update_real_time_data()
+            self.apply_strategy(self.strategy_name, self.strategy_class)
