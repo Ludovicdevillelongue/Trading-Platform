@@ -11,7 +11,7 @@ class LiveStrategyRunner:
     def __init__(self, strategy_name, strategy_class, optimization_results, symbol, start_date, end_date,
                  amount, transaction_costs, data_provider, trading_platform, broker_config):
         self.strategy_name = strategy_name
-        self.strategy_class= strategy_class
+        self.strategy_class = strategy_class
         self.optimization_results = optimization_results
         self.symbol = symbol
         self.start_date = start_date
@@ -20,7 +20,7 @@ class LiveStrategyRunner:
         self.transaction_costs = transaction_costs
         self.data_provider = data_provider
         self.trading_platform = trading_platform
-        self.broker_config=broker_config
+        self.broker_config = broker_config
         self.current_positions = {name: 0 for name in optimization_results}
         self.running = True
         self.units = 1
@@ -31,18 +31,18 @@ class LiveStrategyRunner:
     def fetch_and_update_real_time_data(self):
         try:
             # Fetch and update data
-            if self.data_provider=='yfinance':
-                self.real_time_data = DataRetriever(self.start_date, self.end_date)\
-                    .yfinance_latest_data(self.symbol)[['open', 'high', 'low', 'close']]
+            if self.data_provider == 'yfinance':
+                self.real_time_data = DataRetriever(self.start_date, self.end_date) \
+                    .yfinance_latest_data(self.symbol)[['open', 'high', 'low', 'close', 'volume']]
             else:
                 self.real_time_data = \
-                DataRetriever(self.start_date, self.end_date).yfinance_latest_data(self.symbol)[['open', 'high', 'low', 'close']]
+                    DataRetriever(self.start_date, self.end_date).yfinance_latest_data(self.symbol)[
+                        ['open', 'high', 'low', 'close', 'volume']]
 
             self.real_time_data['return'] = np.log(self.real_time_data['close'] / self.real_time_data['close'].shift(1))
             self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
         except Exception as e:
             self.logger_monitor(f"Error in data fetching: {e}")
-
 
     def apply_strategy(self, strategy_name, strategy_class):
         try:
@@ -50,7 +50,8 @@ class LiveStrategyRunner:
                 pass
             opti_results_strategy = self.optimization_results[strategy_name]['params']
             self.signal = strategy_class(self.real_time_data, self.symbol, self.start_date, self.end_date,
-            amount=self.amount, transaction_costs=self.transaction_costs, **opti_results_strategy).generate_signal()
+                                         amount=self.amount, transaction_costs=self.transaction_costs,
+                                         **opti_results_strategy).generate_signal()
 
             if self.signal != 0:
                 self.execute_trade(strategy_name, self.signal)
@@ -66,9 +67,9 @@ class LiveStrategyRunner:
             self.place_order(strategy_name, signal, current_position)
         else:
             for i in range(len(broker_positions)):
-                if broker_positions[i]._raw['symbol']==self.symbol:
-                    current_position=float(broker_positions[i]._raw['qty'])
-                    if signal!=current_position:
+                if broker_positions[i]._raw['symbol'] == self.symbol:
+                    current_position = float(broker_positions[i]._raw['qty'])
+                    if signal != current_position:
                         self.place_order(strategy_name, signal, current_position)
 
     def place_order(self, strategy_name, signal, current_position):
@@ -77,9 +78,8 @@ class LiveStrategyRunner:
         qty = float(abs(signal) * self.units)
         side = 'buy' if signal == 1 else 'sell'
 
-        #Alpaca order placement
+        # Alpaca order placement
         self.broker.submit_order(self.symbol, qty, side)
-
 
         self.report_trade(self.symbol, strategy_name, side, qty)
 
@@ -93,6 +93,6 @@ class LiveStrategyRunner:
     def run(self):
         current_time = datetime.datetime.now(pytz.timezone('Europe/Paris')).time()
         stop_time = datetime.time(23, 59, 0)
-        while current_time<stop_time:
+        while current_time < stop_time:
             self.fetch_and_update_real_time_data()
             self.apply_strategy(self.strategy_name, self.strategy_class)
