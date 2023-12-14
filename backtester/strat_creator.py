@@ -1,6 +1,3 @@
-from datetime import datetime
-
-import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from data_loader.data_retriever import DataRetriever
@@ -24,10 +21,10 @@ class StrategyCreator:
         ''' Retrieves and prepares the data'''
         if data_provider=='yfinance':
             # raw = pd.read_hdf(DataRetriever(self.start_date, self.end_date).read_data())
-            raw=DataRetriever(self.start_date, self.end_date).yfinance_download(self.symbol)['price'].to_frame()
+            raw=DataRetriever(self.start_date, self.end_date).yfinance_download(self.symbol)[['open', 'high', 'low', 'close']]
             # DataRetriever(self.start_date, self.end_date).write_data(raw)
             # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
-            raw['return'] = np.log(raw / raw.shift(1))
+            raw['return'] = np.log(raw['close'] / raw['close'].shift(1))
             return raw
 
     def select_data(self, start, end):
@@ -181,24 +178,24 @@ class SMAVectorBacktester(StrategyCreator):
     def set_parameters(self, SMA1=None, SMA2=None):
         if SMA1 is not None:
             self.SMA1 = SMA1
-            self.data['SMA1'] = self.data['price'].rolling(self.SMA1).mean()
+            self.data['SMA1'] = self.data['close'].rolling(self.SMA1).mean()
         if SMA2 is not None:
             self.SMA2 = SMA2
-            self.data['SMA2'] = self.data['price'].rolling(self.SMA2).mean()
+            self.data['SMA2'] = self.data['close'].rolling(self.SMA2).mean()
 
     def analyse_strategy(self, data):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         data["SMA1"].plot(ax=ax1, color='r', lw=2.)
         data["SMA2"].plot(ax=ax1, color='b', lw=2.)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Short mavg", "Long mavg", "Buy", "Sell"])
         plt.title("Simple Moving Average Trading Strategy")
@@ -243,14 +240,14 @@ class BollingerBandsBacktester(StrategyCreator):
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         data["lower_band"].plot(ax=ax1, color='r', lw=2.)
         data["upper_band"].plot(ax=ax1, color='g', lw=2.)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
         plt.title("Bollinger Bands Trading Strategy")
@@ -262,12 +259,12 @@ class BollingerBandsBacktester(StrategyCreator):
         data = self.data.copy().dropna()
 
         # Define the trading signals
-        data['middle_band'] = data['price'].rolling(self.window_size).mean()
-        data['std_dev'] = data['price'].rolling(self.window_size).std()
+        data['middle_band'] = data['close'].rolling(self.window_size).mean()
+        data['std_dev'] = data['close'].rolling(self.window_size).std()
         data['upper_band'] = data['middle_band'] + (data['std_dev'] * self.num_std_dev)
         data['lower_band'] = data['middle_band'] - (data['std_dev'] * self.num_std_dev)
-        data['position'] = np.where(data['price'] < data['lower_band'], 1, np.nan)  # buy signal
-        data['position'] = np.where(data['price'] > data['upper_band'], -1, data['position'])  # sell signal
+        data['position'] = np.where(data['close'] < data['lower_band'], 1, np.nan)  # buy signal
+        data['position'] = np.where(data['close'] > data['upper_band'], -1, data['position'])  # sell signal
         data['position'] = data['position'].ffill().fillna(0)
 
         # Implement the rest of the strategy logic similar to SMAVectorBacktester
@@ -305,13 +302,13 @@ class RSIVectorBacktester(StrategyCreator):
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         data["RSI"].plot(ax=ax1, color='b', lw=2.)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "RSI", "Buy", "Sell"])
         plt.title("RSI Trading Strategy")
@@ -322,7 +319,7 @@ class RSIVectorBacktester(StrategyCreator):
         data = self.data.copy().dropna()
 
         # Calculate RSI
-        delta = data['price'].diff()
+        delta = data['close'].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=self.RSI_period).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=self.RSI_period).mean()
 
@@ -354,12 +351,12 @@ class MomVectorBacktester(StrategyCreator):
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Buy", "Sell"])
         plt.title("Momentum Trading Strategy")
@@ -387,20 +384,20 @@ class MRVectorBacktester(StrategyCreator):
 
     def set_parameters(self, SMA=None):
         if SMA is not None:
-            self.data['sma'] = self.data['price'].rolling(SMA).mean()
+            self.data['sma'] = self.data['close'].rolling(SMA).mean()
 
     def analyse_strategy(self, data):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         data["sma"].plot(ax=ax1, color='b', lw=2.)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "SMA", "Buy", "Sell"])
         plt.title("Mean Reversion Trading Strategy")
@@ -409,7 +406,7 @@ class MRVectorBacktester(StrategyCreator):
     def run_strategy(self):
         self.set_parameters(int(self.sma))
         data = self.data.copy().dropna()
-        data['distance'] = data['price'] - data['sma']
+        data['distance'] = data['close'] - data['sma']
         # sell signals
         data['position'] = np.where(data['distance'] > self.threshold,
                                     -1, np.nan)
@@ -429,7 +426,6 @@ class MRVectorBacktester(StrategyCreator):
         self.run_strategy()
         return self.data_signal
 
-
 class TurtleVectorBacktester(StrategyCreator):
     def __init__(self, data, symbol, start_date, end_date, window_size, amount, transaction_costs):
         super().__init__(symbol, start_date, end_date, amount, transaction_costs)
@@ -440,15 +436,15 @@ class TurtleVectorBacktester(StrategyCreator):
     def analyse_strategy(self, data):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         data["high"].plot(ax=ax1, color='g', lw=2.)
         data["low"].plot(ax=ax1, color='r', lw=2.)
         data["avg"].plot(ax=ax1, color='b', lw=2.)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Highs", "Lows", "Average", "Buy", "Sell"])
         plt.title("Turtle Trading Strategy")
@@ -457,18 +453,18 @@ class TurtleVectorBacktester(StrategyCreator):
     def run_strategy(self):
         data = self.data.copy().dropna()
         # window_size-days high
-        data['high'] = data['price'].shift(1). \
+        data['high'] = data['close'].shift(1). \
         rolling(window=self.window_size).max()
         # window_size-days low
-        data['low'] = data['price'].shift(1). \
+        data['low'] = data['close'].shift(1). \
         rolling(window=self.window_size).min()
         # window_size-days mean
-        data['avg'] = data['price'].shift(1). \
+        data['avg'] = data['close'].shift(1). \
         rolling(window=self.window_size).mean()
-        data['long_entry'] = data['price'] > data.high
-        data['short_entry'] = data['price'] < data.low
-        data['long_exit'] = data['price'] < data.avg
-        data['short_exit'] = data['price'] > data.avg
+        data['long_entry'] = data['close'] > data.high
+        data['short_entry'] = data['close'] < data.low
+        data['long_exit'] = data['close'] < data.avg
+        data['short_exit'] = data['close'] > data.avg
         data["position"] = 0
         data["orders"]=0
         for k in range(1, len(data)):
@@ -494,7 +490,6 @@ class TurtleVectorBacktester(StrategyCreator):
         self.run_strategy()
         return self.data_signal
 
-
 class ParabolicSARBacktester(StrategyCreator):
     def __init__(self, data, symbol, start_date, end_date, SAR_step=0.02, SAR_max=0.2, amount=10000,
                  transaction_costs=0):
@@ -505,44 +500,44 @@ class ParabolicSARBacktester(StrategyCreator):
 
     def calculate_parabolic_sar(self):
         data = self.data.copy()
-        data['SAR'] = data['price'].iloc[0]
-        data['EP'] = data['price'].iloc[0]
+        data['SAR'] = data['close'].iloc[0]
+        data['EP'] = data['close'].iloc[0]
         data['trend'] = 1
         data['AF'] = self.SAR_step
 
         for i in range(1, len(data)):
             if data['trend'][i - 1] == 1:  # Uptrend
                 data['SAR'][i] = data['SAR'][i - 1] + data['AF'][i - 1] * (data['EP'][i - 1] - data['SAR'][i - 1])
-                data['SAR'][i] = min(data['SAR'][i], data['price'].iloc[i - 1], data['price'].iloc[i - 2])
+                data['SAR'][i] = min(data['SAR'][i], data['close'].iloc[i - 1], data['close'].iloc[i - 2])
 
-                if data['price'][i] > data['EP'][i - 1]:
-                    data['EP'][i] = data['price'][i]
+                if data['close'][i] > data['EP'][i - 1]:
+                    data['EP'][i] = data['close'][i]
                     data['AF'][i] = min(data['AF'][i - 1] + self.SAR_step, self.SAR_max)
                 else:
                     data['EP'][i] = data['EP'][i - 1]
                     data['AF'][i] = data['AF'][i - 1]
 
-                if data['price'][i] < data['SAR'][i]:
+                if data['close'][i] < data['SAR'][i]:
                     data['trend'][i] = -1  # Switch to downtrend
                     data['SAR'][i] = data['EP'][i - 1]
-                    data['EP'][i] = data['price'][i]
+                    data['EP'][i] = data['close'][i]
                     data['AF'][i] = self.SAR_step
 
             else:  # Downtrend
                 data['SAR'][i] = data['SAR'][i - 1] + data['AF'][i - 1] * (data['EP'][i - 1] - data['SAR'][i - 1])
-                data['SAR'][i] = max(data['SAR'][i], data['price'].iloc[i - 1], data['price'].iloc[i - 2])
+                data['SAR'][i] = max(data['SAR'][i], data['close'].iloc[i - 1], data['close'].iloc[i - 2])
 
-                if data['price'][i] < data['EP'][i - 1]:
-                    data['EP'][i] = data['price'][i]
+                if data['close'][i] < data['EP'][i - 1]:
+                    data['EP'][i] = data['close'][i]
                     data['AF'][i] = min(data['AF'][i - 1] + self.SAR_step, self.SAR_max)
                 else:
                     data['EP'][i] = data['EP'][i - 1]
                     data['AF'][i] = data['AF'][i - 1]
 
-                if data['price'][i] > data['SAR'][i]:
+                if data['close'][i] > data['SAR'][i]:
                     data['trend'][i] = 1  # Switch to uptrend
                     data['SAR'][i] = data['EP'][i - 1]
-                    data['EP'][i] = data['price'][i]
+                    data['EP'][i] = data['close'][i]
                     data['AF'][i] = self.SAR_step
 
         return data
@@ -553,13 +548,13 @@ class ParabolicSARBacktester(StrategyCreator):
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         data["SAR"].plot(ax=ax1, color='b', lw=2.)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "SAR", "Buy", "Sell"])
         plt.title("Parabolic SAR Trading Strategy")
@@ -605,14 +600,14 @@ class VolatilityBreakoutBacktester(StrategyCreator):
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         data["lower_band"].plot(ax=ax1, color='r', lw=2.)
         data["upper_band"].plot(ax=ax1, color='g', lw=2.)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
         plt.title("Volatility Breakout Trading Strategy")
@@ -623,17 +618,264 @@ class VolatilityBreakoutBacktester(StrategyCreator):
         data = self.data.copy().dropna()
 
         # Calculate ATR and bands
-        data['ATR'] = self.data['price'].rolling(self.volatility_window).std()
-        data['upper_band'] = data['price'] + data['ATR'] * self.breakout_factor
-        data['lower_band'] = data['price'] - data['ATR'] * self.breakout_factor
+        data['ATR'] = self.data['close'].rolling(self.volatility_window).std()
+        data['upper_band'] = data['close'] + data['ATR'] * self.breakout_factor
+        data['lower_band'] = data['close'] - data['ATR'] * self.breakout_factor
 
         # Define trading signals
-        data['position'] = np.where(data['price'] > data['upper_band'], 1, np.nan)
-        data['position'] = np.where(data['price'] < data['lower_band'], -1, data['position'])
+        data['position'] = np.where(data['close'] > data['upper_band'], 1, np.nan)
+        data['position'] = np.where(data['close'] < data['lower_band'], -1, data['position'])
         data['position'] = data['position'].ffill().fillna(0)
 
         self.data_signal = data['position'][-1]
         self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+class MACDStrategy(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, short_window, long_window, signal_window, amount, transaction_costs):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.short_window = short_window
+        self.long_window = long_window
+        self.signal_window = signal_window
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
+        data["ema_short"].plot(ax=ax1, color='r', lw=2.)
+        data["ema_long"].plot(ax=ax1, color='g', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["close"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["close"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "EMA Short", "EMA Long", "Buy", "Sell"])
+        plt.title("MACD Trading Strategy")
+        # plt.show()
+
+
+    def run_strategy(self):
+        data = self.data.copy()
+        # MACD calculation
+        data['ema_short'] = data['close'].ewm(span=self.short_window, adjust=False).mean()
+        data['ema_long'] = data['close'].ewm(span=self.long_window, adjust=False).mean()
+        data['macd'] = data['ema_short'] - data['ema_long']
+        data['signal'] = data['macd'].ewm(span=self.signal_window, adjust=False).mean()
+        data['position'] = np.where(data['macd'] > data['signal'], 1, -1)
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+class IchimokuStrategy(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, conversion_line_period=9, base_line_period=26,
+                 leading_span_b_period=52, displacement=26, amount=10000, transaction_costs=0):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.conversion_line_period = conversion_line_period
+        self.base_line_period = base_line_period
+        self.leading_span_b_period = leading_span_b_period
+        self.displacement = displacement
+
+
+    def calculate_ichimoku(self):
+        data = self.data.copy()
+
+        # Conversion Line
+        data['conversion_line'] = (data['high'].rolling(window=self.conversion_line_period).max() +
+                                   data['low'].rolling(window=self.conversion_line_period).min()) / 2
+
+        # Base Line
+        data['base_line'] = (data['high'].rolling(window=self.base_line_period).max() +
+                             data['low'].rolling(window=self.base_line_period).min()) / 2
+
+        # Leading Span A
+        data['leading_span_A'] = ((data['conversion_line'] + data['base_line']) / 2).shift(self.displacement)
+
+        # Leading Span B
+        data['leading_span_B'] = ((data['high'].rolling(window=self.leading_span_b_period).max() +
+                                   data['low'].rolling(window=self.leading_span_b_period).min()) / 2).shift(self.displacement)
+
+        # Lagging Span
+        data['lagging_span'] = data['close'].shift(-self.displacement)
+
+        return data
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
+        data["leading_span_A"].plot(ax=ax1, color='r', lw=2.)
+        data["leading_span_B"].plot(ax=ax1, color='g', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["close"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["close"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Span A", "Span B", "Buy", "Sell"])
+        plt.title("Ichimoku Trading Strategy")
+        # plt.show()
+
+    def run_strategy(self):
+        data = self.calculate_ichimoku()
+
+        # Trading signals based on Ichimoku
+        # Example: Go long when the Conversion Line crosses above the Base Line
+        # and the close is above the Cloud; go short when the opposite is true.
+        data['position'] = np.where((data['conversion_line'] > data['base_line']) &
+                                    (data['close'] > data['leading_span_A']) &
+                                    (data['close'] > data['leading_span_B']), 1, 0)
+        data['position'] = np.where((data['conversion_line'] < data['base_line']) &
+                                    (data['close'] < data['leading_span_A']) &
+                                    (data['close'] < data['leading_span_B']), -1, data['position'])
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+class StochasticOscillatorStrategy(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, k_window=14, d_window=3, buy_threshold=20,
+                 sell_threshold=80, amount=10000, transaction_costs=0):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.k_window = k_window
+        self.d_window = d_window
+        self.buy_threshold = buy_threshold
+        self.sell_threshold = sell_threshold
+
+    def calculate_stochastic_oscillator(self):
+        data = self.data.copy()
+        data['14-high'] = data['high'].rolling(window=self.k_window).max()
+        data['14-low'] = data['low'].rolling(window=self.k_window).min()
+        data['%K'] = 100 * ((data['close'] - data['14-low']) / (data['14-high'] - data['14-low']))
+        data['%D'] = data['%K'].rolling(window=self.d_window).mean()
+        return data
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
+        data['14-high'].plot(ax=ax1, color='r', lw=2.)
+        data['14-low'].plot(ax=ax1, color='g', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["close"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["close"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "14 High", "14 Low", "Buy", "Sell"])
+        plt.title("Stochastic Oscillator Trading Strategy")
+        # plt.show()
+
+    def run_strategy(self):
+        data = self.calculate_stochastic_oscillator()
+
+        # Trading signals based on Stochastic Oscillator
+        data['position'] = np.where(data['%K'] < data['%D'], 1, 0)  # Buy signal
+        data['position'] = np.where(data['%K'] > data['%D'], -1, data['position'])  # Sell signal
+
+        # Additional conditions can be added, such as overbought and oversold thresholds
+        data['position'] = np.where((data['%K'] > self.sell_threshold) & (data['%D'] > self.sell_threshold), -1,
+                                    data['position'])
+        data['position'] = np.where((data['%K'] < self.buy_threshold) & (data['%D'] < self.buy_threshold), 1,
+                                    data['position'])
+
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)  # Implement this method to visualize the strategy
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+class ADXStrategy(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, adx_period=14, di_period=14, threshold=25, amount=10000,
+                 transaction_costs=0):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.adx_period = adx_period
+        self.di_period = di_period
+        self.threshold = threshold
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
+        data['+DI'].plot(ax=ax1, color='r', lw=2.)
+        data['-DI'].plot(ax=ax1, color='g', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["close"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["close"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", '+DI', '-DI' "Buy", "Sell"])
+        plt.title("ADX Trading Strategy")
+        # plt.show()
+
+    def calculate_adx(self):
+        data = self.data.copy()
+        data['+DM'] = np.where((data['high'] - data['high'].shift(1)) > (data['low'].shift(1) - data['low']),
+                               data['high'] - data['high'].shift(1), 0)
+        data['-DM'] = np.where((data['low'].shift(1) - data['low']) > (data['high'] - data['high'].shift(1)),
+                               data['low'].shift(1) - data['low'], 0)
+
+        data['+DM'] = np.where(data['+DM'] < 0, 0, data['+DM'])
+        data['-DM'] = np.where(data['-DM'] < 0, 0, data['-DM'])
+
+        data['TR'] = np.maximum((data['high'] - data['low']), np.maximum(abs(data['high'] - data['close'].shift(1)),
+                                                                         abs(data['low'] - data['close'].shift(1))))
+
+        data['+DI'] = 100 * data['+DM'].rolling(window=self.di_period).sum() / data['TR'].rolling(
+            window=self.di_period).sum()
+        data['-DI'] = 100 * data['-DM'].rolling(window=self.di_period).sum() / data['TR'].rolling(
+            window=self.di_period).sum()
+
+        data['DX'] = 100 * abs(data['+DI'] - data['-DI']) / (data['+DI'] + data['-DI'])
+        data['ADX'] = data['DX'].rolling(window=self.adx_period).mean()
+
+        return data
+
+    def run_strategy(self):
+        data = self.calculate_adx()
+
+        # Trading signals based on ADX, +DI, and -DI
+        data['position'] = np.where((data['+DI'] > data['-DI']) & (data['ADX'] > self.threshold), 1, 0)  # Buy signal
+        data['position'] = np.where((data['-DI'] > data['+DI']) & (data['ADX'] > self.threshold), -1,
+                                    data['position'])  # Sell signal
+
+        # Implement the rest of the strategy logic
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)  # Implement this method to visualize the strategy
         return self.calculate_performance(data)
 
     def generate_signal(self):
@@ -661,12 +903,12 @@ class LRVectorBacktester(StrategyCreator):
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data=data.dropna(axis=0)
-        data["price"].plot(ax=ax1, color='g', lw=.5)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["price"][data.orders >= 1.0],
+                 data["close"][data.orders >= 1.0],
                  '^', markersize=7, color='k')
         ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["price"][data.orders <= -1.0],
+                 data["close"][data.orders <= -1.0],
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Buy", "Sell"])
         plt.title("Linear Regression Prediction Trading Strategy")

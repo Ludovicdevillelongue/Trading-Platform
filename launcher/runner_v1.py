@@ -14,7 +14,8 @@ from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
 from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from backtester.strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
-    MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester
+    MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester, MACDStrategy, \
+    IchimokuStrategy, StochasticOscillatorStrategy, ADXStrategy
 from backtester.strat_comparator import StrategyRunner
 from results_backtest.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
@@ -33,7 +34,11 @@ if __name__ == '__main__':
         'MOM': MomVectorBacktester,
         'MeanRev': MRVectorBacktester,
         'Turtle': TurtleVectorBacktester,
-        'ParabolicSAR': ParabolicSARBacktester}
+        'ParabolicSAR': ParabolicSARBacktester,
+        'MACD':MACDStrategy,
+        'Ichimoku': IchimokuStrategy,
+        'StochasticOscillator': StochasticOscillatorStrategy,
+        'ADX': ADXStrategy}
     # 'VolBreakout':VolatilityBreakoutBacktester}
     # 'LinearReg': LRVectorBacktester,
     # 'ScikitReg': ScikitVectorBacktester}
@@ -45,7 +50,13 @@ if __name__ == '__main__':
         'MOM': {'momentum': (10, 100)},
         'MeanRev': {'sma': (5, 50), 'threshold': (0.3, 0.7)},
         'Turtle': {'window_size': (20, 50)},
-        'ParabolicSAR': {'SAR_step': (0.02, 0.06), 'SAR_max': (0.2, 0.6)}}
+        'ParabolicSAR': {'SAR_step': (0.02, 0.06), 'SAR_max': (0.2, 0.6)},
+        'MACD': {'short_window': (10, 20), 'long_window': (20, 30), 'signal_window': (30, 40)},
+        'Ichimoku': {'conversion_line_period':(10, 20), 'base_line_period': (20,30),
+                     'leading_span_b_period': (50,60), "displacement":(20,30)},
+        'StochasticOscillator':{'k_window':(10,20), 'd_window':(2,6), 'buy_threshold':(10,30),
+                 'sell_threshold':(70,90)},
+        'ADX': {'adx_period':(10,20), 'di_period':(10,20), 'threshold':(20,30)}}
     # 'VolBreakout': {'volatility_window': (1, 50), 'breakout_factor': (0.2, 1.4)},
     # 'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)}}
     # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}}
@@ -59,7 +70,7 @@ if __name__ == '__main__':
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations = 100
+    iterations = 10
 
     """
     --------------------------------------------------------------------------------------------------------------------
@@ -102,30 +113,30 @@ if __name__ == '__main__':
     # ------------------------------------------Get Recap From Brokerage Platform-----------------------------------------
     # --------------------------------------------------------------------------------------------------------------------
     # """
-
-    alpaca = AlpacaPlatform(config)
-
-    alpaca.get_api_connection()
-    alpaca.get_account_info()
-    alpaca.get_orders()
-    alpaca.get_positions()
-    alpaca.get_assets()
-    alpaca.get_positions_history()
-
-    portfolio_manager_app = PortfolioManagementApp(alpaca)
-    portfolio_manager_app.run_server()
-    portfolio_manager_app.open_browser()
-    # Start the PortfolioManagementApp server thread
-    portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
-    portfolio_server_thread.start()
-    threads.append(portfolio_server_thread)
-
-    # Start the PortfolioManagementApp browser thread
-    portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
-    portfolio_browser_thread.start()
-    threads.append(portfolio_browser_thread)
-
-    # Wait for all threads to complete
-    for thread in threads:
-        thread.join()
+    #
+    # alpaca = AlpacaPlatform(config)
+    #
+    # alpaca.get_api_connection()
+    # alpaca.get_account_info()
+    # alpaca.get_orders()
+    # alpaca.get_positions()
+    # alpaca.get_assets()
+    # alpaca.get_positions_history()
+    #
+    # portfolio_manager_app = PortfolioManagementApp(alpaca)
+    # portfolio_manager_app.run_server()
+    # portfolio_manager_app.open_browser()
+    # # Start the PortfolioManagementApp server thread
+    # portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
+    # portfolio_server_thread.start()
+    # threads.append(portfolio_server_thread)
+    #
+    # # Start the PortfolioManagementApp browser thread
+    # portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
+    # portfolio_browser_thread.start()
+    # threads.append(portfolio_browser_thread)
+    #
+    # # Wait for all threads to complete
+    # for thread in threads:
+    #     thread.join()
 

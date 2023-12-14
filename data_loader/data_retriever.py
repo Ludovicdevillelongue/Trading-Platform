@@ -37,8 +37,8 @@ class DataRetriever(object):
         return data_quandl
 
     def yfinance_download(self, symbol:str):
-        data_yfinance = yf.download(symbol, period="7d", interval="1m")
-        data_yfinance.rename(columns={'Close': 'price'}, inplace=True)
+        data_yfinance = yf.download(symbol, period="2d", interval="1m")
+        data_yfinance.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close'}, inplace=True)
         return data_yfinance
 
     def quandl_latest_data(self, symbol: str):
@@ -67,14 +67,7 @@ class DataRetriever(object):
             return None
 
     def yfinance_latest_data(self,symbol:str):
-        latest_data = yf.download(symbol, period="7d", interval="1m")
-        latest_data.rename(columns={'Close': 'price'}, inplace=True)
+        latest_data = yf.download(symbol, period="2d", interval="1m")
+        latest_data.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close'}, inplace=True)
         return latest_data
 
-
-# if __name__ == '__main__':
-#     start_date='2017-01-01'
-#     end_date='2017-12-31'
-#     symbol='	NASDAQOMX/NQGI'
-#     quandl_data = DataRetriever(start_date, end_date).quandl_download(symbol)
-#     DataRetriever(start_date, end_date).write_data(quandl_data)

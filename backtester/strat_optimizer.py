@@ -36,7 +36,7 @@ class RandomSearchAlgorithm(OptimizationAlgorithm):
 
     def random_evaluation(self, optimizer):
         for _ in range(optimizer.iterations):
-            params=optimizer.generate_random_params()
+            params=optimizer.generate_adaptive_params()
             # print(params)
             yield params
 
@@ -72,14 +72,14 @@ class SimulatedAnnealingAlgorithm(OptimizationAlgorithm):
         return self.find_best_params(optimizer, self.simulated_annealing_evaluation)
 
     def simulated_annealing_evaluation(self, optimizer):
-        current_params = optimizer.generate_random_params()
+        current_params = optimizer.generate_adaptive_params()
         current_score = optimizer.test_strategy(current_params)[-1]
         temp = 1.0
         cooling_rate = 0.9
 
         for _ in range(optimizer.iterations):
             try:
-                new_params = optimizer.generate_random_params()
+                new_params = optimizer.generate_adaptive_params()
                 new_score = optimizer.test_strategy(new_params)[-1]
 
                 exponent = (current_score - new_score) / temp
@@ -102,7 +102,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     def genetic_algorithm_evaluation(self, optimizer):
         population_size = optimizer.iterations
         mutation_rate = 0.1
-        population = [optimizer.generate_random_params() for _ in range(population_size)]
+        population = [optimizer.generate_adaptive_params() for _ in range(population_size)]
 
         scores = np.array([optimizer.test_strategy(params)[-1] for params in population])
         try:
@@ -162,13 +162,16 @@ class StrategyOptimizer:
         self.optimization_algorithm = optimization_algorithm
         self.transaction_costs = transaction_costs
         self.iterations = iterations
+        self.param_history = []  # Track history of parameters
 
     def optimize(self):
         return self.optimization_algorithm.optimize(self)
 
-    def generate_random_params(self):
+    def generate_adaptive_params(self):
+        # Adaptively adjust the search space based on past performance
+        adaptive_param_grids = self.adapt_search_space()
         params = {}
-        for key, param_range in self.param_grids.items():
+        for key, param_range in adaptive_param_grids.items():
             if isinstance(param_range, tuple):
                 min_val, max_val = param_range
                 if isinstance(min_val, int):
@@ -179,6 +182,33 @@ class StrategyOptimizer:
                 params[key] = random.choice(param_range)
         return params
 
+    def adapt_search_space(self):
+        if not self.param_history:
+            return self.param_grids  # Return the original param_grids if no history
+
+        # Analyze the parameter history to find the best performing parameters
+        sorted_history = sorted(self.param_history, key=lambda x: x[1], reverse=True)  # Sort by performance (e.g., Sharpe ratio)
+        top_performers = sorted_history[:max(1, len(sorted_history) // 5)]  # Take top 20% of performers
+
+        # Adjust the search space based on top performers
+        new_param_grids = {key: self._adjust_param_range(key, [params[0][key] for params in top_performers]) for key in self.param_grids}
+        return new_param_grids
+
+    def _adjust_param_range(self, param_key, top_values):
+        # Adjust the range of a single parameter based on top performing values
+        original_range = self.param_grids[param_key]
+        if isinstance(original_range, tuple):
+            min_val, max_val = original_range
+            new_min = max(min_val, min(top_values) - (max_val - min_val) * 0.1)  # Contract range by 10%
+            new_max = min(max_val, max(top_values) + (max_val - min_val) * 0.1)
+            if isinstance(min_val, int):
+                new_min, new_max = int(new_min), int(new_max)
+            return new_min, new_max
+        elif isinstance(original_range, list):
+            # For discrete values, simply return the list of top values
+            return list(set(top_values))
+
+
     def test_strategy(self, strategy_params):
         # Instantiate the strategy with provided parameters
         strategy_tester = self.strategy_class(self.data, self.symbol, self.start_date,
@@ -187,5 +217,7 @@ class StrategyOptimizer:
                                               **strategy_params)
         # Run the strategy
         aperf, operf, sharpe_ratio = strategy_tester.run_strategy()
-
+        # Record the parameter performance
+        self.param_history.append((strategy_params, sharpe_ratio))
         return aperf, operf, sharpe_ratio
+
