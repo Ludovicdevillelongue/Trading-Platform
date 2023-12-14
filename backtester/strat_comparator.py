@@ -115,10 +115,12 @@ class StrategyRunner:
             strategy_tester = self.strategies[strategy_name](self.data, self.symbol, self.start_date, self.end_date,
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
                                                              **strategy_params)
-            aperf, operf, sharpe = strategy_tester.run_strategy()
+            aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
+            alpha, beta = strategy_tester.run_strategy()
             best_strats[strategy_name] = {'search_type':optimization_result['search_type'],
                                           'params':optimization_result['params'], 'results':
-                {'aperf': aperf, 'operf': operf, 'sharpe_ratio': sharpe}}
+                {'aperf': aperf, 'operf': operf, 'sharpe_ratio': sharpe_ratio, 'sortino_ratio': sortino_ratio,
+                 'calmar_ratio': calmar_ratio, 'max_drawdown': max_drawdown, 'alpha': alpha, 'beta': beta}}
             comparison_data = self._append_strategy_results(comparison_data, strategy_name, strategy_tester)
 
         return best_strats, comparison_data

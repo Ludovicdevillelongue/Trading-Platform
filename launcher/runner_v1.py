@@ -15,7 +15,7 @@ from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorith
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from backtester.strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
     MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester, MACDStrategy, \
-    IchimokuStrategy, StochasticOscillatorStrategy, ADXStrategy
+    IchimokuStrategy, StochasticOscillatorStrategy, ADXStrategy, VolatilityBreakoutBacktester
 from backtester.strat_comparator import StrategyRunner
 from results_backtest.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         'Ichimoku': IchimokuStrategy,
         'StochasticOscillator': StochasticOscillatorStrategy,
         'ADX': ADXStrategy}
-    # 'VolBreakout':VolatilityBreakoutBacktester}
+        # 'VolBreakout':VolatilityBreakoutBacktester}
     # 'LinearReg': LRVectorBacktester,
     # 'ScikitReg': ScikitVectorBacktester}
 
@@ -57,7 +57,7 @@ if __name__ == '__main__':
         'StochasticOscillator':{'k_window':(10,20), 'd_window':(2,6), 'buy_threshold':(10,30),
                  'sell_threshold':(70,90)},
         'ADX': {'adx_period':(10,20), 'di_period':(10,20), 'threshold':(20,30)}}
-    # 'VolBreakout': {'volatility_window': (1, 50), 'breakout_factor': (0.2, 1.4)},
+    # 'VolBreakout': {'volatility_window': (1, 50), 'breakout_factor': (0.2, 1.4)}}
     # 'LinearReg': {'lags': (3,10), 'train_percent': (0.7, 0.8)}}
     # 'ScikitReg': {'lags': (3, 10), 'train_percent': (0.7, 0.8), 'model': ['logistic']}}
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations = 10
+    iterations = 100
 
     """
     --------------------------------------------------------------------------------------------------------------------

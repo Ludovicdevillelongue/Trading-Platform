@@ -20,7 +20,8 @@ class OptimizationAlgorithm(ABC):
         best_sharpe_ratio = float('-inf')
 
         for params in evaluate(optimizer):
-            aperf, operf, sharpe_ratio = optimizer.test_strategy(params)
+            aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
+            alpha, beta = optimizer.test_strategy(params)
 
             if sharpe_ratio > best_sharpe_ratio:
                 best_performance = aperf
@@ -216,8 +217,10 @@ class StrategyOptimizer:
                                               transaction_costs=self.transaction_costs,
                                               **strategy_params)
         # Run the strategy
-        aperf, operf, sharpe_ratio = strategy_tester.run_strategy()
+        aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
+            alpha, beta = strategy_tester.run_strategy()
         # Record the parameter performance
         self.param_history.append((strategy_params, sharpe_ratio))
-        return aperf, operf, sharpe_ratio
+        return aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
+            alpha, beta
 

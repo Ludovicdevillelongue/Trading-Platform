@@ -125,13 +125,37 @@ class StrategyCreator:
         operf = aperf - self.results['creturns'].iloc[-1]
 
         # Calculate the Sharpe Ratio
+        risk_free_rate = 0.01
         try:
-            risk_free_rate = 0.01  # Risk-free rate of return
+             # Risk-free rate of return
             data['excess_return'] = data['strategy'] - risk_free_rate / 252
             sharpe_ratio = (data['excess_return'].mean() / data['excess_return'].std()) * np.sqrt(252)
         except Exception as e:
             sharpe_ratio=0
-        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2)
+
+        # Sortino Ratio
+        negative_std = np.std(data.loc[data['strategy'] < 0, 'strategy']) * np.sqrt(252)
+        sortino_ratio = (data['strategy'].mean() - risk_free_rate / 252) / negative_std if negative_std != 0 else 0
+
+        # Drawdown
+        roll_max = data['cstrategy'].cummax()
+        drawdown = data['cstrategy'] / roll_max - 1.0
+        data['drawdown'] = drawdown
+
+        # Maximum Drawdown
+        max_drawdown = drawdown.min()
+
+        # Calmar Ratio
+        calmar_ratio = data['strategy'].mean() * 252 / abs(max_drawdown) if max_drawdown != 0 else 0
+
+        # Alpha and Beta (compared to 'data['return']' as the benchmark)
+        covariance = np.cov(data['strategy'], data['return'])[0][1]
+        beta = covariance / np.var(data['return'])
+        alpha = (data['strategy'].mean() - risk_free_rate / 252) - beta * (data['return'].mean() - risk_free_rate / 252)
+
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2),round(sortino_ratio, 2), round(calmar_ratio, 2),\
+               round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
+
 
     def position_holding_time(self, data):
         position_holding_times = []
@@ -578,63 +602,7 @@ class ParabolicSARBacktester(StrategyCreator):
         self.run_strategy()
         return self.data_signal
 
-class VolatilityBreakoutBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, volatility_window, breakout_factor, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
-        self.data = data
-        self.volatility_window = volatility_window
-        self.breakout_factor = breakout_factor
-        self.set_parameters(volatility_window, breakout_factor)
 
-    def set_parameters(self, volatility_window=None, breakout_factor=None):
-        if volatility_window is not None:
-            self.volatility_window = volatility_window
-        if breakout_factor is not None:
-            self.breakout_factor = breakout_factor
-
-
-
-    def analyse_strategy(self, data):
-        ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
-        data['orders'] = data['position'].diff()
-        data=data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='g', lw=.5)
-        data["lower_band"].plot(ax=ax1, color='r', lw=2.)
-        data["upper_band"].plot(ax=ax1, color='g', lw=2.)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
-        plt.title("Volatility Breakout Trading Strategy")
-        # plt.show()
-
-    def run_strategy(self):
-        ''' Backtests the trading strategy. '''
-        data = self.data.copy().dropna()
-
-        # Calculate ATR and bands
-        data['ATR'] = self.data['close'].rolling(self.volatility_window).std()
-        data['upper_band'] = data['close'] + data['ATR'] * self.breakout_factor
-        data['lower_band'] = data['close'] - data['ATR'] * self.breakout_factor
-
-        # Define trading signals
-        data['position'] = np.where(data['close'] > data['upper_band'], 1, np.nan)
-        data['position'] = np.where(data['close'] < data['lower_band'], -1, data['position'])
-        data['position'] = data['position'].ffill().fillna(0)
-
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
-
-    def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
-        return self.data_signal
 
 class MACDStrategy(StrategyCreator):
     def __init__(self, data, symbol, start_date, end_date, short_window, long_window, signal_window, amount, transaction_costs):
@@ -884,6 +852,64 @@ class ADXStrategy(StrategyCreator):
         return self.data_signal
 
 
+class VolatilityBreakoutBacktester(StrategyCreator):
+    def __init__(self, data, symbol, start_date, end_date, volatility_window, breakout_factor, amount, transaction_costs):
+        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.volatility_window = volatility_window
+        self.breakout_factor = breakout_factor
+        self.set_parameters(volatility_window, breakout_factor)
+
+    def set_parameters(self, volatility_window=None, breakout_factor=None):
+        if volatility_window is not None:
+            self.volatility_window = volatility_window
+        if breakout_factor is not None:
+            self.breakout_factor = breakout_factor
+
+
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['position'].diff()
+        data=data.dropna(axis=0)
+        data["close"].plot(ax=ax1, color='g', lw=.5)
+        data["lower_band"].plot(ax=ax1, color='r', lw=2.)
+        data["upper_band"].plot(ax=ax1, color='g', lw=2.)
+        ax1.plot(data.loc[data.orders >= 1.0].index,
+                 data["close"][data.orders >= 1.0],
+                 '^', markersize=7, color='k')
+        ax1.plot(data.loc[data.orders <= -1.0].index,
+                 data["close"][data.orders <= -1.0],
+                 'v', markersize=7, color='k')
+        plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
+        plt.title("Volatility Breakout Trading Strategy")
+        # plt.show()
+
+    def run_strategy(self):
+        ''' Backtests the trading strategy. '''
+        data = self.data.copy().dropna()
+
+        # Calculate ATR and bands
+        data['ATR'] = self.data['close'].rolling(self.volatility_window).std()
+        data['upper_band'] = data['close'] + data['ATR'] * self.breakout_factor
+        data['lower_band'] = data['close'] - data['ATR'] * self.breakout_factor
+
+        # Define trading signals
+        data['position'] = np.where(data['close'] > data['upper_band'], 1, np.nan)
+        data['position'] = np.where(data['close'] < data['lower_band'], -1, data['position'])
+        data['position'] = data['position'].ffill().fillna(0)
+
+        self.data_signal = data['position'][-1]
+        self.analyse_strategy(data)
+        return self.calculate_performance(data)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
 class LRVectorBacktester(StrategyCreator):
 
     def __init__(self, data, symbol, start_date, end_date, lags, train_percent, amount, transaction_costs):
@@ -933,9 +959,11 @@ class LRVectorBacktester(StrategyCreator):
         self.results.loc[self.lagged_data.index, 'position'] = prediction
         self.analyse_strategy(self.results)
         # Call calculate_performance from parent class
-        aperf, operf, sharpe_ratio = self.calculate_performance(self.results)
+        aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
+        alpha, beta = self.calculate_performance(self.results)
 
-        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2)
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2),round(sortino_ratio, 2), round(calmar_ratio, 2),\
+               round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
 
 
     def generate_signal(self):
@@ -988,9 +1016,11 @@ class ScikitVectorBacktester(StrategyCreator):
         # Fill in predictions where we have enough lagged data
         self.results.loc[self.lagged_data.index, 'position'] = prediction
         # Call calculate_performance from parent class
-        aperf, operf, sharpe_ratio = self.calculate_performance(self.results)
+        aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
+        alpha, beta = self.calculate_performance(self.results)
 
-        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2)
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2),round(sortino_ratio, 2), round(calmar_ratio, 2),\
+               round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
 
 
     def generate_signal(self):
