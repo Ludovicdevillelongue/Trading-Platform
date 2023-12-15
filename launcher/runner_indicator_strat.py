@@ -9,7 +9,7 @@ import yaml
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from broker_interaction.broker_order import GetBrokersConfig
-from broker_interaction.borker_metrics import AlpacaPlatform
+from broker_interaction.broker_metrics import AlpacaPlatform
 from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
 from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
@@ -65,19 +65,18 @@ if __name__ == '__main__':
     }
 
     opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
-
     data_provider = 'yfinance'
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
     with open(data_freq, 'r') as file:
         frequency = yaml.safe_load(file)
-    frequency=frequency[data_provider]['day']
+    frequency=frequency[data_provider]['minute']
     symbol = 'TSLA'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations = 2
+    iterations = 100
 
     """
     --------------------------------------------------------------------------------------------------------------------
@@ -120,7 +119,7 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------------------------------------------------
     # """
     #
-    # alpaca = AlpacaPlatform(config)
+    # alpaca = AlpacaPlatform(broker_config)
     #
     # alpaca.get_api_connection()
     # alpaca.get_account_info()
