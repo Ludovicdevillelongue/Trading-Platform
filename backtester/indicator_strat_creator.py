@@ -8,7 +8,8 @@ warnings.filterwarnings('ignore')
 
 # A base backtesting class with common functionality
 class StrategyCreator:
-    def __init__(self, symbol, start_date, end_date, amount, transaction_costs):
+    def __init__(self, frequency, symbol, start_date, end_date, amount, transaction_costs):
+        self.frequency=frequency
         self.symbol = symbol
         self.start_date = start_date
         self.end_date = end_date
@@ -21,7 +22,7 @@ class StrategyCreator:
         ''' Retrieves and prepares the data'''
         if data_provider=='yfinance':
             # raw = pd.read_hdf(DataRetriever(self.start_date, self.end_date).read_data())
-            raw=DataRetriever(self.start_date, self.end_date).yfinance_download(self.symbol)\
+            raw=DataRetriever(self.frequency, self.start_date, self.end_date).yfinance_download(self.symbol)\
             [['open', 'high', 'low',  'close', 'volume']]
             # DataRetriever(self.start_date, self.end_date).write_data(raw)
             # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
@@ -194,8 +195,8 @@ class StrategyCreator:
 
 # Now define specific strategy backtesters
 class SMAVectorBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, sma_short, sma_long, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, sma_short, sma_long, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data=data
         self.sma_short = sma_short
         self.sma_long = sma_long
@@ -246,8 +247,8 @@ class SMAVectorBacktester(StrategyCreator):
 
 
 class BollingerBandsBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, window_size, num_std_dev, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, num_std_dev, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.window_size = window_size
         self.num_std_dev = num_std_dev
@@ -303,9 +304,9 @@ class BollingerBandsBacktester(StrategyCreator):
         return self.data_signal
 
 class RSIVectorBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, RSI_period, overbought_threshold, oversold_threshold,
+    def __init__(self, frequency, data, symbol, start_date, end_date, RSI_period, overbought_threshold, oversold_threshold,
                  amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.RSI_period = RSI_period
         self.overbought_threshold = overbought_threshold
@@ -366,8 +367,8 @@ class RSIVectorBacktester(StrategyCreator):
 
 
 class MomVectorBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, momentum, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, momentum, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data=data
         self.momentum = momentum
 
@@ -401,8 +402,8 @@ class MomVectorBacktester(StrategyCreator):
         return self.data_signal
 
 class MRVectorBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, sma, threshold, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, sma, threshold, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data=data
         self.sma=sma
         self.threshold=threshold
@@ -452,8 +453,8 @@ class MRVectorBacktester(StrategyCreator):
         return self.data_signal
 
 class TurtleVectorBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, window_size, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data=data
         self.window_size=window_size
 
@@ -516,9 +517,9 @@ class TurtleVectorBacktester(StrategyCreator):
         return self.data_signal
 
 class ParabolicSARBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, SAR_step=0.02, SAR_max=0.2, amount=10000,
+    def __init__(self, frequency, data, symbol, start_date, end_date, SAR_step=0.02, SAR_max=0.2, amount=10000,
                  transaction_costs=0):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.SAR_step = SAR_step
         self.SAR_max = SAR_max
@@ -606,8 +607,8 @@ class ParabolicSARBacktester(StrategyCreator):
 
 
 class MACDStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, short_window, long_window, signal_window, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, short_window, long_window, signal_window, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.short_window = short_window
         self.long_window = long_window
@@ -650,9 +651,9 @@ class MACDStrategy(StrategyCreator):
         return self.data_signal
 
 class IchimokuStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, conversion_line_period=9, base_line_period=26,
+    def __init__(self, frequency, data, symbol, start_date, end_date, conversion_line_period=9, base_line_period=26,
                  leading_span_b_period=52, displacement=26, amount=10000, transaction_costs=0):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.conversion_line_period = conversion_line_period
         self.base_line_period = base_line_period
@@ -724,9 +725,9 @@ class IchimokuStrategy(StrategyCreator):
         return self.data_signal
 
 class StochasticOscillatorStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, k_window=14, d_window=3, buy_threshold=20,
+    def __init__(self, frequency, data, symbol, start_date, end_date, k_window=14, d_window=3, buy_threshold=20,
                  sell_threshold=80, amount=10000, transaction_costs=0):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.k_window = k_window
         self.d_window = d_window
@@ -778,9 +779,9 @@ class StochasticOscillatorStrategy(StrategyCreator):
         return self.data_signal
 
 class ADXStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, adx_period=14, di_period=14, threshold=25, amount=10000,
+    def __init__(self, frequency, data, symbol, start_date, end_date, adx_period=14, di_period=14, threshold=25, amount=10000,
                  transaction_costs=0):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.adx_period = adx_period
         self.di_period = di_period
@@ -848,8 +849,8 @@ class ADXStrategy(StrategyCreator):
 
 
 class VolumeStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, volume_threshold, volume_window, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, volume_threshold, volume_window, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.volume_threshold = volume_threshold
         self.volume_window=volume_window
@@ -895,9 +896,9 @@ class VolumeStrategy(StrategyCreator):
 
 
 class WilliamsRBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, lookback_period, overbought, oversold, amount,
+    def __init__(self, frequency, data, symbol, start_date, end_date, lookback_period, overbought, oversold, amount,
                  transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.lookback_period = lookback_period
         self.overbought = overbought
@@ -940,8 +941,8 @@ class WilliamsRBacktester(StrategyCreator):
 
 
 class VolatilityBreakoutBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, volatility_window, breakout_factor, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, volatility_window, breakout_factor, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.volatility_window = volatility_window
         self.breakout_factor = breakout_factor
