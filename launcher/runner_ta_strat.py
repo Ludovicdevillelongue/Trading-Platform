@@ -1,13 +1,10 @@
 import logging
 from datetime import timedelta, datetime
 import threading
-
-import numpy as np
-import pandas as pd
+import time
 import pytz
 import sys
 import os
-
 import yaml
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -88,7 +85,7 @@ if __name__ == '__main__':
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations = 10
+    iterations = 2
 
     """
     --------------------------------------------------------------------------------------------------------------------
@@ -98,15 +95,18 @@ if __name__ == '__main__':
     runner = StrategyRunner(strategies, data_provider, frequency, symbol, start_date, end_date,
                             param_grids, opti_algo, amount, transaction_costs, iterations)
     logging.info("Optimizing strategies...")
+    start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
     logging.info("Optimized results: %s", optimization_results)
     logging.info("\nRunning and comparing strategies...")
     best_strats, comparison_data = runner.run_and_compare_strategies()
+    end_time_opti=time.time()
+    print(f'Elapsed time for optimization: {int(end_time_opti-start_time_opti // 60)} minutes '
+          f'and {int(end_time_opti-start_time_opti % 60)} seconds')
     # show results of bactkest in dashboard
     app = BacktestApp(best_strats, comparison_data, symbol)
     threading.Thread(target=app.run_server).start()
     threading.Thread(target=app.open_browser).start()
-
     best_strat = max(best_strats, key=lambda k: best_strats[k]['results']['sharpe_ratio'])
     print(best_strats)
 
