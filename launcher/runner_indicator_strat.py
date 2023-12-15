@@ -15,7 +15,8 @@ from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorith
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from backtester.indicator_strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
     MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester, MACDStrategy, \
-    IchimokuStrategy, StochasticOscillatorStrategy, ADXStrategy, VolumeStrategy, WilliamsRBacktester, VolatilityBreakoutBacktester
+    IchimokuStrategy, StochasticOscillatorStrategy, ADXStrategy, VolumeStrategy, WilliamsRBacktester, \
+    VolatilityBreakoutBacktester
 from backtester.strat_comparator import StrategyRunner
 from results_backtest.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
@@ -44,7 +45,6 @@ if __name__ == '__main__':
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
 
-
     param_grids = {
         'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30)},
         'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5)},
@@ -69,26 +69,27 @@ if __name__ == '__main__':
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
     with open(data_freq, 'r') as file:
         frequency = yaml.safe_load(file)
-    frequency=frequency[data_provider]['minute']
+    frequency = frequency[data_provider]['minute']
     symbol = 'TSLA'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations = 2
+    contract_multiplier = 1
+    iterations = 100
 
     """
     --------------------------------------------------------------------------------------------------------------------
     -------------------------------------Run Comparison and Optimzation Of Strategies-----------------------------------
     --------------------------------------------------------------------------------------------------------------------
     """
-    runner = StrategyRunner(strategies, data_provider, frequency,symbol, start_date, end_date,
+    runner = StrategyRunner(strategies, data_provider, frequency, symbol, start_date, end_date,
                             param_grids, opti_algo, amount, transaction_costs, iterations)
     logging.info("Optimizing strategies...")
     start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
-    end_time_opti=time.time()
+    end_time_opti = time.time()
     time_diff = end_time_opti - start_time_opti
     print(f'Elapsed time for optimization: {int(time_diff // 60)} minutes '
           f'and {int(time_diff % 60)} seconds')
@@ -111,8 +112,14 @@ if __name__ == '__main__':
 
     trading_platform = 'Alpaca'
     broker_config = GetBrokersConfig.key_secret_url()
-    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol, start_date,
-                                   end_date, amount, transaction_costs, data_provider, trading_platform, broker_config).run()
+    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol,
+                                   start_date,
+                                   end_date, amount, transaction_costs, contract_multiplier, data_provider,
+                                   trading_platform, broker_config).run()
+    closed_positions = AlpacaPlatform(broker_config).close_open_positions()
+    for i in range(len(closed_positions)):
+        print(f'Positions closed at {datetime.now(pytz.timezone("Europe/Paris")).time()} on '
+              f'{closed_positions[i]["symbol"]}')
     # trade_sender = threading.Thread(target=strat_run.run)
     # trade_sender.start()
     # threads.append(trade_sender)

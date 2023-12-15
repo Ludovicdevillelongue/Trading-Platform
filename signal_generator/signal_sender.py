@@ -10,7 +10,7 @@ import os
 
 class LiveStrategyRunner:
     def __init__(self, strategy_name, strategy_class, optimization_results, frequency, symbol, start_date, end_date,
-                 amount, transaction_costs, data_provider, trading_platform, broker_config):
+                 amount, transaction_costs, contract_multiplier, data_provider, trading_platform, broker_config):
         self.strategy_name = strategy_name
         self.strategy_class = strategy_class
         self.optimization_results = optimization_results
@@ -24,7 +24,7 @@ class LiveStrategyRunner:
         self.trading_platform = trading_platform
         self.broker_config = broker_config
         self.current_positions = {name: 0 for name in optimization_results}
-        self.units = 1
+        self.contract_multiplier = contract_multiplier
         self.real_time_data = None
         if self.trading_platform == 'Alpaca':
             self.broker = AlpacaTradingBot(broker_config)
@@ -73,31 +73,31 @@ class LiveStrategyRunner:
             for i in range(len(broker_positions)):
                 if broker_positions[i]._raw['symbol'] == self.symbol:
                     current_position = float(broker_positions[i]._raw['qty'])
-                    if signal != current_position:
+                    if signal*self.contract_multiplier != current_position:
                         self.place_order(strategy_name, signal, current_position)
 
     def place_order(self, strategy_name, signal, current_position):
-        self.logger_monitor(f'\nPosition: {current_position}\nSignal: {signal}', False)
+        self.logger_monitor(f'\nPosition: {current_position}\nRequested: {signal*self.contract_multiplier}', False)
 
-        qty = float(abs(current_position))+ float(abs(signal) * self.units)
-        side = 'buy' if signal == 1 else 'sell'
+        qty = (float(signal * self.contract_multiplier) - float(current_position))
+        side = 'buy' if qty >0 else 'sell'
 
         # Alpaca order placement
-        self.broker.submit_order(self.symbol, qty, side)
+        self.broker.submit_order(self.symbol, int(abs(qty)), side)
 
-        self.report_trade(self.symbol, strategy_name, side, qty)
+        self.report_trade(self.symbol, strategy_name, side, abs(qty))
 
     def logger_monitor(self, message, *args, **kwargs):
         print(message)
 
-    def report_trade(self, symbol, strategy_name, order_type, units):
+    def report_trade(self, symbol, strategy_name, order_type, qty):
         self.logger_monitor(f'Trade Executed at {self.real_time_data.index[-1]} on '
-                            f'{symbol} following the {strategy_name} strategy: {order_type} {abs(units)} units')
+                            f'{symbol} following the {strategy_name} strategy: {order_type} {qty} units')
 
     def stop_loss(self):
         portfolio_history = AlpacaPlatform(self.broker_config).get_portfolio_history().iloc[-1]
         #0.1% of initial portfolio value
-        if portfolio_history['base_value']-portfolio_history['equity']>-5:
+        if portfolio_history['base_value']-portfolio_history['equity']>0.001*portfolio_history['base_value']:
             return True
 
     def run(self):
@@ -106,7 +106,7 @@ class LiveStrategyRunner:
             self.apply_strategy(self.strategy_name, self.strategy_class)
         else:
             current_time = datetime.datetime.now(pytz.timezone('Europe/Paris')).time()
-            stop_time = datetime.time(23, 59, 0)
+            stop_time = datetime.time(22, 0, 0)
             while current_time < stop_time:
                 self.fetch_and_update_real_time_data()
                 self.apply_strategy(self.strategy_name, self.strategy_class)
