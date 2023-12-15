@@ -13,7 +13,7 @@ class TradingPlatform:
     def get_account_info(self):
         raise NotImplementedError
 
-    def get_portfolio_history(self, start_date, end_date):
+    def get_portfolio_history(self):
         raise NotImplementedError
 
     def get_portfolio_metrics(self):
@@ -57,10 +57,14 @@ class AlpacaPlatform(TradingPlatform):
         assets=self.api.list_assets()
         return assets
 
-
-    def get_positions_history(self):
-        positions_history_dict=self.api.get_portfolio_history()
-        positions_history=pd.DataFrame(positions_history_dict)
-        positions_history['timestamp'] = positions_history['timestamp'].\
+    def get_portfolio_history(self):
+        portfolio_history=self.api.get_daily_portfolio_history()
+        portfolio_history=pd.DataFrame(portfolio_history)
+        portfolio_history['timestamp'] = portfolio_history['timestamp'].\
             apply(lambda x: pd.Timestamp.fromtimestamp(x))
-        return positions_history
+        return portfolio_history
+
+
+    def close_open_positions(self):
+        closed_positions=self.api.close_open_positions()
+        return closed_positions
