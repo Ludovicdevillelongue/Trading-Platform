@@ -9,7 +9,7 @@ import yaml
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from broker_interaction.broker_order import GetBrokersConfig
-from broker_interaction.borker_metrics import AlpacaPlatform
+from broker_interaction.broker_metrics import AlpacaPlatform
 from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
 from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
@@ -70,8 +70,6 @@ if __name__ == '__main__':
         'WMA':{'timeperiod':(10,30)}
     }
 
-
-
     opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
 
     data_provider = 'yfinance'
@@ -85,7 +83,7 @@ if __name__ == '__main__':
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations = 2
+    iterations = 5
 
     """
     --------------------------------------------------------------------------------------------------------------------
@@ -97,12 +95,14 @@ if __name__ == '__main__':
     logging.info("Optimizing strategies...")
     start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
+    end_time_opti=time.time()
+    time_diff = end_time_opti - start_time_opti
+    print(f'Elapsed time for optimization: {int(time_diff // 60)} minutes '
+          f'and {int(time_diff % 60)} seconds')
     logging.info("Optimized results: %s", optimization_results)
     logging.info("\nRunning and comparing strategies...")
     best_strats, comparison_data = runner.run_and_compare_strategies()
-    end_time_opti=time.time()
-    print(f'Elapsed time for optimization: {int(end_time_opti-start_time_opti // 60)} minutes '
-          f'and {int(end_time_opti-start_time_opti % 60)} seconds')
+
     # show results of bactkest in dashboard
     app = BacktestApp(best_strats, comparison_data, symbol)
     threading.Thread(target=app.run_server).start()

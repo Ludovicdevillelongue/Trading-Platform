@@ -4,7 +4,7 @@ import threading
 import pytz
 import sys
 import os
-
+import time
 import yaml
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
-    iterations = 100
+    iterations = 2
 
     """
     --------------------------------------------------------------------------------------------------------------------
@@ -86,7 +86,12 @@ if __name__ == '__main__':
     runner = StrategyRunner(strategies, data_provider, frequency,symbol, start_date, end_date,
                             param_grids, opti_algo, amount, transaction_costs, iterations)
     logging.info("Optimizing strategies...")
+    start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
+    end_time_opti=time.time()
+    time_diff = end_time_opti - start_time_opti
+    print(f'Elapsed time for optimization: {int(time_diff // 60)} minutes '
+          f'and {int(time_diff % 60)} seconds')
     logging.info("Optimized results: %s", optimization_results)
     logging.info("\nRunning and comparing strategies...")
     best_strats, comparison_data = runner.run_and_compare_strategies()
@@ -94,7 +99,6 @@ if __name__ == '__main__':
     app = BacktestApp(best_strats, comparison_data, symbol)
     threading.Thread(target=app.run_server).start()
     threading.Thread(target=app.open_browser).start()
-
     best_strat = max(best_strats, key=lambda k: best_strats[k]['results']['sharpe_ratio'])
     print(best_strats)
 
