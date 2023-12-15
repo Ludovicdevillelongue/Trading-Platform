@@ -58,7 +58,7 @@ class LiveStrategyRunner:
             # Removed break; now it will loop continuously
         except Exception as e:
             self.logger_monitor(f"Error in strategy application: {e}")
-        if self.frequency['interval']=='1d':
+        if self.frequency['interval']=='1m':
             time.sleep(60)
         else:
             pass
