@@ -10,8 +10,7 @@ warnings.filterwarnings('ignore')
 
 class StrategyRunner:
     def __init__(self, strategies, data_provider, frequency, symbol, start_date, end_date, param_grids, opti_algo,
-                 amount, transaction_costs,
-                 iterations):
+                 amount, transaction_costs, iterations):
         """
         Initialize the StrategyRunner with given parameters.
 

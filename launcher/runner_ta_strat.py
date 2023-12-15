@@ -83,6 +83,7 @@ if __name__ == '__main__':
         "%Y-%m-%d %H:%M:%S")
     amount = 100000
     transaction_costs = 0.01
+    contract_multiplier=1
     iterations = 5
 
     """
@@ -120,8 +121,8 @@ if __name__ == '__main__':
     trading_platform = 'Alpaca'
     broker_config = GetBrokersConfig.key_secret_url()
     strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol, start_date,
-                                   end_date, amount,
-                                   transaction_costs, data_provider, trading_platform, broker_config).run()
+                                   end_date, amount, transaction_costs,contract_multiplier, data_provider,
+                                   trading_platform, broker_config).run()
     # trade_sender = threading.Thread(target=strat_run.run)
     # trade_sender.start()
     # threads.append(trade_sender)
