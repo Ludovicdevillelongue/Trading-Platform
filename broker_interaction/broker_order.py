@@ -33,6 +33,17 @@ class AlpacaTradingBot:
             print(f"Order submitted: {side} {qty} shares of {symbol}")
         except Exception as e:
             print(f"An error occurred: {e}")
+            outstanding_qty=qty
+            while outstanding_qty>0:
+                self.api.submit_order(
+                    symbol=symbol,
+                    qty=1,
+                    side=side,
+                    type=order_type,
+                    time_in_force=time_in_force
+                )
+                outstanding_qty-=1
+                print(f"Order submitted: {side} {outstanding_qty} shares of {symbol}")
 
     def get_positions(self):
         try:
