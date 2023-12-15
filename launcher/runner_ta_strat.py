@@ -8,6 +8,8 @@ import pytz
 import sys
 import os
 
+import yaml
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from broker_interaction.broker_order import GetBrokersConfig
 from broker_interaction.borker_metrics import AlpacaPlatform
@@ -36,7 +38,7 @@ if __name__ == '__main__':
         'KAMA': KAMAStrategy,
         'MA':MAStrategy,
         'MAMA': MAMAStrategy,
-        'MAVP' : MAVPStrategy,
+        # 'MAVP' : MAVPStrategy,
         'MIDPOINT' : MIDPOINTStrategy,
         'MIDPRICE' : MIDPRICEStrategy,
         "SAR": SARStrategy,
@@ -57,7 +59,7 @@ if __name__ == '__main__':
         'KAMA': {'timeperiod': (10, 30)},
         'MA': {'timeperiod': (10, 30), 'ma_type':['SIMPLE', 'EXPONENTIAL']},
         'MAMA': {'fastlimit': (0.4,0.6), 'slowlimit':(0.04,0.06)},
-        'MAVP' : {'periods':pd.Series(2,10), 'minperiod':(2,10), 'maxperiod':(20,30)},
+        # 'MAVP' : {'periods': np.array(np.arange(2, 5), np.arange(6,9)), 'minperiod':(2,10), 'maxperiod':(20,30)},
         'MIDPOINT' : {'timeperiod':(10,30)},
         'MIDPRICE' : {'timeperiod':(10,30)},
         'SAR': {'acceleration':(0.01,0.03), 'maximum':(0.1,0.3)},
@@ -76,6 +78,10 @@ if __name__ == '__main__':
     opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
 
     data_provider = 'yfinance'
+    data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
+    with open(data_freq, 'r') as file:
+        frequency = yaml.safe_load(file)
+    frequency=frequency[data_provider]['minute']
     symbol = 'TSLA'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
@@ -89,7 +95,7 @@ if __name__ == '__main__':
     -------------------------------------Run Comparison and Optimzation Of Strategies-----------------------------------
     --------------------------------------------------------------------------------------------------------------------
     """
-    runner = StrategyRunner(strategies, data_provider, symbol, start_date, end_date,
+    runner = StrategyRunner(strategies, data_provider, frequency, symbol, start_date, end_date,
                             param_grids, opti_algo, amount, transaction_costs, iterations)
     logging.info("Optimizing strategies...")
     optimization_results = runner.test_all_search_types()
@@ -113,7 +119,7 @@ if __name__ == '__main__':
 
     trading_platform = 'Alpaca'
     broker_config = GetBrokersConfig.key_secret_url()
-    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, symbol, start_date,
+    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol, start_date,
                                    end_date, amount,
                                    transaction_costs, data_provider, trading_platform, broker_config).run()
     # trade_sender = threading.Thread(target=strat_run.run)

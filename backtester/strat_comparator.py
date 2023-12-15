@@ -9,7 +9,7 @@ from .strat_optimizer import StrategyOptimizer
 warnings.filterwarnings('ignore')
 
 class StrategyRunner:
-    def __init__(self, strategies, data_provider, symbol, start_date, end_date, param_grids, opti_algo,
+    def __init__(self, strategies, data_provider, frequency, symbol, start_date, end_date, param_grids, opti_algo,
                  amount, transaction_costs,
                  iterations):
         """
@@ -18,6 +18,7 @@ class StrategyRunner:
         :param strategies: Dictionary of strategy names and their corresponding classes.
         :param symbol: The symbol for which the strategies will be run.
         :param data_provider: source of data
+        :param frequency: The frequency of the data.
         :param start_date: The starting date for the strategies.
         :param end_date: The ending date for the strategies.
         :param param_grids: Parameter grids for optimizing the strategies.
@@ -27,6 +28,7 @@ class StrategyRunner:
         """
         self.strategies = strategies
         self.data_provider=data_provider
+        self.frequency = frequency
         self.symbol = symbol
         self.start_date = start_date
         self.end_date = end_date
@@ -38,14 +40,14 @@ class StrategyRunner:
         self.iterations=iterations
 
         # Load data once and reuse, improving efficiency
-        self.data = StrategyCreator(self.symbol, self.start_date,
+        self.data = StrategyCreator(self.frequency, self.symbol, self.start_date,
                                     self.end_date, self.amount, self.transaction_costs).get_data(self.data_provider)
 
     def _optimize_strategy(self, strategy_name, strategy_class, search_type):
         """
         Private method to optimize a single strategy.
         """
-        optimizer = StrategyOptimizer(strategy_class, self.data, self.symbol, self.start_date, self.end_date,
+        optimizer = StrategyOptimizer(strategy_class, self.frequency, self.data, self.symbol, self.start_date, self.end_date,
                                       self.param_grids[strategy_name], self.amount, self.transaction_costs, search_type,
                                       self.iterations)
         return optimizer.optimize()
@@ -71,6 +73,7 @@ class StrategyRunner:
             comparison_data['returns']['creturns'] = strategy_tester.results['creturns']
         comparison_data['returns'][f'cstrategy_{strategy_name}'] = strategy_tester.results['cstrategy']
         comparison_data['positions'][f'positions_{strategy_name}']=strategy_tester.results['position']
+        comparison_data['returns'] = comparison_data['returns'].rename(columns={'creturns': 'cstrategy_HODL'})
         return comparison_data
 
     def optimize_strategies(self, search_type):
@@ -112,7 +115,7 @@ class StrategyRunner:
 
         for strategy_name, optimization_result in self.optimization_results.items():
             strategy_params = optimization_result['params']
-            strategy_tester = self.strategies[strategy_name](self.data, self.symbol, self.start_date, self.end_date,
+            strategy_tester = self.strategies[strategy_name](self.frequency, self.data, self.symbol, self.start_date, self.end_date,
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
                                                              **strategy_params)
             aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \

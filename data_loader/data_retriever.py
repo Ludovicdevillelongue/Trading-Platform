@@ -5,7 +5,8 @@ import yfinance as yf
 from tables import *
 
 class DataRetriever(object):
-    def __init__(self,start_date, end_date):
+    def __init__(self,frequency, start_date, end_date):
+        self.frequency=frequency
         self.start_date=start_date
         self.end_date=end_date
 
@@ -37,7 +38,8 @@ class DataRetriever(object):
         return data_quandl
 
     def yfinance_download(self, symbol:str):
-        data_yfinance = yf.download(symbol, period="1y", interval="1d")
+
+        data_yfinance = yf.download(symbol, period=self.frequency['period'], interval=self.frequency['interval'])
         data_yfinance.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close', 'Volume':'volume'}, inplace=True)
         return data_yfinance
 
@@ -66,8 +68,8 @@ class DataRetriever(object):
             print(f"Error fetching latest data from FXCM: {e}")
             return None
 
-    def yfinance_latest_data(self,symbol:str):
-        latest_data = yf.download(symbol, period="1y", interval="1d")
+    def yfinance_latest_data(self, symbol:str):
+        latest_data = yf.download(symbol, period=self.frequency['period'], interval=self.frequency['interval'])
         latest_data.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close','Volume':'volume'}, inplace=True)
         return latest_data
 

@@ -153,8 +153,9 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         return individual
 
 class StrategyOptimizer:
-    def __init__(self, strategy_class, data, symbol, start_date, end_date, param_grids, amount, transaction_costs, optimization_algorithm, iterations):
+    def __init__(self, strategy_class, frequency, data, symbol, start_date, end_date, param_grids, amount, transaction_costs, optimization_algorithm, iterations):
         self.strategy_class = strategy_class
+        self.frequency=frequency
         self.data = data
         self.symbol = symbol
         self.start_date = start_date
@@ -221,7 +222,7 @@ class StrategyOptimizer:
 
     def test_strategy(self, strategy_params):
         # Instantiate the strategy with provided parameters
-        strategy_tester = self.strategy_class(self.data, self.symbol, self.start_date,
+        strategy_tester = self.strategy_class(self.frequency, self.data, self.symbol, self.start_date,
                                               self.end_date, amount=self.amount,
                                               transaction_costs=self.transaction_costs,
                                               **strategy_params)

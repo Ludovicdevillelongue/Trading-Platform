@@ -4,8 +4,8 @@ import talib
 from backtester.indicator_strat_creator import StrategyCreator
 
 class BBandsStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, nbdevup, nbdevdn, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, nbdevup, nbdevdn, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
         self.nbdevup = nbdevup
@@ -48,8 +48,8 @@ class BBandsStrategy(StrategyCreator):
         return self.data_signal
 
 class DEMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
 
@@ -92,8 +92,8 @@ class DEMAStrategy(StrategyCreator):
         return self.data_signal
 
 class EMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
 
@@ -136,8 +136,8 @@ class EMAStrategy(StrategyCreator):
         return self.data_signal
 
 class HTTrendlineStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
 
     def analyse_strategy(self, data):
@@ -177,8 +177,8 @@ class HTTrendlineStrategy(StrategyCreator):
         return self.data_signal
 
 class KAMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
 
@@ -220,8 +220,8 @@ class KAMAStrategy(StrategyCreator):
 
 
 class MAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, ma_type, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, ma_type, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
         self.ma_type = ma_type  # MA type (e.g., SIMPLE, EXPONENTIAL)
@@ -269,8 +269,8 @@ class MAStrategy(StrategyCreator):
         return self.data_signal
 
 class MAMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, fastlimit, slowlimit, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, fastlimit, slowlimit, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.fastlimit = fastlimit
         self.slowlimit = slowlimit
@@ -313,8 +313,8 @@ class MAMAStrategy(StrategyCreator):
         return self.data_signal
 
 class MAVPStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, periods, minperiod, maxperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, periods, minperiod, maxperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.periods = periods  # This should be an array or Series of periods
         self.minperiod = minperiod
@@ -358,8 +358,8 @@ class MAVPStrategy(StrategyCreator):
         return self.data_signal
 
 class MIDPOINTStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the midpoint
 
@@ -401,8 +401,8 @@ class MIDPOINTStrategy(StrategyCreator):
         return self.data_signal
 
 class MIDPRICEStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the MIDPRICE
 
@@ -444,8 +444,8 @@ class MIDPRICEStrategy(StrategyCreator):
         return self.data_signal
 
 class SARStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, acceleration, maximum, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, acceleration, maximum, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.acceleration = acceleration
         self.maximum = maximum
@@ -487,10 +487,10 @@ class SARStrategy(StrategyCreator):
         return self.data_signal
 
 class SAREXTStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, start_value, offset_on_reverse,
+    def __init__(self, frequency, data, symbol, start_date, end_date, start_value, offset_on_reverse,
                  acceleration_init_long, acceleration_long, acceleration_max_long, acceleration_init_short,
                  acceleration_short, acceleration_max_short, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.start_value = start_value
         self.offset_on_reverse = offset_on_reverse
@@ -546,8 +546,8 @@ class SAREXTStrategy(StrategyCreator):
         return self.data_signal
 
 class SMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the SMA
 
@@ -589,8 +589,8 @@ class SMAStrategy(StrategyCreator):
         return self.data_signal
 
 class T3Strategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, volume_factor, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, volume_factor, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the T3
         self.volume_factor = volume_factor  # Volume factor for the T3 calculation
@@ -633,8 +633,8 @@ class T3Strategy(StrategyCreator):
         return self.data_signal
 
 class TEMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the TEMA
 
@@ -676,8 +676,8 @@ class TEMAStrategy(StrategyCreator):
         return self.data_signal
 
 class TRIMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the TRIMA
 
@@ -719,8 +719,8 @@ class TRIMAStrategy(StrategyCreator):
         return self.data_signal
 
 class WMAStrategy(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the WMA
 
