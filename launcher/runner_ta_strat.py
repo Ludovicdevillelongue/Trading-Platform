@@ -12,7 +12,7 @@ import yaml
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from broker_interaction.broker_order import GetBrokersConfig
-from broker_interaction.borker_metrics import AlpacaPlatform
+from broker_interaction.broker_metrics import AlpacaPlatform
 from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
 from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm

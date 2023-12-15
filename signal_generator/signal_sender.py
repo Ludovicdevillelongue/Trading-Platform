@@ -2,6 +2,7 @@ import time
 import datetime
 import pytz
 from broker_interaction.broker_order import AlpacaTradingBot
+from broker_interaction.broker_metrics import TradingPlatform, AlpacaPlatform
 from data_loader.data_retriever import DataRetriever
 import numpy as np
 import os
@@ -93,6 +94,12 @@ class LiveStrategyRunner:
         self.logger_monitor(f'Trade Executed at {self.real_time_data.index[-1]} on '
                             f'{symbol} following the {strategy_name} strategy: {order_type} {abs(units)} units')
 
+    def stop_loss(self):
+        portfolio_history = AlpacaPlatform(self.broker_config).get_portfolio_history().iloc[-1]
+        #0.1% of initial portfolio value
+        if portfolio_history['base_value']-portfolio_history['equity']>0.001*portfolio_history['base_value']:
+            return True
+
     def run(self):
         if self.frequency['interval']=='1d':
             self.fetch_and_update_real_time_data()
@@ -103,3 +110,10 @@ class LiveStrategyRunner:
             while current_time < stop_time:
                 self.fetch_and_update_real_time_data()
                 self.apply_strategy(self.strategy_name, self.strategy_class)
+                if self.stop_loss():
+                    print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
+                    closed_positions=AlpacaPlatform(self.broker_config).close_open_positions()
+                    for i in range(len(closed_positions)):
+                        print(f'Positions closed at {self.real_time_data.index[-1]} on {closed_positions[i]["symbol"]}')
+                    return
+

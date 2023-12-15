@@ -30,7 +30,7 @@ class BacktestApp:
             dcc.DatePickerSingle(id="start-date", date=self.comparison_data['returns'].index[0]),
 
             html.Label("End Date"),
-            dcc.DatePickerSingle(id="end-date", date=self.comparison_data['returns'].index[1]),
+            dcc.DatePickerSingle(id="end-date", date=self.comparison_data['returns'].index[-1]),
 
             html.Button("Generate Dashboard", id="generate-dashboard"),
 
