@@ -27,7 +27,8 @@ class OptimizationAlgorithm(ABC):
                 best_performance = aperf
                 best_params = params
                 best_sharpe_ratio = sharpe_ratio
-        best_params={key:round(value,2) for key,value in best_params.items()}
+        best_params = {key: round(value, 2) if isinstance(value, (int, float)) else value for key, value in
+                       best_params.items()}
         return best_params, best_performance, best_sharpe_ratio
 
 
@@ -169,17 +170,18 @@ class StrategyOptimizer:
         return self.optimization_algorithm.optimize(self)
 
     def generate_adaptive_params(self):
-        # Adaptively adjust the search space based on past performance
         adaptive_param_grids = self.adapt_search_space()
         params = {}
         for key, param_range in adaptive_param_grids.items():
             if isinstance(param_range, tuple):
+                # Handle numerical parameters
                 min_val, max_val = param_range
                 if isinstance(min_val, int):
                     params[key] = random.randint(min_val, max_val)
                 else:
                     params[key] = random.uniform(min_val, max_val)
             elif isinstance(param_range, list):
+                # Handle both list of numbers and list of strings
                 params[key] = random.choice(param_range)
         return params
 
@@ -188,25 +190,32 @@ class StrategyOptimizer:
             return self.param_grids  # Return the original param_grids if no history
 
         # Analyze the parameter history to find the best performing parameters
-        sorted_history = sorted(self.param_history, key=lambda x: x[1], reverse=True)  # Sort by performance (e.g., Sharpe ratio)
+        sorted_history = sorted(self.param_history, key=lambda x: x[1], reverse=True)  # Sort by performance
         top_performers = sorted_history[:max(1, len(sorted_history) // 5)]  # Take top 20% of performers
 
-        # Adjust the search space based on top performers
-        new_param_grids = {key: self._adjust_param_range(key, [params[0][key] for params in top_performers]) for key in self.param_grids}
+        new_param_grids = {}
+        for key in self.param_grids:
+            top_values = [params[0][key] for params in top_performers]
+            if isinstance(self.param_grids[key], list) and all(isinstance(x, str) for x in self.param_grids[key]):
+                # Handle string parameters
+                new_param_grids[key] = list(set(top_values))
+            else:
+                # Handle numerical parameters
+                new_param_grids[key] = self._adjust_param_range(key, top_values)
         return new_param_grids
 
     def _adjust_param_range(self, param_key, top_values):
-        # Adjust the range of a single parameter based on top performing values
         original_range = self.param_grids[param_key]
         if isinstance(original_range, tuple):
+            # Handle numerical parameters
             min_val, max_val = original_range
             new_min = max(min_val, min(top_values) - (max_val - min_val) * 0.1)  # Contract range by 10%
             new_max = min(max_val, max(top_values) + (max_val - min_val) * 0.1)
             if isinstance(min_val, int):
                 new_min, new_max = int(new_min), int(new_max)
             return new_min, new_max
-        elif isinstance(original_range, list):
-            # For discrete values, simply return the list of top values
+        elif isinstance(original_range, list) and all(isinstance(x, str) for x in original_range):
+            # No adjustment needed for string parameters
             return list(set(top_values))
 
 

@@ -1,6 +1,6 @@
 # Compare and Run Strategies
 import pandas as pd
-from .strat_creator import StrategyCreator
+from .indicator_strat_creator import StrategyCreator
 from collections import defaultdict
 import warnings
 # To deactivate all warnings:
