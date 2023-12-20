@@ -71,7 +71,7 @@ class StrategyRunner:
         if len(comparison_data['returns'])==0:
             comparison_data['returns']['creturns'] = strategy_tester.results['creturns']
         comparison_data['returns'][f'cstrategy_{strategy_name}'] = strategy_tester.results['cstrategy']
-        comparison_data['positions'][f'positions_{strategy_name}']=strategy_tester.results['position']
+        comparison_data['positions'][f'positions_{strategy_name}']=strategy_tester.results['regularized_position']
         comparison_data['returns'] = comparison_data['returns'].rename(columns={'creturns': 'cstrategy_HODL'})
         return comparison_data
 
