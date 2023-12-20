@@ -21,7 +21,7 @@ class AlpacaTradingBot:
 
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
 
-    def submit_order(self, symbol, qty, side, order_type='market', time_in_force='gtc'):
+    def submit_order(self, symbol, qty, side, order_type='market', time_in_force='day'):
         try:
             self.api.submit_order(
                 symbol=symbol,
