@@ -274,8 +274,9 @@ class SMAVectorBacktester(StrategyCreator):
         self.set_parameters(int(self.sma_short), int(self.sma_long))
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, -1)
-        data_strat['diff_SMA']=data_strat['SMA1']-data_strat['SMA2']
-        data_sized=self.regression_positions(data_strat, "diff_SMA", self.reg_method)
+        # Ratio of short to long SMA
+        data_strat['signal_metric_SMA'] = data_strat['SMA1'] / data_strat['SMA2']
+        data_sized=self.regression_positions(data_strat, "signal_metric_SMA", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -333,8 +334,9 @@ class BollingerBandsBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], -1, data_strat['position'])  # sell signal
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
-        # Implement the rest of the strategy logic similar to SMAVectorBacktester
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        # Distance from middle band
+        data_strat['signal_metric_Bollinger'] = (data_strat['close'] - data_strat['middle_band']) / data_strat['std_dev']
+        data_sized=self.regression_positions(data_strat, "signal_metric_Bollinger", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -398,8 +400,9 @@ class RSIVectorBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
         data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, -1, data_strat['position'])  # sell signal
 
-
+        # RSI value
         data_sized=self.regression_positions(data_strat, "RSI", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
 
@@ -436,8 +439,10 @@ class MomVectorBacktester(StrategyCreator):
         '''
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.sign(data_strat['return'].rolling(self.momentum).mean())
+        # Percentage change over momentum period
+        data_strat['signal_metric_Mom'] = data_strat['close'].pct_change(periods=self.momentum)
         data_strat=data_strat.dropna(axis=0)
-        data_sized=self.regression_positions(data_strat, "return", self.reg_method)
+        data_sized=self.regression_positions(data_strat, "signal_metric_Mom", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -490,8 +495,9 @@ class MRVectorBacktester(StrategyCreator):
                                     data_strat['distance'].shift(1) < 0,
                                     0, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
-
-        data_sized=self.regression_positions(data_strat, "distance", self.reg_method)
+        # Distance from SMA
+        data_strat['signal_metric_MR'] = data_strat['close'] - data_strat['sma']
+        data_sized=self.regression_positions(data_strat, "signal_metric_MR", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -561,7 +567,13 @@ class TurtleVectorBacktester(StrategyCreator):
 
     def run_strategy(self):
         data_strat = self.calculate_turtle()
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        # Relative position in range
+        data_strat['high_max'] = data_strat['high'].rolling(window=self.window_size).max()
+        data_strat['low_min'] = data_strat['low'].rolling(window=self.window_size).min()
+        data_strat['signal_metric_Turtle'] = (data_strat['close'] - data_strat['low_min']) / (
+                    data_strat['high_max'] - data_strat['low_min'])
+        data_strat=data_strat.dropna(axis=0)
+        data_sized=self.regression_positions(data_strat, "signal_metric_Turtle", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -649,8 +661,9 @@ class ParabolicSARBacktester(StrategyCreator):
         # Define trading signals
         data_strat['position'] = np.where(data_strat['trend'] == 1, 1, -1)  # Long when trend is up, short when trend is down
 
-        # Implement the rest of the strategy logic
-        data_sized = self.regression_positions(data_strat, "trend", self.reg_method)
+        # Distance from SAR value
+        data_strat['signal_metric_SAR'] = data_strat['close'] - data_strat['SAR']
+        data_sized = self.regression_positions(data_strat, "signal_metric_SAR", self.reg_method)
         self.data_signal = data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -700,7 +713,9 @@ class MACDStrategy(StrategyCreator):
         data_strat['signal'] = data_strat['macd'].ewm(span=self.signal_window, adjust=False).mean()
         data_strat['position'] = np.where(data_strat['macd'] > data_strat['signal'], 1, -1)
 
-        data_sized=self.regression_positions(data_strat, "macd", self.reg_method)
+        # MACD minus signal line
+        data_strat['signal_metric_MACD'] = data_strat['macd'] - data_strat['signal']
+        data_sized=self.regression_positions(data_strat, "signal_metric_MACD", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -776,8 +791,9 @@ class IchimokuStrategy(StrategyCreator):
         data_strat['position'] = np.where((data_strat['conversion_line'] < data_strat['base_line']) &
                                     (data_strat['close'] < data_strat['leading_span_A']) &
                                     (data_strat['close'] < data_strat['leading_span_B']), -1, data_strat['position'])
-
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        # Conversion line minus base line
+        data_strat['signal_metric_Ichimoku'] = data_strat['conversion_line'] - data_strat['base_line']
+        data_sized=self.regression_positions(data_strat, "signal_metric_Ichimoku", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -832,9 +848,9 @@ class StochasticOscillatorStrategy(StrategyCreator):
         data_strat['position'] = np.where(data_strat['%K'] < data_strat['%D'], 1, 0)  # Buy signal
         data_strat['position'] = np.where(data_strat['%K'] > data_strat['%D'], -1, data_strat['position'])  # Sell signal
 
-
-        data_strat['Diff_%K_%D'] = data_strat['%D'] - data_strat['%K']
-        data_sized=self.regression_positions(data_strat, "Diff_%K_%D", self.reg_method)
+        # %K minus %D
+        data_strat['signal_metric_Stochastic'] = data_strat['%K'] - data_strat['%D']
+        data_sized=self.regression_positions(data_strat, "signal_metric_Stochastic", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -903,9 +919,9 @@ class ADXStrategy(StrategyCreator):
         data_strat['position'] = np.where((data_strat['+DI'] > data_strat['-DI']) & (data_strat['ADX'] > self.threshold), 1, 0)  # Buy signal
         data_strat['position'] = np.where((data_strat['-DI'] > data_strat['+DI']) & (data_strat['ADX'] > self.threshold), -1,
                                     data_strat['position'])  # Sell signal
-
-        data_strat['Diff_DI'] = data_strat['+DI'] - data_strat['-DI']
-        data_sized=self.regression_positions(data_strat, "Diff_DI", self.reg_method)
+        # Difference between +DI and -DI
+        data_strat['signal_metric_ADX'] = data_strat['+DI'] - data_strat['-DI']
+        data_sized=self.regression_positions(data_strat, "signal_metric_ADX", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -955,8 +971,10 @@ class VolumeStrategy(StrategyCreator):
 
         # Define a simple trading logic: buy when there is a volume spike, sell otherwise
         data_strat['position'] = np.where(data_strat['volume_spike'], 1, -1)
-
-        data_sized=self.regression_positions(data_strat, "volume_spike", self.reg_method)
+        # Volume relative to average
+        data_strat['signal_metric_Volume'] = data_strat['volume'] / data_strat['average_volume']
+        data_strat=data_strat.dropna(axis=0)
+        data_sized=self.regression_positions(data_strat, "signal_metric_Volume", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -1003,7 +1021,7 @@ class WilliamsRBacktester(StrategyCreator):
 
         data_strat['position'] = np.where(data_strat['%R'] < -self.oversold, 1, 0)
         data_strat['position'] = np.where(data_strat['%R'] > -self.overbought, -1, data_strat['position'])
-
+        # Williams %R value
         data_sized=self.regression_positions(data_strat, "%R", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
@@ -1066,8 +1084,10 @@ class VolatilityBreakoutBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], -1, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
-        # Implement the rest of the strategy logic similar to SMAVectorBacktester
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        # Relative position within breakout bands
+        data_strat['signal_metric_VolatilityBreakout'] = (data_strat['close'] - data_strat['lower_band']) / (
+                    data_strat['upper_band'] - data_strat['lower_band'])
+        data_sized=self.regression_positions(data_strat, "signal_metric_VolatilityBreakout", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
