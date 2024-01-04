@@ -4,12 +4,14 @@ import talib
 from backtester.indicator_strat_creator import StrategyCreator
 
 class BBandsStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, nbdevup, nbdevdn, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, nbdevup, nbdevdn, reg_method,
+                 amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
         self.nbdevup = nbdevup
         self.nbdevdn = nbdevdn
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -29,18 +31,21 @@ class BBandsStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['upper_band'], data['middle_band'], data['lower_band'] = talib.BBANDS(
-            data['close'], timeperiod=self.timeperiod,
+        data_strat = self.data.copy()
+        data_strat['upper_band'], data_strat['middle_band'], data_strat['lower_band'] = talib.BBANDS(
+            data_strat['close'], timeperiod=self.timeperiod,
             nbdevup=self.nbdevup, nbdevdn=self.nbdevdn, matype=0)
 
         # Buy when the close prices cross below the lower band, and sell when they cross above the upper band
-        data['position'] = np.where(data['close'] < data['lower_band'], 1,
-                                    np.where(data['close'] > data['upper_band'], -1, 0))
+        data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], 1,
+                                    np.where(data_strat['close'] > data_strat['upper_band'], -1, 0))
+        data_strat=data_strat.dropna(axis=0)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -48,10 +53,11 @@ class BBandsStrategy(StrategyCreator):
         return self.data_signal
 
 class DEMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -76,15 +82,18 @@ class DEMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['dema'] = talib.DEMA(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['dema'] = talib.DEMA(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Buy when the close is above the DEMA, sell when below
-        data['position'] = np.where(data['close'] > data['dema'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['dema'], 1, -1)
+        data_strat=data_strat.dropna(axis=0)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -92,10 +101,11 @@ class DEMAStrategy(StrategyCreator):
         return self.data_signal
 
 class EMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -120,25 +130,27 @@ class EMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['ema'] = talib.EMA(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['ema'] = talib.EMA(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Buy when the close is above the EMA, sell when below
-        data['position'] = np.where(data['close'] > data['ema'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['ema'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
-
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
         self.run_strategy()
         return self.data_signal
 
 class HTTrendlineStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -161,15 +173,17 @@ class HTTrendlineStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['ht_trendline'] = talib.HT_TRENDLINE(data['close'])
+        data_strat = self.data.copy()
+        data_strat['ht_trendline'] = talib.HT_TRENDLINE(data_strat['close'])
 
         # Strategy: Buy when the close is above the HT Trendline, sell when below
-        data['position'] = np.where(data['close'] > data['ht_trendline'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['ht_trendline'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -177,10 +191,11 @@ class HTTrendlineStrategy(StrategyCreator):
         return self.data_signal
 
 class KAMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -203,15 +218,17 @@ class KAMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['kama'] = talib.KAMA(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['kama'] = talib.KAMA(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Buy when the close is above the KAMA, sell when below
-        data['position'] = np.where(data['close'] > data['kama'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['kama'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -220,11 +237,12 @@ class KAMAStrategy(StrategyCreator):
 
 
 class MAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, ma_type, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, ma_type,reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod
         self.ma_type = ma_type  # MA type (e.g., SIMPLE, EXPONENTIAL)
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -247,21 +265,23 @@ class MAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
+        data_strat = self.data.copy()
 
         if self.ma_type == 'SIMPLE':
-            data['ma'] = talib.SMA(data['close'], timeperiod=self.timeperiod)
+            data_strat['ma'] = talib.SMA(data_strat['close'], timeperiod=self.timeperiod)
         elif self.ma_type == 'EXPONENTIAL':
-            data['ma'] = talib.EMA(data['close'], timeperiod=self.timeperiod)
+            data_strat['ma'] = talib.EMA(data_strat['close'], timeperiod=self.timeperiod)
         else:
             raise ValueError("Invalid MA Type")
 
         # Strategy: Buy when the close is above the MA, sell when below
-        data['position'] = np.where(data['close'] > data['ma'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['ma'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -269,11 +289,12 @@ class MAStrategy(StrategyCreator):
         return self.data_signal
 
 class MAMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, fastlimit, slowlimit, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, fastlimit, slowlimit, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.fastlimit = fastlimit
         self.slowlimit = slowlimit
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -297,15 +318,17 @@ class MAMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['mama'], data['fama'] = talib.MAMA(data['close'], fastlimit=self.fastlimit, slowlimit=self.slowlimit)
+        data_strat = self.data.copy()
+        data_strat['mama'], data_strat['fama'] = talib.MAMA(data_strat['close'], fastlimit=self.fastlimit, slowlimit=self.slowlimit)
 
         # Strategy: Buy when MAMA crosses above FAMA, sell when MAMA crosses below FAMA
-        data['position'] = np.where(data['mama'] > data['fama'], 1, -1)
+        data_strat['position'] = np.where(data_strat['mama'] > data_strat['fama'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -313,12 +336,14 @@ class MAMAStrategy(StrategyCreator):
         return self.data_signal
 
 class MAVPStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, periods, minperiod, maxperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, periods, minperiod, maxperiod, reg_method,
+                 amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.periods = periods  # This should be an array or Series of periods
         self.minperiod = minperiod
         self.maxperiod = maxperiod
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -341,16 +366,18 @@ class MAVPStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['mavp'] = talib.MAVP(data['close'], self.periods, minperiod=self.minperiod, maxperiod=self.maxperiod)
+        data_strat = self.data.copy()
+        data_strat['mavp'] = talib.MAVP(data_strat['close'], self.periods, minperiod=self.minperiod, maxperiod=self.maxperiod)
 
         # Strategy: Define your buy/sell conditions based on MAVP
         # Example: Buy when close is greater than MAVP, sell when below
-        data['position'] = np.where(data['close'] > data['mavp'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['mavp'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -358,10 +385,11 @@ class MAVPStrategy(StrategyCreator):
         return self.data_signal
 
 class MIDPOINTStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the midpoint
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -384,16 +412,18 @@ class MIDPOINTStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['midpoint'] = talib.MIDPOINT(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['midpoint'] = talib.MIDPOINT(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Define your buy/sell conditions based on MIDPOINT
         # Example: Buy when close is above MIDPOINT, sell when below
-        data['position'] = np.where(data['close'] > data['midpoint'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['midpoint'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -401,10 +431,11 @@ class MIDPOINTStrategy(StrategyCreator):
         return self.data_signal
 
 class MIDPRICEStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the MIDPRICE
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -427,16 +458,18 @@ class MIDPRICEStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['midprice'] = talib.MIDPRICE(data['high'], data['low'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['midprice'] = talib.MIDPRICE(data_strat['high'], data_strat['low'], timeperiod=self.timeperiod)
 
         # Strategy: Define your buy/sell conditions based on MIDPRICE
         # Example: Buy when close is above MIDPRICE, sell when below
-        data['position'] = np.where(data['close'] > data['midprice'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['midprice'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -444,11 +477,12 @@ class MIDPRICEStrategy(StrategyCreator):
         return self.data_signal
 
 class SARStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, acceleration, maximum, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, acceleration, maximum, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.acceleration = acceleration
         self.maximum = maximum
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -471,15 +505,17 @@ class SARStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['sar'] = talib.SAR(data['high'], data['low'], acceleration=self.acceleration, maximum=self.maximum)
+        data_strat = self.data.copy()
+        data_strat['sar'] = talib.SAR(data_strat['high'], data_strat['low'], acceleration=self.acceleration, maximum=self.maximum)
 
         # Strategy: Buy when the close is above the SAR, sell when below
-        data['position'] = np.where(data['close'] > data['sar'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['sar'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -489,7 +525,7 @@ class SARStrategy(StrategyCreator):
 class SAREXTStrategy(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, start_value, offset_on_reverse,
                  acceleration_init_long, acceleration_long, acceleration_max_long, acceleration_init_short,
-                 acceleration_short, acceleration_max_short, amount, transaction_costs):
+                 acceleration_short, acceleration_max_short, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.start_value = start_value
@@ -500,6 +536,7 @@ class SAREXTStrategy(StrategyCreator):
         self.acceleration_init_short = acceleration_init_short
         self.acceleration_short = acceleration_short
         self.acceleration_max_short = acceleration_max_short
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -522,8 +559,8 @@ class SAREXTStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['sarext'] = talib.SAREXT(data['high'], data['low'], startvalue=self.start_value,
+        data_strat = self.data.copy()
+        data_strat['sarext'] = talib.SAREXT(data_strat['high'], data_strat['low'], startvalue=self.start_value,
                                       offsetonreverse=self.offset_on_reverse,
                                       accelerationinitlong=self.acceleration_init_long,
                                       accelerationlong=self.acceleration_long,
@@ -534,11 +571,13 @@ class SAREXTStrategy(StrategyCreator):
 
         # Strategy: Define your buy/sell conditions based on SAREXT
         # Example: Buy when the close is above SAREXT, sell when below
-        data['position'] = np.where(data['close'] > data['sarext'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['sarext'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -546,10 +585,11 @@ class SAREXTStrategy(StrategyCreator):
         return self.data_signal
 
 class SMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the SMA
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -572,16 +612,18 @@ class SMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['sma'] = talib.SMA(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['sma'] = talib.SMA(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Define your buy/sell conditions based on SMA
         # Example: Buy when close is above SMA, sell when below
-        data['position'] = np.where(data['close'] > data['sma'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['sma'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -589,11 +631,13 @@ class SMAStrategy(StrategyCreator):
         return self.data_signal
 
 class T3Strategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, volume_factor, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, volume_factor, reg_method,
+                 amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the T3
         self.volume_factor = volume_factor  # Volume factor for the T3 calculation
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -616,16 +660,18 @@ class T3Strategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['t3'] = talib.T3(data['close'], timeperiod=self.timeperiod, vfactor=self.volume_factor)
+        data_strat = self.data.copy()
+        data_strat['t3'] = talib.T3(data_strat['close'], timeperiod=self.timeperiod, vfactor=self.volume_factor)
 
         # Strategy: Define your buy/sell conditions based on T3
         # Example: Buy when close is above T3, sell when below
-        data['position'] = np.where(data['close'] > data['t3'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['t3'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -633,10 +679,11 @@ class T3Strategy(StrategyCreator):
         return self.data_signal
 
 class TEMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the TEMA
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -659,16 +706,18 @@ class TEMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['tema'] = talib.TEMA(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['tema'] = talib.TEMA(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Define your buy/sell conditions based on TEMA
         # Example: Buy when close is above TEMA, sell when below
-        data['position'] = np.where(data['close'] > data['tema'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['tema'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -676,10 +725,11 @@ class TEMAStrategy(StrategyCreator):
         return self.data_signal
 
 class TRIMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the TRIMA
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -702,16 +752,18 @@ class TRIMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['trima'] = talib.TRIMA(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['trima'] = talib.TRIMA(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Define your buy/sell conditions based on TRIMA
         # Example: Buy when close is above TRIMA, sell when below
-        data['position'] = np.where(data['close'] > data['trima'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['trima'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -719,10 +771,11 @@ class TRIMAStrategy(StrategyCreator):
         return self.data_signal
 
 class WMAStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, amount, transaction_costs):
+    def __init__(self, frequency, data, symbol, start_date, end_date, timeperiod, reg_method, amount, transaction_costs):
         super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data = data
         self.timeperiod = timeperiod  # Time period for calculating the WMA
+        self.reg_method=reg_method
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -745,16 +798,18 @@ class WMAStrategy(StrategyCreator):
         # plt.show()
 
     def run_strategy(self):
-        data = self.data.copy()
-        data['wma'] = talib.WMA(data['close'], timeperiod=self.timeperiod)
+        data_strat = self.data.copy()
+        data_strat['wma'] = talib.WMA(data_strat['close'], timeperiod=self.timeperiod)
 
         # Strategy: Define your buy/sell conditions based on WMA
         # Example: Buy when close is above WMA, sell when below
-        data['position'] = np.where(data['close'] > data['wma'], 1, -1)
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['wma'], 1, -1)
 
-        self.data_signal = data['position'][-1]
-        self.analyse_strategy(data)
-        return self.calculate_performance(data)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
 
     def generate_signal(self):
         ''' Generates a trading signal for the most recent data point. '''
@@ -762,7 +817,137 @@ class WMAStrategy(StrategyCreator):
         return self.data_signal
 
 
+class ADStrategy(StrategyCreator):
+    def __init__(self, frequency, data, symbol, start_date, end_date, reg_method, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.reg_method = reg_method
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.set_ylabel(f'{self.symbol} price in $')
+
+        data['orders'] = data['position'].diff()
+        data = data.dropna()
+
+        # Plot close price and AD line
+        data["close"].plot(ax=ax, color='g', lw=1)
+        data["ad_line"].plot(ax=ax, color='b', lw=1, secondary_y=True)
+
+        # Plot Buy and Sell signals
+        ax.plot(data.loc[data.orders > 0].index, data["close"][data.orders > 0], '^', markersize=10, color='k', label='Buy Signal')
+        ax.plot(data.loc[data.orders < 0].index, data["close"][data.orders < 0], 'v', markersize=10, color='k', label='Sell Signal')
+
+        plt.title("AD Line Trading Strategy")
+        plt.legend()
+        # plt.show()
+
+    def run_strategy(self):
+        data_strat = self.data.copy()
+        data_strat['ad_line'] = talib.AD(data_strat['high'], data_strat['low'], data_strat['close'], data_strat['volume'])
+
+        # Strategy: Define your buy/sell conditions based on AD line
+        # Example: Buy when AD line is increasing, sell when decreasing
+        data_strat['position'] = np.where(data_strat['ad_line'].diff() > 0, 1, -1)
+
+        data_sized = self.regression_positions(data_strat, "ad_line", self.reg_method)
+        self.data_signal = data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
 
 
+class ADOSCStrategy(StrategyCreator):
+    def __init__(self, frequency, data, symbol, start_date, end_date, fast_period, slow_period, reg_method, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.fast_period = fast_period  # Fast period for ADOSC calculation
+        self.slow_period = slow_period  # Slow period for ADOSC calculation
+        self.reg_method = reg_method
 
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.set_ylabel(f'{self.symbol} price in $')
 
+        data['orders'] = data['position'].diff()
+        data = data.dropna()
+
+        # Plot close price and ADOSC
+        data["close"].plot(ax=ax, color='g', lw=1)
+        data["adosc"].plot(ax=ax, color='b', lw=1, secondary_y=True)
+
+        # Plot Buy and Sell signals
+        ax.plot(data.loc[data.orders > 0].index, data["close"][data.orders > 0], '^', markersize=10, color='k', label='Buy Signal')
+        ax.plot(data.loc[data.orders < 0].index, data["close"][data.orders < 0], 'v', markersize=10, color='k', label='Sell Signal')
+
+        plt.title("ADOSC Trading Strategy")
+        plt.legend()
+        # plt.show()
+
+    def run_strategy(self):
+        data_strat = self.data.copy()
+        data_strat['adosc'] = talib.ADOSC(data_strat['high'], data_strat['low'], data_strat['close'], data_strat['volume'], fastperiod=self.fast_period, slowperiod=self.slow_period)
+
+        # Strategy: Define your buy/sell conditions based on ADOSC
+        # Example: Buy when ADOSC is increasing, sell when decreasing
+        data_strat['position'] = np.where(data_strat['adosc'].diff() > 0, 1, -1)
+        data_strat=data_strat.dropna(axis=0)
+        data_sized = self.regression_positions(data_strat, "adosc", self.reg_method)
+        self.data_signal = data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal
+
+class OBVStrategy(StrategyCreator):
+    def __init__(self, frequency, data, symbol, start_date, end_date, reg_method, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+        self.data = data
+        self.reg_method = reg_method
+
+    def analyse_strategy(self, data):
+        ''' Visualization of the strategy trades. '''
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.set_ylabel(f'{self.symbol} price in $')
+
+        data['orders'] = data['position'].diff()
+        data = data.dropna()
+
+        # Plot close price and OBV
+        data["close"].plot(ax=ax, color='g', lw=1)
+        data["obv"].plot(ax=ax, color='b', lw=1, secondary_y=True)
+
+        # Plot Buy and Sell signals
+        ax.plot(data.loc[data.orders > 0].index, data["close"][data.orders > 0], '^', markersize=10, color='k', label='Buy Signal')
+        ax.plot(data.loc[data.orders < 0].index, data["close"][data.orders < 0], 'v', markersize=10, color='k', label='Sell Signal')
+
+        plt.title("OBV Trading Strategy")
+        plt.legend()
+        # plt.show()
+
+    def run_strategy(self):
+        data_strat = self.data.copy()
+        data_strat['obv'] = talib.OBV(data_strat['close'], data_strat['volume'])
+
+        # Strategy: Define your buy/sell conditions based on OBV
+        # Example: Buy when OBV is increasing, sell when decreasing
+        data_strat['position'] = np.where(data_strat['obv'].diff() > 0, 1, -1)
+
+        data_sized = self.regression_positions(data_strat, "obv", self.reg_method)
+        self.data_signal = data_sized['regularized_position'][-1]
+        self.analyse_strategy(data_sized)
+        return self.calculate_performance(data_sized)
+
+    def generate_signal(self):
+        ''' Generates a trading signal for the most recent data point. '''
+        self.run_strategy()
+        return self.data_signal

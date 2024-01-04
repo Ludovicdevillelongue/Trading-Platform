@@ -8,6 +8,45 @@ from dash import dash_table
 import webbrowser
 from time import sleep
 
+class BacktestDashboard:
+    @staticmethod
+    def plot_cumulative_returns(returns):
+        fig = px.line(returns, x=returns.index, y=returns.columns,
+                      title='Cumulative Returns and Strategies Comparison')
+        return fig
+
+    @staticmethod
+    def plot_positions(positions):
+        # Initialize a list to store the figures
+        figures = []
+
+        # Iterate through each column in the DataFrame
+        for column in positions.columns:
+            # Generate a line plot for each column
+            fig = px.line(positions,
+                          x=positions.index,
+                          y=column,  # Plot each column individually
+                          title=f'{column}')  # Title for each column
+
+            # Append the figure to the list
+            figures.append(fig)
+
+        return figures
+
+    @staticmethod
+    def create_table(best_strat_recap):
+        table_data = []
+        for strategy_name, strategy_result in best_strat_recap.items():
+            table_data.append({'strategy_name': strategy_name,
+                               'search_type':str(strategy_result['search_type']),
+                               'params': str(strategy_result['params']),
+                               **strategy_result['results']})
+            table_data = sorted(table_data, key=lambda x: x['sharpe_ratio'], reverse=True)
+        return table_data
+
+
+
+
 class BacktestApp:
     def __init__(self,best_strats, comparison_data, symbol):
 
@@ -55,10 +94,10 @@ class BacktestApp:
         )
         def generate_dashboard(n_clicks, symbol, start_date, end_date):
             try:
-                dashboard = Dashboard()
-                cumulative_returns_fig = Dashboard.plot_cumulative_returns(self.comparison_data['returns'])
-                positions_figs = Dashboard.plot_positions(self.comparison_data['positions'])
-                table_data = Dashboard.create_table(self.best_strats)
+                dashboard = BacktestDashboard()
+                cumulative_returns_fig = BacktestDashboard.plot_cumulative_returns(self.comparison_data['creturns'])
+                positions_figs = BacktestDashboard.plot_positions(self.comparison_data['positions'])
+                table_data = BacktestDashboard.create_table(self.best_strats)
 
                 # Convert each figure to a Graph component and store in a list
                 positions_plots = [dcc.Graph(figure=fig) for fig in positions_figs]
@@ -79,43 +118,6 @@ class BacktestApp:
     def open_browser(self):
         sleep(1)  # Short delay before opening the browser
         webbrowser.open("http://127.0.0.1:8080")
-
-class Dashboard:
-    @staticmethod
-    def plot_cumulative_returns(returns):
-        fig = px.line(returns, x=returns.index, y=returns.columns,
-                      title='Cumulative Returns and Strategies Comparison')
-        return fig
-
-    @staticmethod
-    def plot_positions(positions):
-        # Initialize a list to store the figures
-        figures = []
-
-        # Iterate through each column in the DataFrame
-        for column in positions.columns:
-            # Generate a line plot for each column
-            fig = px.line(positions,
-                          x=positions.index,
-                          y=column,  # Plot each column individually
-                          title=f'{column}')  # Title for each column
-
-            # Append the figure to the list
-            figures.append(fig)
-
-        return figures
-
-    @staticmethod
-    def create_table(best_strat_recap):
-        table_data = []
-        for strategy_name, strategy_result in best_strat_recap.items():
-            table_data.append({'strategy_name': strategy_name,
-                               'search_type':str(strategy_result['search_type']),
-                               'params': str(strategy_result['params']),
-                               **strategy_result['results']})
-            table_data = sorted(table_data, key=lambda x: x['sharpe_ratio'], reverse=True)
-        return table_data
-
 
 
 

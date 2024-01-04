@@ -34,7 +34,8 @@ class StrategyCreator:
             [['open', 'high', 'low',  'close', 'volume']]
             # DataRetriever(self.start_date, self.end_date).write_data(raw)
             # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
-            raw['return'] = np.log(raw['close'] / raw['close'].shift(1))
+            raw['returns'] = np.log(raw['close'] / raw['close'].shift(1))
+            raw['creturns'] = self.amount * raw['returns'].cumsum().apply(np.exp)
             return raw
 
     def select_data(self, start, end):
@@ -63,7 +64,7 @@ class StrategyCreator:
         self.cols = []
         for lag in range(1, lags + 1):
             col = f'lag_{lag}'
-            data[col] = data['return'].shift(lag)
+            data[col] = data['returns'].shift(lag)
             self.cols.append(col)
         data.dropna(inplace=True)  # Drop rows with NaN values
         self.lagged_data = data
@@ -77,18 +78,18 @@ class StrategyCreator:
         self.prepare_lags(start, end, lags)
         if model == 'linalg':
             self.reg = np.linalg.lstsq(self.lagged_data[self.cols],
-                                       np.sign(self.lagged_data['return']),
+                                       np.sign(self.lagged_data['returns']),
                                        rcond=None)[0]
         else:
             model.fit(self.lagged_data[self.cols],
-                      np.sign(self.lagged_data['return']))
+                      np.sign(self.lagged_data['returns']))
 
     def prepare_lags_for_signal(self, lags):
         ''' Prepares the lagged data for the most recent data point for signal generation. '''
         latest_data = self.data.tail(2*lags + 1).copy()  # Get enough rows for lags
         cols = [f'lag_{lag}' for lag in range(1, lags + 1)]
         for lag in range(1, lags + 1):
-            latest_data[f'lag_{lag}'] = latest_data['return'].shift(lag)
+            latest_data[f'lag_{lag}'] = latest_data['returns'].shift(lag)
         latest_data.dropna(inplace=True)
         return latest_data, cols
 
@@ -97,11 +98,11 @@ class StrategyCreator:
         latest_row = latest_data.tail(1)
         if model == 'linalg':
             self.reg = np.linalg.lstsq(latest_row[cols],
-                                       np.sign(latest_row['return']),
+                                       np.sign(latest_row['returns']),
                                        rcond=None)[0]
             return latest_row
         else:
-            model.fit(latest_row[cols], np.sign(latest_row['return']))
+            model.fit(latest_row[cols], np.sign(latest_row['returns']))
             return latest_row
 
     def calculate_accuracy_metrics(self, data):
@@ -114,8 +115,8 @@ class StrategyCreator:
         return {'RMSE': rmse, 'MAE': mae}
 
     def regression_positions(self, data_strat, signal_metric, reg_method):
+        data_regression = data_strat[[signal_metric, "position"]][data_strat["position"] != 0]
         try:
-            data_regression = data_strat[[signal_metric, "position"]][data_strat["position"] != 0]
             X = data_regression[[signal_metric]].values.reshape(-1, 1)
             y = data_regression["position"].values
 
@@ -155,8 +156,9 @@ class StrategyCreator:
             return self.__finalize_data(data_strat, data_regression)
 
         except Exception as e:
-            warnings.warn(f"An error occurred during regression: {e}")
-            return data_strat
+            data_regression["sized_position"]=data_regression['position']
+            return self.__finalize_data(data_strat, data_regression)
+
 
     def __tune_ridge(self, X, y):
         param_grid = {'alpha': [1e-3, 1e-2, 1e-1, 1]}
@@ -221,22 +223,21 @@ class StrategyCreator:
         """ Calculate performance and return a DataFrame with results. """
 
         # Calculate strategy return
-        data['strategy'] = data['regularized_position'].shift(1) * data['return']
+        data['strategy'] = data['regularized_position'].shift(1) * data['returns']
         data = data.dropna(axis=0)
 
         # Subtract transaction costs from return when trade takes place
         data.loc[data['orders']!=0, 'strategy'] -= self.transaction_costs*abs(data['orders'])
 
         # Annualize the mean log return
-        data['an_mean_log_returns'] = data[['return', 'strategy']].mean() * 252
+        data['an_mean_log_returns'] = data[['returns', 'strategy']].mean() * 252
         # Convert log returns to regular returns for comparison
         data['an_mean_returns'] = np.exp(data['an_mean_log_returns']) - 1
 
         # Annualize the standard deviation of log returns
-        data['an_std_log_returns'] = data[['return', 'strategy']].std() * 252 ** 0.5
+        data['an_std_log_returns'] = data[['returns', 'strategy']].std() * 252 ** 0.5
 
         # Calculate cumulative returns
-        data['creturns'] = self.amount * data['return'].cumsum().apply(np.exp)
         data['cstrategy'] = self.amount * data['strategy'].cumsum().apply(np.exp)
 
         # Save results for further output or plot
@@ -244,7 +245,7 @@ class StrategyCreator:
 
         # Calculate absolute and out-/underperformance
         aperf = self.results['cstrategy'].iloc[-1]
-        operf = aperf - self.results['creturns'].iloc[-1]
+        operf = aperf - data['creturns'].iloc[-1]
 
         # Calculate the Sharpe Ratio
         risk_free_rate = 0.01
@@ -270,10 +271,13 @@ class StrategyCreator:
         # Calmar Ratio
         calmar_ratio = data['strategy'].mean() * 252 / abs(max_drawdown) if max_drawdown != 0 else 0
 
-        # Alpha and Beta (compared to 'data['return']' as the benchmark)
-        covariance = np.cov(data['strategy'], data['return'])[0][1]
-        beta = covariance / np.var(data['return'])
-        alpha = (data['strategy'].mean() - risk_free_rate / 252) - beta * (data['return'].mean() - risk_free_rate / 252)
+        try:
+            covariance = np.cov(data['strategy'], data['returns'])[0][1]
+            beta = covariance / np.var(data['returns'])
+            alpha = (data['strategy'].mean() - risk_free_rate / 252) - beta * (data['returns'].mean() - risk_free_rate / 252)
+        except Exception as e:
+            beta=0
+            alpha=0
 
         return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2),round(sortino_ratio, 2), round(calmar_ratio, 2),\
                round(max_drawdown, 0), round(alpha, 2), round(beta, 2)

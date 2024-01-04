@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 
 class StrategyRunner:
     def __init__(self, strategies, data_provider, frequency, symbol, start_date, end_date, param_grids, opti_algo,
-                 amount, transaction_costs, iterations):
+                 amount, transaction_costs, iterations, strat_tester_csv):
         """
         Initialize the StrategyRunner with given parameters.
 
@@ -37,6 +37,7 @@ class StrategyRunner:
         self.opti_algo = opti_algo
         self.optimization_results = {}
         self.iterations=iterations
+        self.strat_tester_csv=strat_tester_csv
 
         # Load data once and reuse, improving efficiency
         self.data = StrategyCreator(self.frequency, self.symbol, self.start_date,
@@ -48,7 +49,7 @@ class StrategyRunner:
         """
         optimizer = StrategyOptimizer(strategy_class, self.frequency, self.data, self.symbol, self.start_date, self.end_date,
                                       self.param_grids[strategy_name], self.amount, self.transaction_costs, search_type,
-                                      self.iterations)
+                                      self.iterations, self.strat_tester_csv)
         return optimizer.optimize()
 
 
@@ -64,16 +65,6 @@ class StrategyRunner:
                 'sharpe_ratio': best_sharpe
             }
 
-    def _append_strategy_results(self, comparison_data, strategy_name, strategy_tester):
-        """
-        Private method to append the results of a strategy to the comparison DataFrame.
-        """
-        if len(comparison_data['returns'])==0:
-            comparison_data['returns']['creturns'] = strategy_tester.results['creturns']
-        comparison_data['returns'][f'cstrategy_{strategy_name}'] = strategy_tester.results['cstrategy']
-        comparison_data['positions'][f'positions_{strategy_name}']=strategy_tester.results['regularized_position']
-        comparison_data['returns'] = comparison_data['returns'].rename(columns={'creturns': 'cstrategy_HODL'})
-        return comparison_data
 
     def optimize_strategies(self, search_type):
         """
@@ -100,6 +91,19 @@ class StrategyRunner:
             self.optimize_strategies(search_type)
         return self.optimization_results
 
+
+
+    def _append_strategy_results(self, comparison_data, strategy_name, strategy_tester):
+        """
+        Private method to append the results of a strategy to the comparison DataFrame.
+        """
+        if len(comparison_data['returns'])==0:
+            comparison_data['returns'][f'{self.symbol}_returns'] = strategy_tester.results['returns']
+        if len(comparison_data['creturns'])==0:
+            comparison_data['creturns']['cstrategy_HODL'] = strategy_tester.results['creturns']
+        comparison_data['creturns'][f'cstrategy_{strategy_name}'] = strategy_tester.results['cstrategy']
+        comparison_data['positions'][f'positions_{strategy_name}']=strategy_tester.results['regularized_position']
+        return comparison_data
 
 
     def run_and_compare_strategies(self):

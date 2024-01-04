@@ -1,6 +1,6 @@
 import itertools
 import math
-
+import pandas as pd
 import numpy as np
 import random
 import warnings
@@ -38,7 +38,7 @@ class RandomSearchAlgorithm(OptimizationAlgorithm):
 
     def random_evaluation(self, optimizer):
         for _ in range(optimizer.iterations):
-            params=optimizer.generate_adaptive_params()
+            params=optimizer.generate_random_params()
             # print(params)
             yield params
 
@@ -74,14 +74,14 @@ class SimulatedAnnealingAlgorithm(OptimizationAlgorithm):
         return self.find_best_params(optimizer, self.simulated_annealing_evaluation)
 
     def simulated_annealing_evaluation(self, optimizer):
-        current_params = optimizer.generate_adaptive_params()
+        current_params = optimizer.generate_random_params()
         current_score = optimizer.test_strategy(current_params)[-1]
         temp = 1.0
         cooling_rate = 0.9
 
         for _ in range(optimizer.iterations):
             try:
-                new_params = optimizer.generate_adaptive_params()
+                new_params = optimizer.generate_random_params()
                 new_score = optimizer.test_strategy(new_params)[-1]
 
                 exponent = (current_score - new_score) / temp
@@ -104,13 +104,14 @@ class GeneticAlgorithm(OptimizationAlgorithm):
     def genetic_algorithm_evaluation(self, optimizer):
         population_size = optimizer.iterations
         mutation_rate = 0.1
-        population = [optimizer.generate_adaptive_params() for _ in range(population_size)]
+        population = [optimizer.generate_random_params() for _ in range(population_size)]
 
-        scores = np.array([optimizer.test_strategy(params)[-1] for params in population])
+        scores = np.array([optimizer.test_strategy(params)[2] for params in population])
         try:
             new_population = self.evolve_population(population, scores, mutation_rate)
+            new_scores = np.array([optimizer.test_strategy(params)[2] for params in new_population])
             population = new_population
-            # print(population)
+            scores = new_scores
             best_index = np.argmax(scores)
             yield population[best_index]
         except Exception as e:
@@ -153,7 +154,8 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         return individual
 
 class StrategyOptimizer:
-    def __init__(self, strategy_class, frequency, data, symbol, start_date, end_date, param_grids, amount, transaction_costs, optimization_algorithm, iterations):
+    def __init__(self, strategy_class, frequency, data, symbol, start_date, end_date, param_grids, amount,
+                 transaction_costs, optimization_algorithm, iterations, strat_tester_csv):
         self.strategy_class = strategy_class
         self.frequency=frequency
         self.data = data
@@ -165,15 +167,14 @@ class StrategyOptimizer:
         self.optimization_algorithm = optimization_algorithm
         self.transaction_costs = transaction_costs
         self.iterations = iterations
-        self.param_history = []  # Track history of parameters
+        self.strat_tester_csv=strat_tester_csv
 
     def optimize(self):
         return self.optimization_algorithm.optimize(self)
 
-    def generate_adaptive_params(self):
-        adaptive_param_grids = self.adapt_search_space()
+    def generate_random_params(self):
         params = {}
-        for key, param_range in adaptive_param_grids.items():
+        for key, param_range in self.param_grids.items():
             if isinstance(param_range, tuple):
                 # Handle numerical parameters
                 min_val, max_val = param_range
@@ -186,38 +187,6 @@ class StrategyOptimizer:
                 params[key] = random.choice(param_range)
         return params
 
-    def adapt_search_space(self):
-        if not self.param_history:
-            return self.param_grids  # Return the original param_grids if no history
-
-        # Analyze the parameter history to find the best performing parameters
-        sorted_history = sorted(self.param_history, key=lambda x: x[1], reverse=True)  # Sort by performance
-        top_performers = sorted_history[:max(1, len(sorted_history) // 5)]  # Take top 20% of performers
-
-        new_param_grids = {}
-        for key in self.param_grids:
-            top_values = [params[0][key] for params in top_performers]
-            if isinstance(self.param_grids[key], list) and all(isinstance(x, str) for x in self.param_grids[key]):
-                # Handle string parameters
-                new_param_grids[key] = list(set(top_values))
-            else:
-                # Handle numerical parameters
-                new_param_grids[key] = self._adjust_param_range(key, top_values)
-        return new_param_grids
-
-    def _adjust_param_range(self, param_key, top_values):
-        original_range = self.param_grids[param_key]
-        if isinstance(original_range, tuple):
-            # Handle numerical parameters
-            min_val, max_val = original_range
-            new_min = max(min_val, min(top_values) - (max_val - min_val) * 0.1)  # Contract range by 10%
-            new_max = min(max_val, max(top_values) + (max_val - min_val) * 0.1)
-            if isinstance(min_val, int):
-                new_min, new_max = int(new_min), int(new_max)
-            return new_min, new_max
-        elif isinstance(original_range, list) and all(isinstance(x, str) for x in original_range):
-            # No adjustment needed for string parameters
-            return list(set(top_values))
 
 
     def test_strategy(self, strategy_params):
@@ -230,7 +199,13 @@ class StrategyOptimizer:
         aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
             alpha, beta = strategy_tester.run_strategy()
         # Record the parameter performance
-        self.param_history.append((strategy_params, sharpe_ratio))
+        strat_test_recap={}
+        strat_test_recap['strat_name']=str(self.strategy_class).split(".")[2].split("'>")[0]
+        strat_test_recap['opti']=str(type(self.optimization_algorithm)).split('.')[2].split("'>")[0]
+        strat_test_recap['params_strat']=strategy_params
+        strat_test_recap['sharpe']=sharpe_ratio
+        strat_test_recap=pd.DataFrame.from_dict(strat_test_recap, orient='index').T
+        strat_test_recap.to_csv(self.strat_tester_csv, mode='a', header=False, index=False)
         return aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
             alpha, beta
 

@@ -2,4 +2,5 @@ broker_config_path
 config/broker_config.yml
 data_frequency_path
 config/data_frequency.yml
-
+strat_tester_path
+launcher/strat_tester_recap
