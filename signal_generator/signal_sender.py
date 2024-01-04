@@ -40,7 +40,8 @@ class LiveStrategyRunner:
                     DataRetriever(self.frequency, self.start_date, self.end_date).yfinance_latest_data(self.symbol)[
                         ['open', 'high', 'low', 'close', 'volume']]
 
-            self.real_time_data['return'] = np.log(self.real_time_data['close'] / self.real_time_data['close'].shift(1))
+            self.real_time_data['returns'] = np.log(self.real_time_data['close'] / self.real_time_data['close'].shift(1))
+            self.real_time_data['creturns']=self.amount * self.real_time_data['returns'].cumsum().apply(np.exp)
             self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
         except Exception as e:
             self.logger_monitor(f"Error in data fetching: {e}")
@@ -83,7 +84,7 @@ class LiveStrategyRunner:
         side = 'buy' if qty >0 else 'sell'
 
         # Alpaca order placement
-        self.broker.submit_order(self.symbol, int(abs(qty)), side)
+        self.broker.submit_order(self.symbol, round(abs(qty)), side)
 
         self.report_trade(self.symbol, strategy_name, side, abs(qty))
 

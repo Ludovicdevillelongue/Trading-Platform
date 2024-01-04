@@ -1,6 +1,6 @@
 import alpaca_trade_api as tradeapi
 from datetime import datetime
-
+import numpy as np
 import pandas as pd
 
 
@@ -13,10 +13,16 @@ class TradingPlatform:
     def get_account_info(self):
         raise NotImplementedError
 
+    def get_orders(self):
+        raise NotImplementedError
+
+    def get_positions(self):
+        raise NotImplementedError
+
     def get_portfolio_history(self):
         raise NotImplementedError
 
-    def get_portfolio_metrics(self):
+    def get_portfolio_metrics(self, symbol, df_benchmark):
         raise NotImplementedError
 
 class AlpacaPlatform(TradingPlatform):
@@ -33,7 +39,7 @@ class AlpacaPlatform(TradingPlatform):
 
     def get_account_info(self):
         account = self.api.get_account()
-        return {
+        dict_account_info={
             'currency':account.currency,
             'pending_transfer_in':account.pending_transfer_in,
             'created_at':account.created_at,
@@ -43,15 +49,26 @@ class AlpacaPlatform(TradingPlatform):
             'buying_power': account.buying_power,
             'portfolio_value': account.portfolio_value
         }
+        df_account_info=pd.DataFrame.from_dict(dict_account_info, orient='index').T
+        return df_account_info
 
     def get_orders(self):
-        order=self.api.list_orders()
-        return order
+        orders=self.api.list_orders()
+        orders_list=[order._raw for order in orders]
+        df_orders=pd.DataFrame(orders_list)
+        if df_orders.empty:
+            return pd.DataFrame()
+        else:
+            return df_orders[['created_at', 'filled_at', 'asset_id', 'symbol',
+                         'asset_class', 'qty', 'filled_qty', 'order_type', 'side',
+                         'time_in_force', 'limit_price', 'stop_price']]
 
 
     def get_positions(self):
         positions=self.api.list_positions()
-        return positions
+        positions_list=[position._raw for position in positions]
+        df_positions=pd.DataFrame(positions_list)
+        return df_positions
 
     def get_assets(self):
         assets=self.api.list_assets()
@@ -68,3 +85,57 @@ class AlpacaPlatform(TradingPlatform):
     def close_open_positions(self):
         closed_positions=self.api.close_open_positions()
         return closed_positions
+
+    def get_portfolio_metrics(self, symbol, df_benchmark):
+        dict_key_metrics={}
+        df_ptf=self.get_portfolio_history()
+        df_ptf.set_index('timestamp', inplace=True)
+        df_ptf=df_ptf.tz_localize('America/New_York')
+        df_benchmark=df_benchmark.tz_localize('America/New_York')
+        # Calculate returns
+        df_ptf['ptf_returns'] =np.log(df_ptf['equity'] / df_ptf['equity'].shift(1))
+        df_ptf['ptf_creturns'] = df_ptf['base_value'].iloc[0] * df_ptf['ptf_returns'].cumsum().apply(np.exp)
+        df_ptf=df_ptf.dropna(axis=0)
+        df_ptf_vs_bench = df_ptf.merge(df_benchmark, left_index=True, right_index=True, how='outer')
+        df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
+
+        # Calculate the Sharpe Ratio
+        risk_free_rate = 0.00
+        try:
+             # Risk-free rate of return
+            df_ptf['ptf_excess_returns'] = df_ptf['ptf_returns'] - risk_free_rate / 252
+            dict_key_metrics['sharpe_ratio'] = (df_ptf['ptf_excess_returns'].mean() / df_ptf['ptf_excess_returns'].std()) * np.sqrt(252)
+        except Exception as e:
+            sharpe_ratio=0
+
+        # Sortino Ratio
+        negative_std = np.std(df_ptf.loc[df_ptf['ptf_returns'] < 0, 'ptf_returns']) * np.sqrt(252)
+        dict_key_metrics['sortino_ratio'] = (df_ptf['ptf_returns'].mean() - risk_free_rate / 252) / negative_std if negative_std != 0 else 0
+
+
+        # Drawdown
+        roll_max = df_ptf['ptf_creturns'].cummax()
+        drawdown = df_ptf['ptf_creturns'] / roll_max - 1.0
+        df_ptf['drawdown'] = drawdown
+
+        # Maximum Drawdown
+        dict_key_metrics['max_drawdown'] = drawdown.min()
+
+        # Calmar Ratio
+        dict_key_metrics['calmar_ratio'] = df_ptf['ptf_returns'].mean() * 252 / \
+                                           abs(dict_key_metrics['max_drawdown']) if dict_key_metrics['max_drawdown'] != 0 else 0
+
+        # Alpha and Beta (compared to 'df_ptf['return']' as the benchmark)
+        try:
+            covariance = np.cov(df_ptf_vs_bench['ptf_returns'], df_ptf_vs_bench[f'{symbol}_returns'])[0][1]
+            dict_key_metrics['beta'] = covariance / np.var(df_ptf_vs_bench[f'{symbol}_returns'])
+            dict_key_metrics['alpha'] = (df_ptf_vs_bench['returns'].mean() - risk_free_rate / 252) - \
+                                        dict_key_metrics['beta'] * (df_ptf_vs_bench[f'{symbol}_returns'].mean() - risk_free_rate / 252)
+        except Exception as e:
+            dict_key_metrics['beta']=0
+            dict_key_metrics['alpha']=0
+
+        df_key_metrics=pd.DataFrame.from_dict(dict_key_metrics, orient='index').T
+
+        return df_key_metrics
+

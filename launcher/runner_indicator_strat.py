@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     strategies = {
         'SMA': SMAVectorBacktester,
-        'BB': BollingerBandsBacktester,
+        # 'BB': BollingerBandsBacktester,
         # 'RSI': RSIVectorBacktester,
         # 'MOM': MomVectorBacktester,
         # 'MeanRev': MRVectorBacktester,
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     param_grids = {
         'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
-        'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5), 'reg_method': regression_methods},
+        # 'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5), 'reg_method': regression_methods},
         # 'RSI': {'RSI_period': (5, 15), 'overbought_threshold': (65, 75), 'oversold_threshold': (25, 35), 'reg_method': regression_methods},
         # 'MOM': {'momentum': (5, 15), 'reg_method': regression_methods},
         # 'MeanRev': {'sma': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
@@ -65,12 +65,12 @@ if __name__ == '__main__':
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
-    opti_algo = [RandomSearchAlgorithm()]
+    opti_algo = [GeneticAlgorithm()]
     data_provider = 'yfinance'
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
     with open(data_freq, 'r') as file:
         frequency = yaml.safe_load(file)
-    frequency = frequency[data_provider]['minute']
+    frequency = frequency[data_provider]['day']
     symbol = 'TSLA'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
@@ -78,15 +78,16 @@ if __name__ == '__main__':
     amount = 100000
     transaction_costs = 0.01
     contract_multiplier = 1
-    iterations = 100
+    iterations = 10
 
     """
     --------------------------------------------------------------------------------------------------------------------
     -------------------------------------Run Comparison and Optimzation Of Strategies-----------------------------------
     --------------------------------------------------------------------------------------------------------------------
     """
+    strat_tester_csv='strat_tester_recap'
     runner = StrategyRunner(strategies, data_provider, frequency, symbol, start_date, end_date,
-                            param_grids, opti_algo, amount, transaction_costs, iterations)
+                            param_grids, opti_algo, amount, transaction_costs, iterations, strat_tester_csv)
     logging.info("Optimizing strategies...")
     start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
@@ -109,46 +110,40 @@ if __name__ == '__main__':
     ------------------------------------------------Run Live Strategies-------------------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     """
-    # threads = []
 
-    # trading_platform = 'Alpaca'
-    # broker_config = GetBrokersConfig.key_secret_url()
+    threads = []
+
+    trading_platform = 'Alpaca'
+    broker_config = GetBrokersConfig.key_secret_url()
     # strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol,
-    #                                start_date,
-    #                                end_date, amount, transaction_costs, contract_multiplier, data_provider,
-    #                                trading_platform, broker_config).run()
+    #                                start_date, end_date, amount, transaction_costs, contract_multiplier, data_provider,
+    #                                trading_platform, broker_config)
+    # trade_sender = threading.Thread(target=strat_run.run)
+    # trade_sender.start()
+    # threads.append(trade_sender)
 
-    # """
-    # --------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------Get Recap From Brokerage Platform-----------------------------------------
-    # --------------------------------------------------------------------------------------------------------------------
-    # """
-    #
-    # alpaca = AlpacaPlatform(broker_config)
-    #
-    # alpaca.get_api_connection()
-    # alpaca.get_account_info()
-    # alpaca.get_orders()
-    # alpaca.get_positions()
-    # alpaca.get_assets()
-    # alpaca.get_positions_history()
-    #
-    # portfolio_manager_app = PortfolioManagementApp(alpaca)
-    # portfolio_manager_app.run_server()
-    # portfolio_manager_app.open_browser()
-    # # Start the PortfolioManagementApp server thread
-    # portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
-    # portfolio_server_thread.start()
-    # threads.append(portfolio_server_thread)
-    #
-    # # Start the PortfolioManagementApp browser thread
-    # portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
-    # portfolio_browser_thread.start()
-    # threads.append(portfolio_browser_thread)
-    #
-    # # Wait for all threads to complete
-    # for thread in threads:
-    #     thread.join()
+    """
+    --------------------------------------------------------------------------------------------------------------------
+    ------------------------------------------Get Recap From Brokerage Platform-----------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    """
+
+    alpaca = AlpacaPlatform(broker_config)
+
+    portfolio_manager_app = PortfolioManagementApp(alpaca, symbol, comparison_data['returns'])
+    # Start the PortfolioManagementApp server thread
+    portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
+    portfolio_server_thread.start()
+    threads.append(portfolio_server_thread)
+
+    # Start the PortfolioManagementApp browser thread
+    portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
+    portfolio_browser_thread.start()
+    threads.append(portfolio_browser_thread)
+
+    # Wait for all threads to complete
+    for thread in threads:
+        thread.join()
 
     # """
     # ------------------------------------------------------------------------------------------------------------------
@@ -161,6 +156,4 @@ if __name__ == '__main__':
     # for i in range(len(closed_positions)):
     #     print(f'Positions closed at {datetime.now(pytz.timezone("Europe/Paris")).time()} on '
     #           f'{closed_positions[i]["symbol"]}')
-    # trade_sender = threading.Thread(target=strat_run.run)
-    # trade_sender.start()
-    # threads.append(trade_sender)
+
