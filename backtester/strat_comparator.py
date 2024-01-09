@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 
 class StrategyRunner:
     def __init__(self, strategies, data_provider, frequency, symbol, start_date, end_date, param_grids, opti_algo,
-                 amount, transaction_costs, iterations, strat_tester_csv):
+                 amount, transaction_costs, iterations, predictive_strat, strat_tester_csv):
         """
         Initialize the StrategyRunner with given parameters.
 
@@ -24,6 +24,8 @@ class StrategyRunner:
         :param opti_algo: Optimization algorithm for optimizing the strategies.
         :param amount: Initial investment amount (default: 10000).
         :param transaction_costs: Costs per transaction (default: 0.0).
+        :param iterations: Number of iterations for optimizing the strategies.
+        :param predictive_strat: Whether to use predictive strategies.
         """
         self.strategies = strategies
         self.data_provider=data_provider
@@ -37,11 +39,13 @@ class StrategyRunner:
         self.opti_algo = opti_algo
         self.optimization_results = {}
         self.iterations=iterations
+        self.predictive_strat=predictive_strat
         self.strat_tester_csv=strat_tester_csv
 
         # Load data once and reuse, improving efficiency
         self.data = StrategyCreator(self.frequency, self.symbol, self.start_date,
-                                    self.end_date, self.amount, self.transaction_costs).get_data(self.data_provider)
+                                    self.end_date, self.amount, self.transaction_costs,
+                                    self.predictive_strat).get_data(self.data_provider)
 
     def _optimize_strategy(self, strategy_name, strategy_class, search_type):
         """
@@ -49,7 +53,7 @@ class StrategyRunner:
         """
         optimizer = StrategyOptimizer(strategy_class, self.frequency, self.data, self.symbol, self.start_date, self.end_date,
                                       self.param_grids[strategy_name], self.amount, self.transaction_costs, search_type,
-                                      self.iterations, self.strat_tester_csv)
+                                      self.iterations, self.predictive_strat, self.strat_tester_csv)
         return optimizer.optimize()
 
 
@@ -74,7 +78,10 @@ class StrategyRunner:
         :return: A dictionary of optimization results for each strategy.
         """
         for strategy_name, strategy_class in self.strategies.items():
-            best_params, best_performance, best_sharpe = self._optimize_strategy(strategy_name, strategy_class, search_type)
+            try:
+                best_params, best_performance, best_sharpe=self._optimize_strategy(strategy_name, strategy_class, search_type)
+            except Exception as e:
+                print(f"Error optimizing {strategy_name}: {e}")
             self._update_optimization_results(strategy_name, search_type, best_params, best_performance, best_sharpe)
         return self.optimization_results
 
@@ -103,7 +110,7 @@ class StrategyRunner:
             comparison_data['creturns']['cstrategy_HODL'] = strategy_tester.results['creturns']
         comparison_data['creturns'][f'cstrategy_{strategy_name}'] = strategy_tester.results['cstrategy']
         comparison_data['positions'][f'positions_{strategy_name}']=strategy_tester.results['regularized_position']
-        return comparison_data
+        return dict(comparison_data)
 
 
     def run_and_compare_strategies(self):
@@ -120,6 +127,7 @@ class StrategyRunner:
             strategy_params = optimization_result['params']
             strategy_tester = self.strategies[strategy_name](self.frequency, self.data, self.symbol, self.start_date, self.end_date,
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
+                                                             predictive_strat=self.predictive_strat,
                                                              **strategy_params)
             aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
             alpha, beta = strategy_tester.run_strategy()
@@ -129,5 +137,5 @@ class StrategyRunner:
                  'calmar_ratio': calmar_ratio, 'max_drawdown': max_drawdown, 'alpha': alpha, 'beta': beta}}
             comparison_data = self._append_strategy_results(comparison_data, strategy_name, strategy_tester)
 
-        return best_strats, comparison_data
+        return best_strats, dict(comparison_data)
 

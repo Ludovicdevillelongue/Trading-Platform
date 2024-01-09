@@ -7,13 +7,14 @@ from backtester.indicator_strat_creator import StrategyCreator
 
 class LRVectorBacktester(StrategyCreator):
 
-    def __init__(self, data, symbol, start_date, end_date, lags, train_percent, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, lags, train_percent, model, reg_method, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data=data
         self.lags=lags
         self.cols = [f'lag_{lag}' for lag in range(1, self.lags + 1)]
         self.train_percent=train_percent
-        self.model='linalg'
+        self.model= model
+        self.reg_method=reg_method
         self.train_start = None
         self.train_end = None
         self.test_start = None
@@ -52,13 +53,11 @@ class LRVectorBacktester(StrategyCreator):
         self.results['position'] = 0
         # Fill in predictions where we have enough lagged data
         self.results.loc[self.lagged_data.index, 'position'] = prediction
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        self.results=self.regression_positions(self.results, "returns", self.reg_method)
         self.analyse_strategy(self.results)
-        # Call calculate_performance from parent class
-        aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
-        alpha, beta = self.calculate_performance(self.results)
+        return self.calculate_performance(self.results)
 
-        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2),round(sortino_ratio, 2), round(calmar_ratio, 2),\
-               round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
 
 
     def generate_signal(self):
@@ -72,19 +71,20 @@ class LRVectorBacktester(StrategyCreator):
 
 
 class ScikitVectorBacktester(StrategyCreator):
-    def __init__(self, data, symbol, start_date, end_date, lags, train_percent, model, amount, transaction_costs):
-        super().__init__(symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, lags, train_percent, model, reg_method, amount, transaction_costs):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
         self.data=data
         self.lags=lags
         self.cols = [f'lag_{lag}' for lag in range(1, self.lags + 1)]
         self.train_percent=train_percent
         self.model=model
+        self.reg_method=reg_method
         self.train_start = None
         self.train_end = None
         self.test_start = None
         self.test_end = None
 
-        if model == 'regression':
+        if model == 'linear':
             self.model = linear_model.LinearRegression()
         elif model == 'logistic':
             self.model = linear_model.LogisticRegression(C=1e6,
@@ -111,12 +111,12 @@ class ScikitVectorBacktester(StrategyCreator):
         self.results['position'] = 0
         # Fill in predictions where we have enough lagged data
         self.results.loc[self.lagged_data.index, 'position'] = prediction
-        # Call calculate_performance from parent class
-        aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
-        alpha, beta = self.calculate_performance(self.results)
+        # Implement the rest of the strategy logic similar to SMAVectorBacktester
+        self.results = self.regression_positions(self.results, "close", self.reg_method)
+        self.results = self.results['regularized_position'][-1]
+        self.analyse_strategy(self.results)
+        return self.calculate_performance(self.results)
 
-        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2),round(sortino_ratio, 2), round(calmar_ratio, 2),\
-               round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
 
 
     def generate_signal(self):

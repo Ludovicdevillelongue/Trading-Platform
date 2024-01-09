@@ -9,6 +9,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
 
+from backtester.dl_predictor import LSTM
 from data_loader.data_retriever import DataRetriever
 import warnings
 # To deactivate all warnings:
@@ -16,13 +17,14 @@ warnings.filterwarnings('ignore')
 
 # A base backtesting class with common functionality
 class StrategyCreator:
-    def __init__(self, frequency, symbol, start_date, end_date, amount, transaction_costs):
+    def __init__(self, frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat):
         self.frequency=frequency
         self.symbol = symbol
         self.start_date = start_date
         self.end_date = end_date
         self.amount = amount
         self.transaction_costs = transaction_costs
+        self.predictive_strat = predictive_strat
         self.data = None  # Will hold historical price data
         self.results = None  # Will hold backtest results
 
@@ -221,10 +223,12 @@ class StrategyCreator:
 
     def calculate_performance(self, data):
         """ Calculate performance and return a DataFrame with results. """
-
+        #get relevant columns
+        data=data[['returns', 'creturns', 'regularized_position', 'orders']]
         # Calculate strategy return
         data['strategy'] = data['regularized_position'].shift(1) * data['returns']
-        data = data.dropna(axis=0)
+        data['strategy'].iloc[0] = 0
+        data['orders'].iloc[0]=data['regularized_position'].iloc[0]
 
         # Subtract transaction costs from return when trade takes place
         data.loc[data['orders']!=0, 'strategy'] -= self.transaction_costs*abs(data['orders'])
@@ -250,9 +254,12 @@ class StrategyCreator:
         # Calculate the Sharpe Ratio
         risk_free_rate = 0.01
         try:
-             # Risk-free rate of return
-            data['excess_return'] = data['strategy'] - risk_free_rate / 252
-            sharpe_ratio = (data['excess_return'].mean() / data['excess_return'].std()) * np.sqrt(252)
+            if data['regularized_position'].eq(0).all():
+                sharpe_ratio = 0
+            else:
+                 # Risk-free rate of return
+                data['excess_return'] = data['strategy'] - risk_free_rate / 252
+                sharpe_ratio = (data['excess_return'].mean() / data['excess_return'].std()) * np.sqrt(252)
         except Exception as e:
             sharpe_ratio=0
 
@@ -319,8 +326,9 @@ class StrategyCreator:
 
 # Now define specific strategy backtesters
 class SMAVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, sma_short, sma_long, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, sma_short, sma_long, reg_method, amount, transaction_costs,
+                 predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data=data
         self.sma_short = sma_short
         self.sma_long = sma_long
@@ -363,6 +371,10 @@ class SMAVectorBacktester(StrategyCreator):
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, -1)
         data_strat['diff_SMA']=data_strat['SMA1']-data_strat['SMA2']
+        if self.predictive_strat:
+            data_sized=LSTM(self.frequency, data_strat[['SMA1', 'SMA2', 'position']],5, 'SMA').fit()
+        else:
+            pass
         data_sized=self.regression_positions(data_strat, "diff_SMA", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
@@ -374,12 +386,13 @@ class SMAVectorBacktester(StrategyCreator):
 
 
 class BollingerBandsBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, num_std_dev, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, num_std_dev, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.window_size = window_size
         self.num_std_dev = num_std_dev
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def set_parameters(self, window_size=None, num_std_dev=None):
         ''' Updates Bollinger Bands parameters and respective time series. '''
@@ -434,13 +447,14 @@ class BollingerBandsBacktester(StrategyCreator):
 
 class RSIVectorBacktester(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, RSI_period, overbought_threshold, oversold_threshold,
-                 reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.RSI_period = RSI_period
         self.overbought_threshold = overbought_threshold
         self.oversold_threshold = oversold_threshold
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def set_parameters(self, RSI_period=None, overbought_threshold=None, oversold_threshold=None):
         if RSI_period is not None:
@@ -486,8 +500,8 @@ class RSIVectorBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
         data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, -1, data_strat['position'])  # sell signal
 
-
         data_sized=self.regression_positions(data_strat, "RSI", self.reg_method)
+        self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
 
@@ -497,11 +511,12 @@ class RSIVectorBacktester(StrategyCreator):
 
 
 class MomVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, momentum, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, momentum, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data=data
         self.momentum = momentum
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def analyse_strategy(self, data):
         fig = plt.figure()
@@ -523,9 +538,9 @@ class MomVectorBacktester(StrategyCreator):
         ''' Backtests the trading strategy.
         '''
         data_strat = self.data.copy().dropna()
-        data_strat['position'] = np.sign(data_strat['return'].rolling(self.momentum).mean())
+        data_strat['position'] = np.sign(data_strat['returns'].rolling(self.momentum).mean())
         data_strat=data_strat.dropna(axis=0)
-        data_sized=self.regression_positions(data_strat, "return", self.reg_method)
+        data_sized=self.regression_positions(data_strat, "returns", self.reg_method)
         self.data_signal=data_sized['regularized_position'][-1]
         self.analyse_strategy(data_sized)
         return self.calculate_performance(data_sized)
@@ -535,12 +550,14 @@ class MomVectorBacktester(StrategyCreator):
         return self.data_signal
 
 class MRVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, sma, threshold, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, sma, threshold, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data=data
         self.sma=sma
         self.threshold=threshold
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
+
 
     def set_parameters(self, SMA=None):
         if SMA is not None:
@@ -589,11 +606,12 @@ class MRVectorBacktester(StrategyCreator):
         return self.data_signal
 
 class TurtleVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data=data
         self.window_size=window_size
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
 
     def analyse_strategy(self, data):
@@ -660,12 +678,13 @@ class TurtleVectorBacktester(StrategyCreator):
 
 class ParabolicSARBacktester(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, SAR_step, SAR_max, reg_method, amount,
-                 transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.SAR_step = SAR_step
         self.SAR_max = SAR_max
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def calculate_parabolic_sar(self):
         data = self.data.copy()
@@ -752,13 +771,14 @@ class ParabolicSARBacktester(StrategyCreator):
 
 class MACDStrategy(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, short_window, long_window,
-                 signal_window, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 signal_window, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.short_window = short_window
         self.long_window = long_window
         self.signal_window = signal_window
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -800,14 +820,15 @@ class MACDStrategy(StrategyCreator):
 
 class IchimokuStrategy(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, conversion_line_period, base_line_period,
-                 leading_span_b_period, displacement, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 leading_span_b_period, displacement, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.conversion_line_period = conversion_line_period
         self.base_line_period = base_line_period
         self.leading_span_b_period = leading_span_b_period
         self.displacement = displacement
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
 
     def calculate_ichimoku(self):
@@ -877,14 +898,15 @@ class IchimokuStrategy(StrategyCreator):
 
 class StochasticOscillatorStrategy(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, k_window, d_window, buy_threshold,
-                 sell_threshold, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 sell_threshold, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.k_window = k_window
         self.d_window = d_window
         self.buy_threshold = buy_threshold
         self.sell_threshold = sell_threshold
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def calculate_stochastic_oscillator(self):
         data = self.data.copy()
@@ -934,13 +956,14 @@ class StochasticOscillatorStrategy(StrategyCreator):
 
 class ADXStrategy(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, adx_period, di_period, threshold, reg_method, amount,
-                 transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.adx_period = adx_period
         self.di_period = di_period
         self.threshold = threshold
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -1006,12 +1029,13 @@ class ADXStrategy(StrategyCreator):
 
 class VolumeStrategy(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, volume_threshold,
-                 volume_window, reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 volume_window, reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.volume_threshold = volume_threshold
         self.volume_window=volume_window
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
@@ -1057,13 +1081,14 @@ class VolumeStrategy(StrategyCreator):
 
 class WilliamsRBacktester(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, lookback_period, overbought, oversold,
-                 reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.lookback_period = lookback_period
         self.overbought = overbought
         self.oversold = oversold
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
 
 
     def analyse_strategy(self, data):
@@ -1105,12 +1130,13 @@ class WilliamsRBacktester(StrategyCreator):
 
 class VolatilityBreakoutBacktester(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, volatility_window, breakout_factor,
-                 reg_method, amount, transaction_costs):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs)
+                 reg_method, amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
         self.data = data
         self.volatility_window = volatility_window
         self.breakout_factor = breakout_factor
         self.reg_method=reg_method
+        self.predictive_strat=predictive_strat
         self.set_parameters(volatility_window, breakout_factor)
 
     def set_parameters(self, volatility_window=None, breakout_factor=None):
