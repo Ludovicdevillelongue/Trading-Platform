@@ -75,14 +75,14 @@ class SimulatedAnnealingAlgorithm(OptimizationAlgorithm):
 
     def simulated_annealing_evaluation(self, optimizer):
         current_params = optimizer.generate_random_params()
-        current_score = optimizer.test_strategy(current_params)[-1]
+        current_score = optimizer.test_strategy(current_params)[2]
         temp = 1.0
         cooling_rate = 0.9
 
         for _ in range(optimizer.iterations):
             try:
                 new_params = optimizer.generate_random_params()
-                new_score = optimizer.test_strategy(new_params)[-1]
+                new_score = optimizer.test_strategy(new_params)[2]
 
                 exponent = (current_score - new_score) / temp
                 exponent = max(exponent, -700)  # Clamp to prevent overflow
@@ -105,7 +105,6 @@ class GeneticAlgorithm(OptimizationAlgorithm):
         population_size = optimizer.iterations
         mutation_rate = 0.1
         population = [optimizer.generate_random_params() for _ in range(population_size)]
-
         scores = np.array([optimizer.test_strategy(params)[2] for params in population])
         try:
             new_population = self.evolve_population(population, scores, mutation_rate)
@@ -155,7 +154,7 @@ class GeneticAlgorithm(OptimizationAlgorithm):
 
 class StrategyOptimizer:
     def __init__(self, strategy_class, frequency, data, symbol, start_date, end_date, param_grids, amount,
-                 transaction_costs, optimization_algorithm, iterations, strat_tester_csv):
+                 transaction_costs, optimization_algorithm, iterations, predictive_strat, strat_tester_csv):
         self.strategy_class = strategy_class
         self.frequency=frequency
         self.data = data
@@ -167,6 +166,7 @@ class StrategyOptimizer:
         self.optimization_algorithm = optimization_algorithm
         self.transaction_costs = transaction_costs
         self.iterations = iterations
+        self.predictive_strat=predictive_strat
         self.strat_tester_csv=strat_tester_csv
 
     def optimize(self):
@@ -194,6 +194,7 @@ class StrategyOptimizer:
         strategy_tester = self.strategy_class(self.frequency, self.data, self.symbol, self.start_date,
                                               self.end_date, amount=self.amount,
                                               transaction_costs=self.transaction_costs,
+                                              predictive_strat=self.predictive_strat,
                                               **strategy_params)
         # Run the strategy
         aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \

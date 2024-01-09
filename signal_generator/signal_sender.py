@@ -10,7 +10,7 @@ import os
 
 class LiveStrategyRunner:
     def __init__(self, strategy_name, strategy_class, optimization_results, frequency, symbol, start_date, end_date,
-                 amount, transaction_costs, contract_multiplier, data_provider, trading_platform, broker_config):
+                 amount, transaction_costs, predictive_strat, contract_multiplier, data_provider, trading_platform, broker_config):
         self.strategy_name = strategy_name
         self.strategy_class = strategy_class
         self.optimization_results = optimization_results
@@ -20,6 +20,7 @@ class LiveStrategyRunner:
         self.end_date = end_date
         self.amount = amount
         self.transaction_costs = transaction_costs
+        self.predictive_strat=predictive_strat
         self.data_provider = data_provider
         self.trading_platform = trading_platform
         self.broker_config = broker_config
@@ -53,6 +54,7 @@ class LiveStrategyRunner:
             opti_results_strategy = self.optimization_results[strategy_name]['params']
             self.signal = strategy_class(self.frequency, self.real_time_data, self.symbol, self.start_date, self.end_date,
                                          amount=self.amount, transaction_costs=self.transaction_costs,
+                                         predictive_strat=self.predictive_strat,
                                          **opti_results_strategy).generate_signal()
 
             if self.signal != 0:
