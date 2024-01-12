@@ -65,12 +65,12 @@ if __name__ == '__main__':
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
-    opti_algo = [RandomSearchAlgorithm()]
+    opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
     data_provider = 'yfinance'
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
     with open(data_freq, 'r') as file:
         frequency = yaml.safe_load(file)
-    frequency = frequency[data_provider]['day']
+    frequency = frequency[data_provider]['minute']
     symbol = 'TSLA'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
@@ -118,12 +118,12 @@ if __name__ == '__main__':
 
     trading_platform = 'Alpaca'
     broker_config = GetBrokersConfig.key_secret_url()
-    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol,
-                                   start_date, end_date, amount, transaction_costs, predictive_strat,
-                                   contract_multiplier, data_provider, trading_platform, broker_config)
-    trade_sender = threading.Thread(target=strat_run.run)
-    trade_sender.start()
-    threads.append(trade_sender)
+    # strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol,
+    #                                start_date, end_date, amount, transaction_costs, predictive_strat,
+    #                                contract_multiplier, data_provider, trading_platform, broker_config)
+    # trade_sender = threading.Thread(target=strat_run.run)
+    # trade_sender.start()
+    # threads.append(trade_sender)
 
     """
     --------------------------------------------------------------------------------------------------------------------

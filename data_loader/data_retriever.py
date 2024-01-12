@@ -1,6 +1,9 @@
+import os
+
 import fxcmpy
 import quandl as q
 import pandas as pd
+import yaml
 import yfinance as yf
 from tables import *
 
@@ -12,9 +15,9 @@ class DataRetriever(object):
 
     @property
     def read_key(self):
-        import configparser
-        config = configparser.ConfigParser()
-        config.read('api_keys.cfg')
+        config_file = os.path.join(os.path.dirname(__file__), '../config/data_provider_config.yml')
+        with open(config_file, 'r') as file:
+            config = yaml.safe_load(file)
         return config
 
     @staticmethod
@@ -33,7 +36,7 @@ class DataRetriever(object):
 
     def quandl_download(self, symbol:str):
         data_quandl = q.get(symbol, start_date=self.start_date,
-        end_date=self.end_date, api_key=self.read_key.get('api_keys', 'quandl_api_key'))
+        end_date=self.end_date, api_key=self.read_key['quandl']['api_key'])
         data_quandl.rename(columns={'Value': symbol.split('/')[1]}, inplace=True)
         return data_quandl
 
