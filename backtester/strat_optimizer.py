@@ -1,5 +1,6 @@
 import itertools
 import math
+import os
 import pandas as pd
 import numpy as np
 import random
@@ -206,7 +207,13 @@ class StrategyOptimizer:
         strat_test_recap['params_strat']=strategy_params
         strat_test_recap['sharpe']=sharpe_ratio
         strat_test_recap=pd.DataFrame.from_dict(strat_test_recap, orient='index').T
-        strat_test_recap.to_csv(self.strat_tester_csv, mode='a', header=False, index=False)
+        # Check if the file exists and has content
+        if not os.path.exists(self.strat_tester_csv) or os.path.getsize(self.strat_tester_csv) == 0:
+            # If the file doesn't exist or is empty, write with header
+            strat_test_recap.to_csv(self.strat_tester_csv, mode='w', header=True, index=False)
+        else:
+            # If the file exists and is not empty, append without header
+            strat_test_recap.to_csv(self.strat_tester_csv, mode='a', header=False, index=False)
         return aperf, operf, sharpe_ratio, sortino_ratio, calmar_ratio, max_drawdown, \
             alpha, beta
 
