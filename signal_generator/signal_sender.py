@@ -2,7 +2,7 @@ import time
 import datetime
 import pytz
 from broker_interaction.broker_order import AlpacaTradingBot
-from broker_interaction.broker_metrics import TradingPlatform, AlpacaPlatform
+from broker_interaction.broker_metrics import AlpacaPlatform
 from data_loader.data_retriever import DataRetriever
 import numpy as np
 import os
