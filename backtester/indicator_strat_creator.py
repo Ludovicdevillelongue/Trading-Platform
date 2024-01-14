@@ -8,7 +8,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
-
+import yfinance as yf
 from backtester.dl_predictor import LSTM
 from data_loader.data_retriever import DataRetriever
 import warnings
@@ -221,6 +221,12 @@ class StrategyCreator:
         data_sized['regularized_position']=data_sized['regularized_position'].fillna(method='ffill')
         return data_sized
 
+    def get_risk_free_rate(self):
+        tbill = yf.Ticker("^IRX")  # ^IRX is the symbol for 13-week Treasury Bill
+        hist = tbill.history(period="1mo")
+        risk_free_rate = hist['Close'].iloc[-1] / 100
+        return risk_free_rate
+
     def calculate_performance(self, data):
         """ Calculate performance and return a DataFrame with results. """
         #get relevant columns
@@ -234,12 +240,12 @@ class StrategyCreator:
         data.loc[data['orders']!=0, 'strategy'] -= self.transaction_costs*abs(data['orders'])
 
         # Annualize the mean log return
-        data['an_mean_log_returns'] = data[['returns', 'strategy']].mean() * 252
+        data['an_mean_log_returns'] = data[['returns', 'strategy']].mean() * self.frequency['annualized_coefficient']
         # Convert log returns to regular returns for comparison
         data['an_mean_returns'] = np.exp(data['an_mean_log_returns']) - 1
 
         # Annualize the standard deviation of log returns
-        data['an_std_log_returns'] = data[['returns', 'strategy']].std() * 252 ** 0.5
+        data['an_std_log_returns'] = data[['returns', 'strategy']].std() * self.frequency['annualized_coefficient'] ** 0.5
 
         # Calculate cumulative returns
         data['cstrategy'] = self.amount * data['strategy'].cumsum().apply(np.exp)
@@ -252,20 +258,22 @@ class StrategyCreator:
         operf = aperf - data['creturns'].iloc[-1]
 
         # Calculate the Sharpe Ratio
-        risk_free_rate = 0.01
+        risk_free_rate=self.get_risk_free_rate()
         try:
             if data['regularized_position'].eq(0).all():
                 sharpe_ratio = 0
             else:
                  # Risk-free rate of return
-                data['excess_return'] = data['strategy'] - risk_free_rate / 252
-                sharpe_ratio = (data['excess_return'].mean() / data['excess_return'].std()) * np.sqrt(252)
+                data['excess_return'] = data['strategy'] - (risk_free_rate/ self.frequency['annualized_coefficient'])
+                sharpe_ratio = (data['excess_return'].mean() /
+                                data['excess_return'].std()) * np.sqrt(self.frequency['annualized_coefficient'])
         except Exception as e:
             sharpe_ratio=0
 
         # Sortino Ratio
-        negative_std = np.std(data.loc[data['strategy'] < 0, 'strategy']) * np.sqrt(252)
-        sortino_ratio = (data['strategy'].mean() - risk_free_rate / 252) / negative_std if negative_std != 0 else 0
+        negative_std = np.std(data.loc[data['strategy'] < 0, 'strategy']) * np.sqrt(self.frequency['annualized_coefficient'])
+        sortino_ratio = (data['strategy'].mean() - (risk_free_rate /
+                         self.frequency['annualized_coefficient'])) / negative_std if negative_std != 0 else 0
 
         # Drawdown
         roll_max = data['cstrategy'].cummax()
@@ -276,12 +284,13 @@ class StrategyCreator:
         max_drawdown = drawdown.min()
 
         # Calmar Ratio
-        calmar_ratio = data['strategy'].mean() * 252 / abs(max_drawdown) if max_drawdown != 0 else 0
+        calmar_ratio = data['strategy'].mean() * self.frequency['annualized_coefficient'] / abs(max_drawdown) if max_drawdown != 0 else 0
 
         try:
             covariance = np.cov(data['strategy'], data['returns'])[0][1]
             beta = covariance / np.var(data['returns'])
-            alpha = (data['strategy'].mean() - risk_free_rate / 252) - beta * (data['returns'].mean() - risk_free_rate / 252)
+            alpha = (data['strategy'].mean() - (risk_free_rate / self.frequency['annualized_coefficient'])) - \
+                    beta * (data['returns'].mean() - (risk_free_rate / self.frequency['annualized_coefficient']))
         except Exception as e:
             beta=0
             alpha=0

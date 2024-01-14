@@ -6,7 +6,7 @@ import yaml
 class GetBrokersConfig:
 
     @staticmethod
-    def key_secret_url():
+    def key_secret_tc_url():
         config_file = os.path.join(os.path.dirname(__file__), '../config/broker_config.yml')
         with open(config_file, 'r') as file:
             config = yaml.safe_load(file)
