@@ -1,9 +1,0 @@
-yfinance:
-  day:
-    period: '1y'
-    interval: '1d'
-    'annualized_coefficient': 252
-  minute:
-    period: '7d'
-    interval: '1m'
-    'annualized_coefficient': 98280
