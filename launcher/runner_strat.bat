@@ -7,3 +7,4 @@ CALL "%CONDA_PATH%\Scripts\activate.bat" %CONDA_PATH%
 CALL conda activate %ENV_NAME%
 CALL python "%SCRIPT_PATH%" error_log.txt 2>&1 || pause
 pause
+

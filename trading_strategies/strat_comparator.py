@@ -15,17 +15,17 @@ class StrategyRunner:
         Initialize the StrategyRunner with given parameters.
 
         :param strategies: Dictionary of strategy names and their corresponding classes.
-        :param symbol: The symbol for which the strategies will be run.
+        :param symbol: The symbol for which the trading_strategies will be run.
         :param data_provider: source of data
         :param frequency: The frequency of the data.
-        :param start_date: The starting date for the strategies.
-        :param end_date: The ending date for the strategies.
-        :param param_grids: Parameter grids for optimizing the strategies.
-        :param opti_algo: Optimization algorithm for optimizing the strategies.
+        :param start_date: The starting date for the trading_strategies.
+        :param end_date: The ending date for the trading_strategies.
+        :param param_grids: Parameter grids for optimizing the trading_strategies.
+        :param opti_algo: Optimization algorithm for optimizing the trading_strategies.
         :param amount: Initial investment amount (default: 10000).
         :param transaction_costs: Costs per transaction (default: 0.0).
-        :param iterations: Number of iterations for optimizing the strategies.
-        :param predictive_strat: Whether to use predictive strategies.
+        :param iterations: Number of iterations for optimizing the trading_strategies.
+        :param predictive_strat: Whether to use predictive trading_strategies.
         """
         self.strategies = strategies
         self.data_provider=data_provider
@@ -72,7 +72,7 @@ class StrategyRunner:
 
     def optimize_strategies(self, search_type):
         """
-        Optimize all strategies using a specified search type.
+        Optimize all trading_strategies using a specified search type.
 
         :param search_type: The type of search to use for optimization ('random' or 'grid').
         :return: A dictionary of optimization results for each strategy.
@@ -115,7 +115,7 @@ class StrategyRunner:
 
     def run_and_compare_strategies(self):
         """
-        Run and compare the strategies based on the optimization results.
+        Run and compare the trading_strategies based on the optimization results.
 
         :return: A tuple containing a summary of the best strategy results and a DataFrame for comparison.
         """

@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha
+
+
 class TradingPlatform:
     """Base class for all trading platforms."""
 
@@ -109,41 +112,21 @@ class AlpacaPlatform(TradingPlatform):
         df_ptf_vs_bench = df_ptf.merge(df_benchmark, left_index=True, right_index=True, how='outer')
         df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
 
-        # Calculate the Sharpe Ratio
-        risk_free_rate = self.get_risk_free_rate()
+        # Calculate Performance Indicators
+        risk_free_rate=self.get_risk_free_rate()
+
         try:
-             # Risk-free rate of return
-            df_ptf['ptf_excess_returns'] = df_ptf['ptf_returns'] -  (risk_free_rate/ frequency['annualized_coefficient'])
-            dict_key_metrics['sharpe_ratio'] = (df_ptf['ptf_excess_returns'].mean() / df_ptf['ptf_excess_returns'].std()) \
-                                               * np.sqrt(frequency['annualized_coefficient'])
+            dict_key_metrics['sharpe_ratio']  = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])
         except Exception as e:
-            sharpe_ratio=0
+            dict_key_metrics['sharpe_ratio'] =0
+        dict_key_metrics['sortino_ratio'] =SortinoRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])
 
-        # Sortino Ratio
-        negative_std = np.std(df_ptf.loc[df_ptf['ptf_returns'] < 0, 'ptf_returns']) * np.sqrt(frequency['annualized_coefficient'])
-        dict_key_metrics['sortino_ratio'] = (df_ptf['ptf_returns'].mean() -  (risk_free_rate /
-                         frequency['annualized_coefficient'])) / negative_std if negative_std != 0 else 0
-
-
-        # Drawdown
-        roll_max = df_ptf['ptf_creturns'].cummax()
-        drawdown = df_ptf['ptf_creturns'] / roll_max - 1.0
-        df_ptf['drawdown'] = drawdown
-
-        # Maximum Drawdown
-        dict_key_metrics['max_drawdown'] = drawdown.min()
-
-        # Calmar Ratio
-        dict_key_metrics['calmar_ratio'] = df_ptf['ptf_returns'].mean() * frequency['annualized_coefficient']  / \
-                                           abs(dict_key_metrics['max_drawdown']) if dict_key_metrics['max_drawdown'] != 0 else 0
-
-        # Alpha and Beta (compared to 'df_ptf['return']' as the benchmark)
+        dict_key_metrics['max_drawdown'] =MaxDrawdown().calculate(df_ptf['ptf_creturns'])
+        dict_key_metrics['calmar_ratio'] =CalmarRatio(frequency).calculate(df_ptf['ptf_returns'], dict_key_metrics['max_drawdown'])
         try:
-            covariance = np.cov(df_ptf_vs_bench['ptf_returns'], df_ptf_vs_bench[f'{symbol}_returns'])[0][1]
-            dict_key_metrics['beta'] = covariance / np.var(df_ptf_vs_bench[f'{symbol}_returns'])
-            dict_key_metrics['alpha'] = (df_ptf_vs_bench['returns'].mean() - (risk_free_rate / frequency['annualized_coefficient'])) - \
-                                        dict_key_metrics['beta'] * \
-                                        (df_ptf_vs_bench[f'{symbol}_returns'].mean() -(risk_free_rate / frequency['annualized_coefficient']))
+            dict_key_metrics['beta']=Beta().calculate(df_ptf_vs_bench['ptf_returns'], df_ptf_vs_bench[f'{symbol}_returns'])
+            dict_key_metrics['alpha']=Alpha(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'],
+                                                        df_ptf_vs_bench[f'{symbol}_returns'], dict_key_metrics['beta'])
         except Exception as e:
             dict_key_metrics['beta']=0
             dict_key_metrics['alpha']=0

@@ -7,18 +7,20 @@ import os
 import time
 import yaml
 
+from positions_pnl_tracker.live_strat_metrics_manual_tracker import LiveStrategyTracker
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from broker_interaction.broker_order import GetBrokersConfig
 from broker_interaction.broker_metrics import AlpacaPlatform
 from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
-from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
+from trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
-from backtester.indicator_strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
+from trading_strategies.indicator_strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
     MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester, MACDStrategy, \
     IchimokuStrategy, StochasticOscillatorStrategy, ADXStrategy, VolumeStrategy, WilliamsRBacktester, \
     VolatilityBreakoutBacktester
-from backtester.strat_comparator import StrategyRunner
-from results_backtest.backtester_dashboard import BacktestApp
+from trading_strategies.strat_comparator import StrategyRunner
+from backtester_tracker.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
 
 if __name__ == '__main__':
@@ -44,7 +46,8 @@ if __name__ == '__main__':
         'WilliamR': WilliamsRBacktester,
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
-    regression_methods = ['no_regression']
+    regression_methods = ['linear', 'poly', 'logistic', 'ridge', 'lasso', 'elastic_net', 'bayesian', 'svr',
+                          'no_regression']
 
     param_grids = {
         'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
@@ -65,7 +68,7 @@ if __name__ == '__main__':
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
-    opti_algo = [RandomSearchAlgorithm()]
+    opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
@@ -79,8 +82,8 @@ if __name__ == '__main__':
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
     contract_multiplier = 10
-    iterations = 10
-    predictive_strat=False
+    iterations = 100
+    predictive_strat=True
 
     """
     --------------------------------------------------------------------------------------------------------------------
@@ -92,7 +95,7 @@ if __name__ == '__main__':
         pass
     runner = StrategyRunner(strategies, data_provider, frequency, symbol, start_date, end_date,
                             param_grids, opti_algo, invested_amount, transaction_costs, iterations, predictive_strat, strat_tester_csv)
-    logging.info("Optimizing strategies...")
+    logging.info("Optimizing trading_strategies...")
     start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
     end_time_opti = time.time()
@@ -100,7 +103,7 @@ if __name__ == '__main__':
     print(f'Elapsed time for optimization: {int(time_diff // 60)} minutes '
           f'and {int(time_diff % 60)} seconds')
     logging.info("Optimized results: %s", optimization_results)
-    logging.info("\nRunning and comparing strategies...")
+    logging.info("\nRunning and comparing trading_strategies...")
     best_strats, comparison_data = runner.run_and_compare_strategies()
     # show results of bactkest in dashboard
     app = BacktestApp(best_strats, comparison_data, symbol)
@@ -126,13 +129,22 @@ if __name__ == '__main__':
 
     """
     --------------------------------------------------------------------------------------------------------------------
+    ------------------------------------------Manual Live Strategy Tracker----------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------
+    """
+
+    # LiveStrategyTracker()
+
+
+    """
+    --------------------------------------------------------------------------------------------------------------------
     ------------------------------------------Get Recap From Brokerage Platform-----------------------------------------
     --------------------------------------------------------------------------------------------------------------------
     """
 
-    alpaca = AlpacaPlatform(broker_config)
+    alpaca_platform = AlpacaPlatform(broker_config)
 
-    portfolio_manager_app = PortfolioManagementApp(alpaca, frequency, symbol, comparison_data['returns'])
+    portfolio_manager_app = PortfolioManagementApp(alpaca_platform, frequency, symbol, comparison_data['returns'])
     # Start the PortfolioManagementApp server thread
     portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
     portfolio_server_thread.start()
@@ -146,3 +158,4 @@ if __name__ == '__main__':
     # Wait for all threads to complete
     for thread in threads:
         thread.join()
+
