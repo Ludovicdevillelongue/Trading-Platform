@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha
+from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha, \
+    RiskFreeRate
 
 
 class TradingPlatform:
@@ -89,13 +90,6 @@ class AlpacaPlatform(TradingPlatform):
         closed_positions=self.api.close_open_positions()
         return closed_positions
 
-    def get_risk_free_rate(self):
-        tbill = yf.Ticker("^IRX")  # ^IRX is the symbol for 13-week Treasury Bill
-        hist = tbill.history(period="1mo")
-        risk_free_rate = hist['Close'].iloc[-1] / 100
-        return risk_free_rate
-
-
     def get_portfolio_metrics(self, frequency, symbol, df_benchmark):
         dict_key_metrics={}
         df_ptf=self.get_portfolio_history()
@@ -113,7 +107,7 @@ class AlpacaPlatform(TradingPlatform):
         df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
 
         # Calculate Performance Indicators
-        risk_free_rate=self.get_risk_free_rate()
+        risk_free_rate=RiskFreeRate().get_risk_free_rate()
 
         try:
             dict_key_metrics['sharpe_ratio']  = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])

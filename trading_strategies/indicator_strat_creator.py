@@ -13,14 +13,18 @@ from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDra
 from signal_generator.ml_predictor import MLPredictor
 from data_loader.data_retriever import DataRetriever
 import warnings
+
 # To deactivate all warnings:
 warnings.filterwarnings('ignore')
 
+
 # A base backtesting class with common functionality
 class StrategyCreator:
-    def __init__(self, frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat):
-        self.frequency=frequency
+    def __init__(self, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                 predictive_strat):
+        self.frequency = frequency
         self.symbol = symbol
+        self.risk_free_rate = risk_free_rate
         self.start_date = start_date
         self.end_date = end_date
         self.amount = amount
@@ -31,10 +35,10 @@ class StrategyCreator:
 
     def get_data(self, data_provider):
         ''' Retrieves and prepares the data'''
-        if data_provider=='yfinance':
+        if data_provider == 'yfinance':
             # raw = pd.read_hdf(DataRetriever(self.start_date, self.end_date).read_data())
-            raw=DataRetriever(self.frequency, self.start_date, self.end_date).yfinance_download(self.symbol)\
-            [['open', 'high', 'low',  'close', 'volume']]
+            raw = DataRetriever(self.frequency, self.start_date, self.end_date).yfinance_download(self.symbol) \
+                [['open', 'high', 'low', 'close', 'volume']]
             # DataRetriever(self.start_date, self.end_date).write_data(raw)
             # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
             raw['returns'] = np.log(raw['close'] / raw['close'].shift(1))
@@ -61,7 +65,6 @@ class StrategyCreator:
         self.test_start = self.data.index[split_point + 1]
         self.test_end = self.data.index[-1]
 
-
     def prepare_lags(self, start, end, lags):
         data = self.select_data(start, end)
         self.cols = []
@@ -71,8 +74,6 @@ class StrategyCreator:
             self.cols.append(col)
         data.dropna(inplace=True)  # Drop rows with NaN values
         self.lagged_data = data
-
-
 
     def fit_model(self, start, end, lags, model):
         ''' Implements the fitting step.
@@ -89,7 +90,7 @@ class StrategyCreator:
 
     def prepare_lags_for_signal(self, lags):
         ''' Prepares the lagged data for the most recent data point for signal generation. '''
-        latest_data = self.data.tail(2*lags + 1).copy()  # Get enough rows for lags
+        latest_data = self.data.tail(2 * lags + 1).copy()  # Get enough rows for lags
         cols = [f'lag_{lag}' for lag in range(1, lags + 1)]
         for lag in range(1, lags + 1):
             latest_data[f'lag_{lag}'] = latest_data['returns'].shift(lag)
@@ -114,7 +115,7 @@ class StrategyCreator:
 
         rmse = np.sqrt(mean_squared_error(y_true, y_pred))
         mae = mean_absolute_error(y_true, y_pred)
-        #RMSE or MAE less than 0.1 might be considered good
+        # RMSE or MAE less than 0.1 might be considered good
         return {'RMSE': rmse, 'MAE': mae}
 
     def regression_positions(self, data_strat, signal_metric, position_type, reg_method):
@@ -159,9 +160,8 @@ class StrategyCreator:
             return self.__finalize_data(data_strat, data_regression)
 
         except Exception as e:
-            data_regression["sized_position"]=data_regression['position']
+            data_regression["sized_position"] = data_regression['position']
             return self.__finalize_data(data_strat, data_regression)
-
 
     def __tune_ridge(self, X, y):
         param_grid = {'alpha': [1e-3, 1e-2, 1e-1, 1]}
@@ -212,33 +212,25 @@ class StrategyCreator:
         data_sized = self.regularize_sizing(data_sized, 0.5)
         return data_sized
 
-
-
     def regularize_sizing(self, data_sized, percent_change):
-        data_sized['percentage_change']=data_sized['sized_position'].pct_change()
-        mask=data_sized['percentage_change'].abs()>percent_change
-        data_sized['regularized_position']=data_sized['sized_position'].where(mask, other=pd.NA).ffill()
-        data_sized.at[data_sized.index[0],'regularized_position']=data_sized['sized_position'].iloc[0]
-        data_sized['regularized_position']=data_sized['regularized_position'].fillna(method='ffill')
+        data_sized['percentage_change'] = data_sized['sized_position'].pct_change()
+        mask = data_sized['percentage_change'].abs() > percent_change
+        data_sized['regularized_position'] = data_sized['sized_position'].where(mask, other=pd.NA).ffill()
+        data_sized.at[data_sized.index[0], 'regularized_position'] = data_sized['sized_position'].iloc[0]
+        data_sized['regularized_position'] = data_sized['regularized_position'].fillna(method='ffill')
         return data_sized
-
-    def get_risk_free_rate(self):
-        tbill = yf.Ticker("^IRX")  # ^IRX is the symbol for 13-week Treasury Bill
-        hist = tbill.history(period="1mo")
-        risk_free_rate = hist['Close'].iloc[-1] / 100
-        return risk_free_rate
 
     def calculate_performance(self, data):
         """ Calculate performance and return a DataFrame with results. """
-        #get relevant columns
-        data=data[['returns', 'creturns', 'regularized_position', 'orders']]
+        # get relevant columns
+        data = data[['returns', 'creturns', 'regularized_position', 'orders']]
         # Calculate strategy return
         data['strategy'] = data['regularized_position'].shift(1) * data['returns']
         data['strategy'].iloc[0] = 0
-        data['orders'].iloc[0]=data['regularized_position'].iloc[0]
+        data['orders'].iloc[0] = data['regularized_position'].iloc[0]
 
         # Subtract transaction costs from return when trade takes place
-        data.loc[data['orders']!=0, 'strategy'] -= self.transaction_costs*abs(data['orders'])
+        data.loc[data['orders'] != 0, 'strategy'] -= self.transaction_costs * abs(data['orders'])
 
         # Annualize the mean log return
         data['an_mean_log_returns'] = data[['returns', 'strategy']].mean() * self.frequency['annualized_coefficient']
@@ -246,7 +238,8 @@ class StrategyCreator:
         data['an_mean_returns'] = np.exp(data['an_mean_log_returns']) - 1
 
         # Annualize the standard deviation of log returns
-        data['an_std_log_returns'] = data[['returns', 'strategy']].std() * self.frequency['annualized_coefficient'] ** 0.5
+        data['an_std_log_returns'] = data[['returns', 'strategy']].std() * self.frequency[
+            'annualized_coefficient'] ** 0.5
 
         # Calculate cumulative returns
         data['cstrategy'] = self.amount * data['strategy'].cumsum().apply(np.exp)
@@ -259,7 +252,7 @@ class StrategyCreator:
         operf = aperf - data['creturns'].iloc[-1]
 
         # Calculate Performance Indicators
-        risk_free_rate=self.get_risk_free_rate()
+        risk_free_rate = self.risk_free_rate
 
         try:
             if data['regularized_position'].eq(0).all():
@@ -267,21 +260,21 @@ class StrategyCreator:
             else:
                 sharpe_ratio = SharpeRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
         except Exception as e:
-            sharpe_ratio=0
-        sortino_ratio=SortinoRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
+            sharpe_ratio = 0
+        sortino_ratio = SortinoRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
 
-        max_drawdown=MaxDrawdown().calculate(data['cstrategy'])
-        calmar_ratio=CalmarRatio(self.frequency).calculate(data['strategy'], max_drawdown)
+        max_drawdown = MaxDrawdown().calculate(data['cstrategy'])
+        calmar_ratio = CalmarRatio(self.frequency).calculate(data['strategy'], max_drawdown)
         try:
-            beta=Beta().calculate(data['strategy'], data['returns'])
-            alpha=Alpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
+            beta = Beta().calculate(data['strategy'], data['returns'])
+            alpha = Alpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
         except Exception as e:
-            beta=0
-            alpha=0
+            beta = 0
+            alpha = 0
 
-        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2),round(sortino_ratio, 2), round(calmar_ratio, 2),\
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2), round(sortino_ratio, 2), round(calmar_ratio,
+                                                                                                        2), \
                round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
-
 
     def position_holding_time(self, data):
         position_holding_times = []
@@ -317,15 +310,18 @@ class StrategyCreator:
     def generate_signal(self):
         raise NotImplementedError("Should implement method in subclass!")
 
+
 # Now define specific strategy backtesters
 class SMAVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, sma_short, sma_long, reg_method, amount, transaction_costs,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, sma_short, sma_long, reg_method,
+                 amount, transaction_costs,
                  predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
-        self.data=data
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
+        self.data = data
         self.sma_short = sma_short
         self.sma_long = sma_long
-        self.reg_method=reg_method
+        self.reg_method = reg_method
 
     def set_parameters(self, SMA1=None, SMA2=None):
         if SMA1 is not None:
@@ -339,7 +335,7 @@ class SMAVectorBacktester(StrategyCreator):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data["SMA1"].plot(ax=ax1, color='r', lw=.5)
         data["SMA2"].plot(ax=ax1, color='g', lw=.5)
@@ -353,8 +349,6 @@ class SMAVectorBacktester(StrategyCreator):
         plt.title("Simple Moving Average Trading Strategy")
         # plt.show()
 
-
-
     def run_strategy(self, predictive_strat=False):
 
         '''
@@ -363,9 +357,9 @@ class SMAVectorBacktester(StrategyCreator):
         self.set_parameters(int(self.sma_short), int(self.sma_long))
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, -1)
-        data_strat['diff_SMA']=data_strat['SMA1']-data_strat['SMA2']
+        data_strat['diff_SMA'] = data_strat['SMA1'] - data_strat['SMA2']
         if predictive_strat:
-            data_pred=MLPredictor(data_strat, ['SMA1', 'SMA2'], 1).run()
+            data_pred = MLPredictor(data_strat, ['SMA1', 'SMA2'], 1).run()
             data_sized = self.regression_positions(data_pred, "diff_SMA", "pred_position", self.reg_method)
             self.data_signal = data_sized['regularized_position'][-1]
         else:
@@ -380,13 +374,16 @@ class SMAVectorBacktester(StrategyCreator):
 
 
 class BollingerBandsBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, num_std_dev, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+    def __init__(self, frequency, data, symbol, risk_free_rate,
+                 start_date, end_date, window_size, num_std_dev, reg_method, amount, transaction_costs,
+                 predictive_strat):
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.window_size = window_size
         self.num_std_dev = num_std_dev
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def set_parameters(self, window_size=None, num_std_dev=None):
         ''' Updates Bollinger Bands parameters and respective time series. '''
@@ -400,7 +397,7 @@ class BollingerBandsBacktester(StrategyCreator):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data["lower_band"].plot(ax=ax1, color='r', lw=.5)
         data["upper_band"].plot(ax=ax1, color='g', lw=.5)
@@ -425,7 +422,8 @@ class BollingerBandsBacktester(StrategyCreator):
         data_strat['upper_band'] = data_strat['middle_band'] + (data_strat['std_dev'] * self.num_std_dev)
         data_strat['lower_band'] = data_strat['middle_band'] - (data_strat['std_dev'] * self.num_std_dev)
         data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], 1, np.nan)  # buy signal
-        data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], -1, data_strat['position'])  # sell signal
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], -1,
+                                          data_strat['position'])  # sell signal
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
         if predictive_strat:
@@ -444,15 +442,17 @@ class BollingerBandsBacktester(StrategyCreator):
 
 
 class RSIVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, RSI_period, overbought_threshold, oversold_threshold,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, RSI_period, overbought_threshold,
+                 oversold_threshold,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.RSI_period = RSI_period
         self.overbought_threshold = overbought_threshold
         self.oversold_threshold = oversold_threshold
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def set_parameters(self, RSI_period=None, overbought_threshold=None, oversold_threshold=None):
         if RSI_period is not None:
@@ -462,14 +462,12 @@ class RSIVectorBacktester(StrategyCreator):
         if oversold_threshold is not None:
             self.oversold_threshold = oversold_threshold
 
-
-
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data["RSI"].plot(ax=ax1, color='g', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
@@ -496,7 +494,8 @@ class RSIVectorBacktester(StrategyCreator):
 
         # Define trading signals
         data_strat['position'] = np.where(data_strat['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
-        data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, -1, data_strat['position'])  # sell signal
+        data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, -1,
+                                          data_strat['position'])  # sell signal
 
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['RSI'], 1).run()
@@ -513,20 +512,21 @@ class RSIVectorBacktester(StrategyCreator):
         return self.data_signal
 
 
-
 class MomVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, momentum, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
-        self.data=data
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, momentum, reg_method, amount,
+                 transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
+        self.data = data
         self.momentum = momentum
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='g', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
                  data["close"][data.orders >= 1.0],
@@ -543,7 +543,7 @@ class MomVectorBacktester(StrategyCreator):
         '''
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.sign(data_strat['returns'].rolling(self.momentum).mean())
-        data_strat=data_strat.dropna(axis=0)
+        data_strat = data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['returns'], 1).run()
             data_sized = self.regression_positions(data_pred, "returns", "pred_position", self.reg_method)
@@ -560,14 +560,15 @@ class MomVectorBacktester(StrategyCreator):
 
 
 class MRVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, sma, threshold, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
-        self.data=data
-        self.sma=sma
-        self.threshold=threshold
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
-
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, sma, threshold, reg_method,
+                 amount, transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
+        self.data = data
+        self.sma = sma
+        self.threshold = threshold
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def set_parameters(self, SMA=None):
         if SMA is not None:
@@ -577,7 +578,7 @@ class MRVectorBacktester(StrategyCreator):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data["sma"].plot(ax=ax1, color='g', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
@@ -596,14 +597,14 @@ class MRVectorBacktester(StrategyCreator):
         data_strat['distance'] = data_strat['close'] - data_strat['sma']
         # sell signals
         data_strat['position'] = np.where(data_strat['distance'] > self.threshold,
-                                    -1, np.nan)
+                                          -1, np.nan)
         # buy signals
         data_strat['position'] = np.where(data_strat['distance'] < -self.threshold,
-                                    1, data_strat['position'])
+                                          1, data_strat['position'])
         # crossing of current price and SMA (zero distance)
         data_strat['position'] = np.where(data_strat['distance'] *
-                                    data_strat['distance'].shift(1) < 0,
-                                    0, data_strat['position'])
+                                          data_strat['distance'].shift(1) < 0,
+                                          0, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
         if predictive_strat:
@@ -620,14 +621,16 @@ class MRVectorBacktester(StrategyCreator):
         self.run_strategy(self.predictive_strat)
         return self.data_signal
 
-class TurtleVectorBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, window_size, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
-        self.data=data
-        self.window_size=window_size
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
 
+class TurtleVectorBacktester(StrategyCreator):
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, window_size, reg_method, amount,
+                 transaction_costs, predictive_strat):
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
+        self.data = data
+        self.window_size = window_size
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
         fig = plt.figure()
@@ -650,30 +653,30 @@ class TurtleVectorBacktester(StrategyCreator):
         data = self.data.copy()
         # window_size-days high
         data['high'] = data['close'].shift(1). \
-        rolling(window=self.window_size).max()
+            rolling(window=self.window_size).max()
         # window_size-days low
         data['low'] = data['close'].shift(1). \
-        rolling(window=self.window_size).min()
+            rolling(window=self.window_size).min()
         # window_size-days mean
         data['avg'] = data['close'].shift(1). \
-        rolling(window=self.window_size).mean()
+            rolling(window=self.window_size).mean()
         data['long_entry'] = data['close'] > data.high
         data['short_entry'] = data['close'] < data.low
         data['long_exit'] = data['close'] < data.avg
         data['short_exit'] = data['close'] > data.avg
         data["position"] = 0
-        data["orders"]=0
+        data["orders"] = 0
         for k in range(1, len(data)):
-            if data['long_entry'][k] and data['position'][k-1] == 0:
+            if data['long_entry'][k] and data['position'][k - 1] == 0:
                 data.orders.values[k] = 1
                 data.position.values[k] = 1
-            elif data['short_entry'][k] and data['position'][k-1] == 0:
+            elif data['short_entry'][k] and data['position'][k - 1] == 0:
                 data.orders.values[k] = -1
                 data.position.values[k] = -1
-            elif data['short_exit'][k] and data['position'][k-1] > 0:
+            elif data['short_exit'][k] and data['position'][k - 1] > 0:
                 data.orders.values[k] = -1
                 data.position.values[k] = 0
-            elif data['long_exit'][k] and data['position'][k-1] < 0:
+            elif data['long_exit'][k] and data['position'][k - 1] < 0:
                 data.orders.values[k] = 1
                 data.position.values[k] = 0
             else:
@@ -696,15 +699,18 @@ class TurtleVectorBacktester(StrategyCreator):
         self.run_strategy(self.predictive_strat)
         return self.data_signal
 
+
 class ParabolicSARBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, SAR_step, SAR_max, reg_method, amount,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, SAR_step, SAR_max, reg_method,
+                 amount,
                  transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.SAR_step = SAR_step
         self.SAR_max = SAR_max
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def calculate_parabolic_sar(self):
         data = self.data.copy()
@@ -755,7 +761,7 @@ class ParabolicSARBacktester(StrategyCreator):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data["SAR"].plot(ax=ax1, color='g', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
@@ -768,13 +774,13 @@ class ParabolicSARBacktester(StrategyCreator):
         plt.title("Parabolic SAR Trading Strategy")
         # plt.show()
 
-
     def run_strategy(self, predictive_strat=False):
         ''' Backtests the trading strategy. '''
         data_strat = self.calculate_parabolic_sar()
 
         # Define trading signals
-        data_strat['position'] = np.where(data_strat['trend'] == 1, 1, -1)  # Long when trend is up, short when trend is down
+        data_strat['position'] = np.where(data_strat['trend'] == 1, 1,
+                                          -1)  # Long when trend is up, short when trend is down
 
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['trend'], 1).run()
@@ -791,24 +797,24 @@ class ParabolicSARBacktester(StrategyCreator):
         return self.data_signal
 
 
-
 class MACDStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, short_window, long_window,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, short_window, long_window,
                  signal_window, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.short_window = short_window
         self.long_window = long_window
         self.signal_window = signal_window
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["macd"].plot(ax=ax1, color='g', lw=.5)
         data["signal"].plot(ax=ax1, color='r', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
@@ -820,7 +826,6 @@ class MACDStrategy(StrategyCreator):
         plt.legend(["MACD", "Signal", "Buy", "Sell"])
         plt.title("MACD Trading Strategy")
         # plt.show()
-
 
     def run_strategy(self, predictive_strat=False):
         data_strat = self.data.copy()
@@ -845,18 +850,20 @@ class MACDStrategy(StrategyCreator):
         self.run_strategy(self.predictive_strat)
         return self.data_signal
 
+
 class IchimokuStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, conversion_line_period, base_line_period,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, conversion_line_period,
+                 base_line_period,
                  leading_span_b_period, displacement, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.conversion_line_period = conversion_line_period
         self.base_line_period = base_line_period
         self.leading_span_b_period = leading_span_b_period
         self.displacement = displacement
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
-
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def calculate_ichimoku(self):
         data = self.data.copy()
@@ -874,7 +881,8 @@ class IchimokuStrategy(StrategyCreator):
 
         # Leading Span B
         data['leading_span_B'] = ((data['high'].rolling(window=self.leading_span_b_period).max() +
-                                   data['low'].rolling(window=self.leading_span_b_period).min()) / 2).shift(self.displacement)
+                                   data['low'].rolling(window=self.leading_span_b_period).min()) / 2).shift(
+            self.displacement)
 
         # Lagging Span
         data['lagging_span'] = data['close'].shift(-self.displacement)
@@ -886,7 +894,7 @@ class IchimokuStrategy(StrategyCreator):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data["leading_span_A"].plot(ax=ax1, color='r', lw=0.5)
         data["leading_span_B"].plot(ax=ax1, color='g', lw=0.5)
@@ -907,13 +915,16 @@ class IchimokuStrategy(StrategyCreator):
         # Example: Go long when the Conversion Line crosses above the Base Line
         # and the close is above the Cloud; go short when the opposite is true.
         data_strat['position'] = np.where((data_strat['conversion_line'] > data_strat['base_line']) &
-                                    (data_strat['close'] > data_strat['leading_span_A']) &
-                                    (data_strat['close'] > data_strat['leading_span_B']), 1, 0)
+                                          (data_strat['close'] > data_strat['leading_span_A']) &
+                                          (data_strat['close'] > data_strat['leading_span_B']), 1, 0)
         data_strat['position'] = np.where((data_strat['conversion_line'] < data_strat['base_line']) &
-                                    (data_strat['close'] < data_strat['leading_span_A']) &
-                                    (data_strat['close'] < data_strat['leading_span_B']), -1, data_strat['position'])
+                                          (data_strat['close'] < data_strat['leading_span_A']) &
+                                          (data_strat['close'] < data_strat['leading_span_B']), -1,
+                                          data_strat['position'])
         if predictive_strat:
-            data_pred = MLPredictor(data_strat, ['close', 'conversion_line', 'base_line', 'leading_span_A', 'leading_span_B'], 1).run()
+            data_pred = MLPredictor(data_strat,
+                                    ['close', 'conversion_line', 'base_line', 'leading_span_A', 'leading_span_B'],
+                                    1).run()
             data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)
             self.data_signal = data_sized['regularized_position'][-1]
         else:
@@ -926,17 +937,19 @@ class IchimokuStrategy(StrategyCreator):
         self.run_strategy(self.predictive_strat)
         return self.data_signal
 
+
 class StochasticOscillatorStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, k_window, d_window, buy_threshold,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, k_window, d_window, buy_threshold,
                  sell_threshold, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.k_window = k_window
         self.d_window = d_window
         self.buy_threshold = buy_threshold
         self.sell_threshold = sell_threshold
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def calculate_stochastic_oscillator(self):
         data = self.data.copy()
@@ -951,7 +964,7 @@ class StochasticOscillatorStrategy(StrategyCreator):
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data['close'].plot(ax=ax1, color='b', lw=.5)
         data["%K"].plot(ax=ax1, color='b', lw=.5)
         data['%D'].plot(ax=ax1, color='g', lw=.5)
@@ -970,7 +983,8 @@ class StochasticOscillatorStrategy(StrategyCreator):
 
         # Trading signals based on Stochastic Oscillator
         data_strat['position'] = np.where(data_strat['%K'] < data_strat['%D'], 1, 0)  # Buy signal
-        data_strat['position'] = np.where(data_strat['%K'] > data_strat['%D'], -1, data_strat['position'])  # Sell signal
+        data_strat['position'] = np.where(data_strat['%K'] > data_strat['%D'], -1,
+                                          data_strat['position'])  # Sell signal
         data_strat['Diff_%K_%D'] = data_strat['%D'] - data_strat['%K']
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['%K', '%D'], 1).run()
@@ -988,22 +1002,24 @@ class StochasticOscillatorStrategy(StrategyCreator):
 
 
 class ADXStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, adx_period, di_period, threshold, reg_method, amount,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, adx_period, di_period, threshold,
+                 reg_method, amount,
                  transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.adx_period = adx_period
         self.di_period = di_period
         self.threshold = threshold
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data['+DI'].plot(ax=ax1, color='g', lw=.5)
         data['-DI'].plot(ax=ax1, color='r', lw=.5)
@@ -1044,9 +1060,11 @@ class ADXStrategy(StrategyCreator):
         data_strat = self.calculate_adx()
 
         # Trading signals based on ADX, +DI, and -DI
-        data_strat['position'] = np.where((data_strat['+DI'] > data_strat['-DI']) & (data_strat['ADX'] > self.threshold), 1, 0)  # Buy signal
-        data_strat['position'] = np.where((data_strat['-DI'] > data_strat['+DI']) & (data_strat['ADX'] > self.threshold), -1,
-                                    data_strat['position'])  # Sell signal
+        data_strat['position'] = np.where(
+            (data_strat['+DI'] > data_strat['-DI']) & (data_strat['ADX'] > self.threshold), 1, 0)  # Buy signal
+        data_strat['position'] = np.where(
+            (data_strat['-DI'] > data_strat['+DI']) & (data_strat['ADX'] > self.threshold), -1,
+            data_strat['position'])  # Sell signal
 
         data_strat['Diff_DI'] = data_strat['+DI'] - data_strat['-DI']
         if predictive_strat:
@@ -1065,21 +1083,22 @@ class ADXStrategy(StrategyCreator):
 
 
 class VolumeStrategy(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, volume_threshold,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, volume_threshold,
                  volume_window, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.volume_threshold = volume_threshold
-        self.volume_window=volume_window
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.volume_window = volume_window
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["volume"].plot(ax=ax1, color='g', lw=.5)
         data["average_volume"].plot(ax=ax1, color='r', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
@@ -1091,7 +1110,6 @@ class VolumeStrategy(StrategyCreator):
         plt.legend(["Volume", "Average Volume", "Buy", "Sell"])
         plt.title("Volume Trading Strategy")
         # plt.show()
-
 
     def run_strategy(self, predictive_strat=False):
         data_strat = self.data.copy()
@@ -1120,26 +1138,25 @@ class VolumeStrategy(StrategyCreator):
         return self.data_signal
 
 
-
-
 class WilliamsRBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, lookback_period, overbought, oversold,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, lookback_period, overbought,
+                 oversold,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.lookback_period = lookback_period
         self.overbought = overbought
         self.oversold = oversold
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
-
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='g', lw=.5)
         ax1.plot(data.loc[data.orders >= 1.0].index,
                  data["close"][data.orders >= 1.0],
@@ -1152,7 +1169,7 @@ class WilliamsRBacktester(StrategyCreator):
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
-        data_strat=self.data.copy()
+        data_strat = self.data.copy()
         high = data_strat['high'].rolling(self.lookback_period).max()
         low = data_strat['low'].rolling(self.lookback_period).min()
         data_strat['%R'] = -100 * (high - data_strat['close']) / (high - low)
@@ -1175,16 +1192,17 @@ class WilliamsRBacktester(StrategyCreator):
         return self.data_signal
 
 
-
 class VolatilityBreakoutBacktester(StrategyCreator):
-    def __init__(self, frequency, data, symbol, start_date, end_date, volatility_window, breakout_factor,
+    def __init__(self, frequency, data, symbol, risk_free_rate, start_date, end_date, volatility_window,
+                 breakout_factor,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(frequency, symbol, start_date, end_date, amount, transaction_costs, predictive_strat)
+        super().__init__(frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+                         predictive_strat)
         self.data = data
         self.volatility_window = volatility_window
         self.breakout_factor = breakout_factor
-        self.reg_method=reg_method
-        self.predictive_strat=predictive_strat
+        self.reg_method = reg_method
+        self.predictive_strat = predictive_strat
         self.set_parameters(volatility_window, breakout_factor)
 
     def set_parameters(self, volatility_window=None, breakout_factor=None):
@@ -1193,14 +1211,12 @@ class VolatilityBreakoutBacktester(StrategyCreator):
         if breakout_factor is not None:
             self.breakout_factor = breakout_factor
 
-
-
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
         fig = plt.figure()
         ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
-        data=data.dropna(axis=0)
+        data = data.dropna(axis=0)
         data["close"].plot(ax=ax1, color='b', lw=.5)
         data["lower_band"].plot(ax=ax1, color='r', lw=.5)
         data["upper_band"].plot(ax=ax1, color='g', lw=.5)

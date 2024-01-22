@@ -46,8 +46,7 @@ if __name__ == '__main__':
         'WilliamR': WilliamsRBacktester,
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
-    regression_methods = ['linear', 'poly', 'logistic', 'ridge', 'lasso', 'elastic_net', 'bayesian', 'svr',
-                          'no_regression']
+    regression_methods = ['linear']
 
     param_grids = {
         'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
@@ -68,7 +67,7 @@ if __name__ == '__main__':
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
-    opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
+    opti_algo = [RandomSearchAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
@@ -82,7 +81,7 @@ if __name__ == '__main__':
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
     contract_multiplier = 10
-    iterations = 100
+    iterations = 10
     predictive_strat=True
 
     """
