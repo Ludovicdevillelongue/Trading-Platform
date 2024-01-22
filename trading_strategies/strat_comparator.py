@@ -1,5 +1,7 @@
 # Compare and Run Strategies
 import pandas as pd
+
+from indicators.performances_indicators import RiskFreeRate
 from .indicator_strat_creator import StrategyCreator
 from collections import defaultdict
 import warnings
@@ -41,17 +43,20 @@ class StrategyRunner:
         self.iterations=iterations
         self.predictive_strat=predictive_strat
         self.strat_tester_csv=strat_tester_csv
+        self.risk_free_rate=RiskFreeRate().get_risk_free_rate()
 
         # Load data once and reuse, improving efficiency
-        self.data = StrategyCreator(self.frequency, self.symbol, self.start_date,
+        strat_creator=StrategyCreator(self.frequency, self.symbol, self.risk_free_rate, self.start_date,
                                     self.end_date, self.amount, self.transaction_costs,
-                                    self.predictive_strat).get_data(self.data_provider)
+                                    self.predictive_strat)
+        self.data = strat_creator.get_data(self.data_provider)
+
 
     def _optimize_strategy(self, strategy_name, strategy_class, search_type):
         """
         Private method to optimize a single strategy.
         """
-        optimizer = StrategyOptimizer(strategy_class, self.frequency, self.data, self.symbol, self.start_date, self.end_date,
+        optimizer = StrategyOptimizer(strategy_class, self.frequency, self.data, self.symbol, self.risk_free_rate, self.start_date, self.end_date,
                                       self.param_grids[strategy_name], self.amount, self.transaction_costs, search_type,
                                       self.iterations, self.predictive_strat, self.strat_tester_csv)
         return optimizer.optimize()
@@ -125,7 +130,8 @@ class StrategyRunner:
 
         for strategy_name, optimization_result in self.optimization_results.items():
             strategy_params = optimization_result['params']
-            strategy_tester = self.strategies[strategy_name](self.frequency, self.data, self.symbol, self.start_date, self.end_date,
+            strategy_tester = self.strategies[strategy_name](self.frequency, self.data,
+                                                             self.symbol, self.risk_free_rate, self.start_date, self.end_date,
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
                                                              predictive_strat=self.predictive_strat,
                                                              **strategy_params)

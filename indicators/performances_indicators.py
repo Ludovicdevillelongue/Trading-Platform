@@ -1,8 +1,15 @@
 import numpy as np
-import pandas as pd
+import yfinance as yf
 
 
-# Class for Sharpe Ratio
+class RiskFreeRate():
+    @staticmethod
+    def get_risk_free_rate():
+        tbill = yf.Ticker("^IRX")  # ^IRX is the symbol for 13-week Treasury Bill
+        hist = tbill.history(period="1mo")
+        risk_free_rate = hist['Close'].iloc[-1] / 100
+        return risk_free_rate
+
 class SharpeRatio():
     def __init__(self, frequency, risk_free_rate):
         self.frequency=frequency

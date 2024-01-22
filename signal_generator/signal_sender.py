@@ -7,6 +7,8 @@ from data_loader.data_retriever import DataRetriever
 import numpy as np
 import os
 
+from indicators.performances_indicators import RiskFreeRate
+
 
 class LiveStrategyRunner:
     def __init__(self, strategy_name, strategy_class, optimization_results, frequency, symbol, start_date, end_date,
@@ -27,6 +29,7 @@ class LiveStrategyRunner:
         self.current_positions = {name: 0 for name in optimization_results}
         self.contract_multiplier = contract_multiplier
         self.real_time_data = None
+        self.risk_free_rate=RiskFreeRate().get_risk_free_rate()
         if self.trading_platform == 'Alpaca':
             self.broker = AlpacaTradingBot(broker_config)
 
@@ -52,7 +55,7 @@ class LiveStrategyRunner:
             if self.real_time_data is None:
                 pass
             opti_results_strategy = self.optimization_results[strategy_name]['params']
-            self.signal = strategy_class(self.frequency, self.real_time_data, self.symbol, self.start_date, self.end_date,
+            self.signal = strategy_class(self.frequency, self.real_time_data, self.symbol, self.risk_free_rate, self.start_date, self.end_date,
                                          amount=self.amount, transaction_costs=self.transaction_costs,
                                          predictive_strat=self.predictive_strat,
                                          **opti_results_strategy).generate_signal()
