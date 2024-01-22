@@ -15,7 +15,7 @@ from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorith
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from backtester.ml_strat_creator import LRVectorBacktester, ScikitVectorBacktester
 from backtester.strat_comparator import StrategyRunner
-from results_backtest.backtester_dashboard import BacktestApp
+from backtester_tracker.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
 
 if __name__ == '__main__':
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         pass
     runner = StrategyRunner(strategies, data_provider, frequency, symbol, start_date, end_date,
                             param_grids, opti_algo, amount, transaction_costs, iterations, strat_tester_csv)
-    logging.info("Optimizing strategies...")
+    logging.info("Optimizing trading_strategies...")
     start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
     end_time_opti=time.time()
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     print(f'Elapsed time for optimization: {int(time_diff // 60)} minutes '
           f'and {int(time_diff % 60)} seconds')
     logging.info("Optimized results: %s", optimization_results)
-    logging.info("\nRunning and comparing strategies...")
+    logging.info("\nRunning and comparing trading_strategies...")
     best_strats, comparison_data = runner.run_and_compare_strategies()
 
     # show results of bactkest in dashboard
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     # trading_platform = 'Alpaca'
     # broker_config = GetBrokersConfig.key_secret_url()
-    # strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol, start_date,
+    # strat_run = LiveStrategyRunner(best_strat, trading_strategies[best_strat], optimization_results, frequency, symbol, start_date,
     #                                end_date, amount, transaction_costs,contract_multiplier, data_provider,
     #                                trading_platform, broker_config).run()
     # trade_sender = threading.Thread(target=strat_run.run)

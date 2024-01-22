@@ -9,8 +9,8 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
 import yfinance as yf
-from backtester.dl_predictor import LSTM
-from backtester.ml_predictor import MLPredictor
+from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Alpha, Beta
+from signal_generator.ml_predictor import MLPredictor
 from data_loader.data_retriever import DataRetriever
 import warnings
 # To deactivate all warnings:
@@ -258,40 +258,23 @@ class StrategyCreator:
         aperf = self.results['cstrategy'].iloc[-1]
         operf = aperf - data['creturns'].iloc[-1]
 
-        # Calculate the Sharpe Ratio
+        # Calculate Performance Indicators
         risk_free_rate=self.get_risk_free_rate()
+
         try:
             if data['regularized_position'].eq(0).all():
                 sharpe_ratio = 0
             else:
-                 # Risk-free rate of return
-                data['excess_return'] = data['strategy'] - (risk_free_rate/ self.frequency['annualized_coefficient'])
-                sharpe_ratio = (data['excess_return'].mean() /
-                                data['excess_return'].std()) * np.sqrt(self.frequency['annualized_coefficient'])
+                sharpe_ratio = SharpeRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
         except Exception as e:
             sharpe_ratio=0
+        sortino_ratio=SortinoRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
 
-        # Sortino Ratio
-        negative_std = np.std(data.loc[data['strategy'] < 0, 'strategy']) * np.sqrt(self.frequency['annualized_coefficient'])
-        sortino_ratio = (data['strategy'].mean() - (risk_free_rate /
-                         self.frequency['annualized_coefficient'])) / negative_std if negative_std != 0 else 0
-
-        # Drawdown
-        roll_max = data['cstrategy'].cummax()
-        drawdown = data['cstrategy'] / roll_max - 1.0
-        data['drawdown'] = drawdown
-
-        # Maximum Drawdown
-        max_drawdown = drawdown.min()
-
-        # Calmar Ratio
-        calmar_ratio = data['strategy'].mean() * self.frequency['annualized_coefficient'] / abs(max_drawdown) if max_drawdown != 0 else 0
-
+        max_drawdown=MaxDrawdown().calculate(data['cstrategy'])
+        calmar_ratio=CalmarRatio(self.frequency).calculate(data['strategy'], max_drawdown)
         try:
-            covariance = np.cov(data['strategy'], data['returns'])[0][1]
-            beta = covariance / np.var(data['returns'])
-            alpha = (data['strategy'].mean() - (risk_free_rate / self.frequency['annualized_coefficient'])) - \
-                    beta * (data['returns'].mean() - (risk_free_rate / self.frequency['annualized_coefficient']))
+            beta=Beta().calculate(data['strategy'], data['returns'])
+            alpha=Alpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
         except Exception as e:
             beta=0
             alpha=0
