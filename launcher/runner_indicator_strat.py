@@ -7,6 +7,7 @@ import os
 import time
 import yaml
 
+from indicators.performances_indicators import RiskFreeRate
 from positions_pnl_tracker.live_strat_metrics_manual_tracker import LiveStrategyTracker
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -46,7 +47,8 @@ if __name__ == '__main__':
         'WilliamR': WilliamsRBacktester,
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
-    regression_methods = ['linear']
+    regression_methods = ['linear', 'poly', 'logistic', 'ridge', 'lasso', 'elastic_net', 'bayesian', 'svr',
+                          'no_regression']
 
     param_grids = {
         'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
@@ -67,7 +69,7 @@ if __name__ == '__main__':
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
-    opti_algo = [RandomSearchAlgorithm()]
+    opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
@@ -75,13 +77,14 @@ if __name__ == '__main__':
         frequency = yaml.safe_load(file)
     frequency = frequency[data_provider]['day']
     symbol = 'TSLA'
+    risk_free_rate = RiskFreeRate().get_risk_free_rate()
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
         "%Y-%m-%d %H:%M:%S")
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
     contract_multiplier = 10
-    iterations = 10
+    iterations = 100
     predictive_strat=True
 
     """
@@ -92,7 +95,7 @@ if __name__ == '__main__':
     strat_tester_csv = 'strat_tester_recap.csv'
     with open(strat_tester_csv, 'w') as file:
         pass
-    runner = StrategyRunner(strategies, data_provider, frequency, symbol, start_date, end_date,
+    runner = StrategyRunner(strategies, data_provider, frequency, symbol, risk_free_rate, start_date, end_date,
                             param_grids, opti_algo, invested_amount, transaction_costs, iterations, predictive_strat, strat_tester_csv)
     logging.info("Optimizing trading_strategies...")
     start_time_opti = time.time()
@@ -120,7 +123,7 @@ if __name__ == '__main__':
 
     trading_platform = 'Alpaca'
     strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol,
-                                   start_date, end_date, invested_amount, transaction_costs, predictive_strat,
+                                   risk_free_rate,start_date, end_date, invested_amount, transaction_costs, predictive_strat,
                                    contract_multiplier, data_provider, trading_platform, broker_config)
     trade_sender = threading.Thread(target=strat_run.run)
     trade_sender.start()
@@ -143,7 +146,7 @@ if __name__ == '__main__':
 
     alpaca_platform = AlpacaPlatform(broker_config)
 
-    portfolio_manager_app = PortfolioManagementApp(alpaca_platform, frequency, symbol, comparison_data['returns'])
+    portfolio_manager_app = PortfolioManagementApp(alpaca_platform, frequency, symbol, risk_free_rate, comparison_data['returns'])
     # Start the PortfolioManagementApp server thread
     portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
     portfolio_server_thread.start()

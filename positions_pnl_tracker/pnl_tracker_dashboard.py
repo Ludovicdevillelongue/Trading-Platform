@@ -39,10 +39,11 @@ class PortfolioDashboard:
         )
 
 class PortfolioManagementApp:
-    def __init__(self, platform, frequency, symbol, benchmark):
+    def __init__(self, platform, frequency, symbol, risk_free_rate, benchmark):
         self.platform = platform
         self.frequency=frequency
         self.symbol=symbol
+        self.risk_free_rate=risk_free_rate
         self.benchmark=benchmark
         self.app = dash.Dash(__name__, suppress_callback_exceptions=True)
         self.setup_layout()
@@ -77,7 +78,7 @@ class PortfolioManagementApp:
                 orders_data = self.platform.get_orders()          # Assuming DataFrame
                 positions_data = self.platform.get_positions()    # Assuming DataFrame
                 portfolio_history = self.platform.get_portfolio_history()
-                portfolio_metrics=self.platform.get_portfolio_metrics(self.frequency, self.symbol, self.benchmark)
+                portfolio_metrics=self.platform.get_portfolio_metrics(self.frequency, self.symbol, self.risk_free_rate, self.benchmark)
 
                 graph = PortfolioDashboard.create_portfolio_value_graph(portfolio_history)
                 portfolio_metrics_table=PortfolioDashboard.create_data_table(portfolio_metrics)

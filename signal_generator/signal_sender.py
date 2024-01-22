@@ -11,13 +11,14 @@ from indicators.performances_indicators import RiskFreeRate
 
 
 class LiveStrategyRunner:
-    def __init__(self, strategy_name, strategy_class, optimization_results, frequency, symbol, start_date, end_date,
+    def __init__(self, strategy_name, strategy_class, optimization_results, frequency, symbol, risk_free_rate, start_date, end_date,
                  amount, transaction_costs, predictive_strat, contract_multiplier, data_provider, trading_platform, broker_config):
         self.strategy_name = strategy_name
         self.strategy_class = strategy_class
         self.optimization_results = optimization_results
         self.frequency = frequency
         self.symbol = symbol
+        self.risk_free_rate=risk_free_rate
         self.start_date = start_date
         self.end_date = end_date
         self.amount = amount
@@ -29,7 +30,6 @@ class LiveStrategyRunner:
         self.current_positions = {name: 0 for name in optimization_results}
         self.contract_multiplier = contract_multiplier
         self.real_time_data = None
-        self.risk_free_rate=RiskFreeRate().get_risk_free_rate()
         if self.trading_platform == 'Alpaca':
             self.broker = AlpacaTradingBot(broker_config)
 
