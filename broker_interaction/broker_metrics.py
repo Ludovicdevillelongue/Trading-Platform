@@ -26,7 +26,7 @@ class TradingPlatform:
     def get_portfolio_history(self):
         raise NotImplementedError
 
-    def get_portfolio_metrics(self, frequency, symbol, df_benchmark):
+    def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
         raise NotImplementedError
 
 class AlpacaPlatform(TradingPlatform):
@@ -90,7 +90,7 @@ class AlpacaPlatform(TradingPlatform):
         closed_positions=self.api.close_open_positions()
         return closed_positions
 
-    def get_portfolio_metrics(self, frequency, symbol, df_benchmark):
+    def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
         dict_key_metrics={}
         df_ptf=self.get_portfolio_history()
         df_ptf.set_index('timestamp', inplace=True)
@@ -107,7 +107,6 @@ class AlpacaPlatform(TradingPlatform):
         df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
 
         # Calculate Performance Indicators
-        risk_free_rate=RiskFreeRate().get_risk_free_rate()
 
         try:
             dict_key_metrics['sharpe_ratio']  = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])

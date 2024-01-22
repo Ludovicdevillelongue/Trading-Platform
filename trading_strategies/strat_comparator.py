@@ -11,13 +11,14 @@ from .strat_optimizer import StrategyOptimizer
 warnings.filterwarnings('ignore')
 
 class StrategyRunner:
-    def __init__(self, strategies, data_provider, frequency, symbol, start_date, end_date, param_grids, opti_algo,
+    def __init__(self, strategies, data_provider, frequency, symbol, risk_free_rate, start_date, end_date, param_grids, opti_algo,
                  amount, transaction_costs, iterations, predictive_strat, strat_tester_csv):
         """
         Initialize the StrategyRunner with given parameters.
 
         :param strategies: Dictionary of strategy names and their corresponding classes.
         :param symbol: The symbol for which the trading_strategies will be run.
+        :param risk_free_rate: value of risk free rate
         :param data_provider: source of data
         :param frequency: The frequency of the data.
         :param start_date: The starting date for the trading_strategies.
@@ -33,6 +34,7 @@ class StrategyRunner:
         self.data_provider=data_provider
         self.frequency = frequency
         self.symbol = symbol
+        self.risk_free_rate=risk_free_rate
         self.start_date = start_date
         self.end_date = end_date
         self.amount = amount
@@ -43,7 +45,6 @@ class StrategyRunner:
         self.iterations=iterations
         self.predictive_strat=predictive_strat
         self.strat_tester_csv=strat_tester_csv
-        self.risk_free_rate=RiskFreeRate().get_risk_free_rate()
 
         # Load data once and reuse, improving efficiency
         strat_creator=StrategyCreator(self.frequency, self.symbol, self.risk_free_rate, self.start_date,
