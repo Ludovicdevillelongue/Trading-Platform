@@ -29,49 +29,49 @@ if __name__ == '__main__':
     """
 
     strategies = {
-        # 'SMA': SMAVectorBacktester,
+        'SMA': SMAVectorBacktester,
         'BB': BollingerBandsBacktester,
         'RSI': RSIVectorBacktester,
         'MOM': MomVectorBacktester,
-        # 'MeanRev': MRVectorBacktester,
-        # 'Turtle': TurtleVectorBacktester,
-        # 'ParabolicSAR': ParabolicSARBacktester,
-        # 'MACD': MACDStrategy,
-        # 'Ichimoku': IchimokuStrategy,
-        # 'StochasticOscillator': StochasticOscillatorStrategy,
-        # 'ADX': ADXStrategy,
-        # 'Volume': VolumeStrategy,
-        # 'WilliamR': WilliamsRBacktester,
+        'MeanRev': MRVectorBacktester,
+        'Turtle': TurtleVectorBacktester,
+        'ParabolicSAR': ParabolicSARBacktester,
+        'MACD': MACDStrategy,
+        'Ichimoku': IchimokuStrategy,
+        'StochasticOscillator': StochasticOscillatorStrategy,
+        'ADX': ADXStrategy,
+        'Volume': VolumeStrategy,
+        'WilliamR': WilliamsRBacktester,
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
-    regression_methods = ['linear', 'poly', 'logistic','ridge', 'lasso', 'elastic_net', 'bayesian', 'svr', 'no_regression']
+    regression_methods = ['no_regression']
 
     param_grids = {
-        # 'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
+        'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
         'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5), 'reg_method': regression_methods},
         'RSI': {'RSI_period': (5, 15), 'overbought_threshold': (65, 75), 'oversold_threshold': (25, 35), 'reg_method': regression_methods},
         'MOM': {'momentum': (5, 15), 'reg_method': regression_methods},
-        # 'MeanRev': {'sma': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
-        # 'Turtle': {'window_size': (10, 30), 'reg_method': regression_methods},
-        # 'ParabolicSAR': {'SAR_step': (0.01, 0.1), 'SAR_max': (0.1, 0.4), 'reg_method': regression_methods},
-        # 'MACD': {'short_window': (3, 8), 'long_window': (10, 20), 'signal_window': (3, 9), 'reg_method': regression_methods},
-        # 'Ichimoku': {'conversion_line_period': (3, 6), 'base_line_period': (10, 20), 'leading_span_b_period': (20, 40),
-        #              'displacement': (10, 20), 'reg_method': regression_methods},
-        # 'StochasticOscillator': {'k_window': (5, 15), 'd_window': (2, 5), 'buy_threshold': (15, 30),
-        #                          'sell_threshold': (70, 85), 'reg_method': regression_methods},
-        # 'ADX': {'adx_period': (5, 15), 'di_period': (5, 15), 'threshold': (15, 25), 'reg_method': regression_methods},
-        # 'Volume': {'volume_threshold': (1.0, 4.0), 'volume_window': (2, 30), 'reg_method': regression_methods},
-        # 'WilliamR': {'lookback_period': (5, 15), 'overbought': (10, 20), 'oversold': (80, 90), 'reg_method': regression_methods},
+        'MeanRev': {'sma': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
+        'Turtle': {'window_size': (10, 30), 'reg_method': regression_methods},
+        'ParabolicSAR': {'SAR_step': (0.01, 0.1), 'SAR_max': (0.1, 0.4), 'reg_method': regression_methods},
+        'MACD': {'short_window': (3, 8), 'long_window': (10, 20), 'signal_window': (3, 9), 'reg_method': regression_methods},
+        'Ichimoku': {'conversion_line_period': (3, 6), 'base_line_period': (10, 20), 'leading_span_b_period': (20, 40),
+                     'displacement': (10, 20), 'reg_method': regression_methods},
+        'StochasticOscillator': {'k_window': (5, 15), 'd_window': (2, 5), 'buy_threshold': (15, 30),
+                                 'sell_threshold': (70, 85), 'reg_method': regression_methods},
+        'ADX': {'adx_period': (5, 15), 'di_period': (5, 15), 'threshold': (15, 25), 'reg_method': regression_methods},
+        'Volume': {'volume_threshold': (1.0, 4.0), 'volume_window': (2, 30), 'reg_method': regression_methods},
+        'WilliamR': {'lookback_period': (5, 15), 'overbought': (10, 20), 'oversold': (80, 90), 'reg_method': regression_methods},
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
-    opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
+    opti_algo = [RandomSearchAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
     data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
     with open(data_freq, 'r') as file:
         frequency = yaml.safe_load(file)
-    frequency = frequency[data_provider]['minute']
+    frequency = frequency[data_provider]['day']
     symbol = 'TSLA'
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
     contract_multiplier = 10
-    iterations = 100
+    iterations = 10
     predictive_strat=False
 
     """
@@ -107,7 +107,6 @@ if __name__ == '__main__':
     threading.Thread(target=app.run_server).start()
     threading.Thread(target=app.open_browser).start()
     best_strat = max(best_strats, key=lambda k: best_strats[k]['results']['sharpe_ratio'])
-    print(best_strats)
 
     """
     --------------------------------------------------------------------------------------------------------------------
@@ -118,12 +117,12 @@ if __name__ == '__main__':
     threads = []
 
     trading_platform = 'Alpaca'
-    # strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol,
-    #                                start_date, end_date, invested_amount, transaction_costs, predictive_strat,
-    #                                contract_multiplier, data_provider, trading_platform, broker_config)
-    # trade_sender = threading.Thread(target=strat_run.run)
-    # trade_sender.start()
-    # threads.append(trade_sender)
+    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency, symbol,
+                                   start_date, end_date, invested_amount, transaction_costs, predictive_strat,
+                                   contract_multiplier, data_provider, trading_platform, broker_config)
+    trade_sender = threading.Thread(target=strat_run.run)
+    trade_sender.start()
+    threads.append(trade_sender)
 
     """
     --------------------------------------------------------------------------------------------------------------------

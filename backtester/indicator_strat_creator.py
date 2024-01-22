@@ -10,6 +10,7 @@ from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
 import yfinance as yf
 from backtester.dl_predictor import LSTM
+from backtester.ml_predictor import MLPredictor
 from data_loader.data_retriever import DataRetriever
 import warnings
 # To deactivate all warnings:
@@ -116,11 +117,11 @@ class StrategyCreator:
         #RMSE or MAE less than 0.1 might be considered good
         return {'RMSE': rmse, 'MAE': mae}
 
-    def regression_positions(self, data_strat, signal_metric, reg_method):
-        data_regression = data_strat[[signal_metric, "position"]][data_strat["position"] != 0]
+    def regression_positions(self, data_strat, signal_metric, position_type, reg_method):
+        data_regression = data_strat[[signal_metric, position_type]][data_strat[position_type] != 0]
         try:
             X = data_regression[[signal_metric]].values.reshape(-1, 1)
-            y = data_regression["position"].values
+            y = data_regression[position_type].values
 
             if reg_method == "linear":
                 model = LinearRegression()
@@ -371,7 +372,7 @@ class SMAVectorBacktester(StrategyCreator):
 
 
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
 
         '''
         Backtests the trading strategy.
@@ -380,17 +381,18 @@ class SMAVectorBacktester(StrategyCreator):
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, -1)
         data_strat['diff_SMA']=data_strat['SMA1']-data_strat['SMA2']
-        if self.predictive_strat:
-            data_sized=LSTM(self.frequency, data_strat[['SMA1', 'SMA2', 'position']],5, 'SMA').fit()
+        if predictive_strat:
+            data_pred=MLPredictor(data_strat, ['SMA1', 'SMA2'], 1).run()
+            data_sized = self.regression_positions(data_pred, "diff_SMA", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
         else:
-            pass
-        data_sized=self.regression_positions(data_strat, "diff_SMA", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+            data_sized = self.regression_positions(data_strat, "diff_SMA", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
 
 
@@ -429,7 +431,7 @@ class BollingerBandsBacktester(StrategyCreator):
         plt.title("Bollinger Bands Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         ''' Backtests the trading strategy. '''
         self.set_parameters(self.window_size, self.num_std_dev)
         data_strat = self.data.copy().dropna()
@@ -443,16 +445,20 @@ class BollingerBandsBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], -1, data_strat['position'])  # sell signal
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
-        # Implement the rest of the strategy logic similar to SMAVectorBacktester
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['close', 'lower_band', 'upper_band'], 1).run()
+            data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "close", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
+
 
 class RSIVectorBacktester(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, RSI_period, overbought_threshold, oversold_threshold,
@@ -493,7 +499,7 @@ class RSIVectorBacktester(StrategyCreator):
         plt.title("RSI Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         self.set_parameters(self.RSI_period, self.overbought_threshold, self.oversold_threshold)
         data_strat = self.data.copy().dropna()
 
@@ -509,14 +515,20 @@ class RSIVectorBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
         data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, -1, data_strat['position'])  # sell signal
 
-        data_sized=self.regression_positions(data_strat, "RSI", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['RSI'], 1).run()
+            data_sized = self.regression_positions(data_pred, "RSI", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "RSI", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
+
 
 
 class MomVectorBacktester(StrategyCreator):
@@ -543,20 +555,26 @@ class MomVectorBacktester(StrategyCreator):
         plt.title("Momentum Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         ''' Backtests the trading strategy.
         '''
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.sign(data_strat['returns'].rolling(self.momentum).mean())
         data_strat=data_strat.dropna(axis=0)
-        data_sized=self.regression_positions(data_strat, "returns", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['returns'], 1).run()
+            data_sized = self.regression_positions(data_pred, "returns", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "returns", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
+
 
 class MRVectorBacktester(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, sma, threshold, reg_method, amount, transaction_costs, predictive_strat):
@@ -589,7 +607,7 @@ class MRVectorBacktester(StrategyCreator):
         plt.title("Mean Reversion Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         self.set_parameters(int(self.sma))
         data_strat = self.data.copy().dropna()
         data_strat['distance'] = data_strat['close'] - data_strat['sma']
@@ -605,13 +623,18 @@ class MRVectorBacktester(StrategyCreator):
                                     0, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
-        data_sized=self.regression_positions(data_strat, "distance", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['distance'], 1).run()
+            data_sized = self.regression_positions(data_pred, "distance", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "distance", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
 
 class TurtleVectorBacktester(StrategyCreator):
@@ -674,15 +697,20 @@ class TurtleVectorBacktester(StrategyCreator):
                 data.orders.values[k] = 0
         return data
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         data_strat = self.calculate_turtle()
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['long_exit', 'long_entry', 'short_exit', 'short_entry'], 1).run()
+            data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "close", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
 
 class ParabolicSARBacktester(StrategyCreator):
@@ -758,22 +786,25 @@ class ParabolicSARBacktester(StrategyCreator):
         # plt.show()
 
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         ''' Backtests the trading strategy. '''
         data_strat = self.calculate_parabolic_sar()
 
         # Define trading signals
         data_strat['position'] = np.where(data_strat['trend'] == 1, 1, -1)  # Long when trend is up, short when trend is down
 
-        # Implement the rest of the strategy logic
-        data_sized = self.regression_positions(data_strat, "trend", self.reg_method)
-        self.data_signal = data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['trend'], 1).run()
+            data_sized = self.regression_positions(data_pred, "trend", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "trend", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
 
 
@@ -808,7 +839,7 @@ class MACDStrategy(StrategyCreator):
         # plt.show()
 
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         data_strat = self.data.copy()
         # MACD calculation
         data_strat['ema_short'] = data_strat['close'].ewm(span=self.short_window, adjust=False).mean()
@@ -817,14 +848,18 @@ class MACDStrategy(StrategyCreator):
         data_strat['signal'] = data_strat['macd'].ewm(span=self.signal_window, adjust=False).mean()
         data_strat['position'] = np.where(data_strat['macd'] > data_strat['signal'], 1, -1)
 
-        data_sized=self.regression_positions(data_strat, "macd", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['macd', 'signal'], 1).run()
+            data_sized = self.regression_positions(data_pred, "macd", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "macd", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
 
 class IchimokuStrategy(StrategyCreator):
@@ -882,7 +917,7 @@ class IchimokuStrategy(StrategyCreator):
         plt.title("Ichimoku Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         data_strat = self.calculate_ichimoku()
 
         # Trading signals based on Ichimoku
@@ -894,15 +929,18 @@ class IchimokuStrategy(StrategyCreator):
         data_strat['position'] = np.where((data_strat['conversion_line'] < data_strat['base_line']) &
                                     (data_strat['close'] < data_strat['leading_span_A']) &
                                     (data_strat['close'] < data_strat['leading_span_B']), -1, data_strat['position'])
-
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['close', 'conversion_line', 'base_line', 'leading_span_A', 'leading_span_B'], 1).run()
+            data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "close", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
 
 class StochasticOscillatorStrategy(StrategyCreator):
@@ -944,24 +982,27 @@ class StochasticOscillatorStrategy(StrategyCreator):
         plt.title("Stochastic Oscillator Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         data_strat = self.calculate_stochastic_oscillator()
 
         # Trading signals based on Stochastic Oscillator
         data_strat['position'] = np.where(data_strat['%K'] < data_strat['%D'], 1, 0)  # Buy signal
         data_strat['position'] = np.where(data_strat['%K'] > data_strat['%D'], -1, data_strat['position'])  # Sell signal
-
-
         data_strat['Diff_%K_%D'] = data_strat['%D'] - data_strat['%K']
-        data_sized=self.regression_positions(data_strat, "Diff_%K_%D", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['%K', '%D'], 1).run()
+            data_sized = self.regression_positions(data_pred, "Diff_%K_%D", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "Diff_%K_%D", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
+
 
 class ADXStrategy(StrategyCreator):
     def __init__(self, frequency, data, symbol, start_date, end_date, adx_period, di_period, threshold, reg_method, amount,
@@ -1016,7 +1057,7 @@ class ADXStrategy(StrategyCreator):
 
         return data
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         data_strat = self.calculate_adx()
 
         # Trading signals based on ADX, +DI, and -DI
@@ -1025,14 +1066,18 @@ class ADXStrategy(StrategyCreator):
                                     data_strat['position'])  # Sell signal
 
         data_strat['Diff_DI'] = data_strat['+DI'] - data_strat['-DI']
-        data_sized=self.regression_positions(data_strat, "Diff_DI", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['-DI', '+DI', 'ADX'], 1).run()
+            data_sized = self.regression_positions(data_pred, "Diff_DI", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "Diff_DI", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
 
 
@@ -1065,7 +1110,7 @@ class VolumeStrategy(StrategyCreator):
         # plt.show()
 
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         data_strat = self.data.copy()
 
         # Calculate the average volume over a specified period
@@ -1077,15 +1122,21 @@ class VolumeStrategy(StrategyCreator):
         # Define a simple trading logic: buy when there is a volume spike, sell otherwise
         data_strat['position'] = np.where(data_strat['volume_spike'], 1, -1)
 
-        data_sized=self.regression_positions(data_strat, "volume_spike", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['volume_spike'], 1).run()
+            data_sized = self.regression_positions(data_pred, "volume_spike", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "volume_spike", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
+
+
 
 
 class WilliamsRBacktester(StrategyCreator):
@@ -1117,7 +1168,7 @@ class WilliamsRBacktester(StrategyCreator):
         plt.title("William R Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         data_strat=self.data.copy()
         high = data_strat['high'].rolling(self.lookback_period).max()
         low = data_strat['low'].rolling(self.lookback_period).min()
@@ -1126,15 +1177,20 @@ class WilliamsRBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['%R'] < -self.oversold, 1, 0)
         data_strat['position'] = np.where(data_strat['%R'] > -self.overbought, -1, data_strat['position'])
 
-        data_sized=self.regression_positions(data_strat, "%R", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['%R'], 1).run()
+            data_sized = self.regression_positions(data_pred, "%R", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "%R", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
+
 
 
 class VolatilityBreakoutBacktester(StrategyCreator):
@@ -1175,7 +1231,7 @@ class VolatilityBreakoutBacktester(StrategyCreator):
         plt.title("Volatility Breakout Trading Strategy")
         # plt.show()
 
-    def run_strategy(self):
+    def run_strategy(self, predictive_strat=False):
         ''' Backtests the trading strategy. '''
         data_strat = self.data.copy().dropna()
 
@@ -1189,13 +1245,16 @@ class VolatilityBreakoutBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], -1, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
-        # Implement the rest of the strategy logic similar to SMAVectorBacktester
-        data_sized=self.regression_positions(data_strat, "close", self.reg_method)
-        self.data_signal=data_sized['regularized_position'][-1]
-        self.analyse_strategy(data_sized)
-        return self.calculate_performance(data_sized)
+        if predictive_strat:
+            data_pred = MLPredictor(data_strat, ['close', 'upper_band', 'lower_band'], 1).run()
+            data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+        else:
+            data_sized = self.regression_positions(data_strat, "close", "position", self.reg_method)
+            self.data_signal = data_sized['regularized_position'][-1]
+            self.analyse_strategy(data_sized)
+            return self.calculate_performance(data_sized)
 
     def generate_signal(self):
-        ''' Generates a trading signal for the most recent data point. '''
-        self.run_strategy()
+        self.run_strategy(self.predictive_strat)
         return self.data_signal
