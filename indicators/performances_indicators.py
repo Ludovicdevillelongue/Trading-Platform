@@ -66,13 +66,14 @@ class SortinoRatio():
 
     def calculate(self, returns):
         # Setting the target return, typically 0 or the risk-free rate
-        target_return = self.risk_free_rate
+        target_return = self.risk_free_rate / self.frequency['annualized_coefficient']
         downside_returns = returns[returns < target_return]
-        downside_deviation = np.std(downside_returns)
+        # Annualizing the downside deviation
+        annualized_downside_deviation = np.std(downside_returns) * np.sqrt(self.frequency['annualized_coefficient'])
         excess_returns = returns - (self.risk_free_rate / self.frequency['annualized_coefficient'])
         annualized_mean_excess_return = np.mean(excess_returns) * self.frequency['annualized_coefficient']
-        # Calculating the Sortino Ratio
-        return annualized_mean_excess_return / downside_deviation if downside_deviation != 0 else 0
+        # Calculating the Sortino Ratio using the annualized downside deviation
+        return annualized_mean_excess_return / annualized_downside_deviation if annualized_downside_deviation != 0 else 0
 
 
 # Class for Calmar Ratio

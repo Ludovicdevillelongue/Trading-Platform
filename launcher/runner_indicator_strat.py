@@ -7,10 +7,8 @@ import os
 import time
 import yaml
 
-from indicators.performances_indicators import RiskFreeRate
-from positions_pnl_tracker.live_strat_metrics_manual_tracker import LiveStrategyTracker
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from indicators.performances_indicators import RiskFreeRate
 from broker_interaction.broker_order import GetBrokersConfig
 from broker_interaction.broker_metrics import AlpacaPlatform
 from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
@@ -23,6 +21,7 @@ from trading_strategies.indicator_strat_creator import SMAVectorBacktester, Boll
 from trading_strategies.strat_comparator import StrategyRunner
 from backtester_tracker.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
+from positions_pnl_tracker.live_strat_metrics_manual_tracker import LiveStrategyTracker
 
 if __name__ == '__main__':
     """
@@ -84,7 +83,7 @@ if __name__ == '__main__':
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
     contract_multiplier = 10
-    iterations = 100
+    iterations = 50
     predictive_strat=True
 
     """
