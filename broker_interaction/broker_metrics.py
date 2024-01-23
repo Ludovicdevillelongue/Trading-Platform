@@ -5,7 +5,7 @@ import pandas as pd
 import yfinance as yf
 
 from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha, \
-    RiskFreeRate
+    RiskFreeRate, Returns, CumulativeReturns
 
 
 class TradingPlatform:
@@ -100,8 +100,8 @@ class AlpacaPlatform(TradingPlatform):
         except Exception as e:
             pass
         # Calculate returns
-        df_ptf['ptf_returns'] =np.log(df_ptf['equity'] / df_ptf['equity'].shift(1))
-        df_ptf['ptf_creturns'] = df_ptf['base_value'].iloc[0] * df_ptf['ptf_returns'].cumsum().apply(np.exp)
+        df_ptf['ptf_returns'] =Returns().get_metric(df_ptf['equity'])
+        df_ptf['ptf_creturns'] = CumulativeReturns().get_metric(df_ptf['base_value'].iloc[0], df_ptf['ptf_returns'])
         df_ptf=df_ptf.dropna(axis=0)
         df_ptf_vs_bench = df_ptf.merge(df_benchmark, left_index=True, right_index=True, how='outer')
         df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
