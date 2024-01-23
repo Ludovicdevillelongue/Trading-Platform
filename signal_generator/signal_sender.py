@@ -7,7 +7,8 @@ from data_loader.data_retriever import DataRetriever
 import numpy as np
 import os
 
-from indicators.performances_indicators import RiskFreeRate
+from indicators.performances_indicators import RiskFreeRate, Returns, LogReturns, CumulativeReturns, \
+    CumulativeLogReturns
 
 
 class LiveStrategyRunner:
@@ -43,9 +44,10 @@ class LiveStrategyRunner:
                 self.real_time_data = \
                     DataRetriever(self.frequency, self.start_date, self.end_date).yfinance_latest_data(self.symbol)[
                         ['open', 'high', 'low', 'close', 'volume']]
-
-            self.real_time_data['returns'] = np.log(self.real_time_data['close'] / self.real_time_data['close'].shift(1))
-            self.real_time_data['creturns']=self.amount * self.real_time_data['returns'].cumsum().apply(np.exp)
+            self.real_time_data['returns']=Returns().get_metric(self.real_time_data['close'])
+            self.real_time_data['log_returns']=LogReturns().get_metric(self.real_time_data['returns'])
+            self.real_time_data['creturns']=CumulativeReturns().get_metric(self.amount, self.real_time_data['returns'])
+            self.real_time_data['log_creturns']=CumulativeLogReturns().get_metric(self.amount, self.real_time_data['log_returns'])
             self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
         except Exception as e:
             self.logger_monitor(f"Error in data fetching: {e}")
@@ -89,6 +91,8 @@ class LiveStrategyRunner:
         side = 'buy' if qty >0 else 'sell'
 
         # Alpaca order placement
+        if '-' in self.symbol:
+            self.symbol=self.symbol.replace("-","/")
         self.broker.submit_order(self.symbol, round(abs(qty)), side)
 
         self.report_trade(self.symbol, strategy_name, side, abs(qty))

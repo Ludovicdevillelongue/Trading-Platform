@@ -17,7 +17,7 @@ class Returns:
     @staticmethod
     def get_metric(c: pd.Series) -> np.array:
         res = np.empty_like(c)
-        res[0] = np.nan  # Set the first element to NaN as there's no previous price
+        res[0] = 0
         res[1:] = (c.values[1:] - c.values[:-1]) / c.values[:-1]
 
         return res
