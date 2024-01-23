@@ -77,7 +77,7 @@ if __name__ == '__main__':
         frequency = yaml.safe_load(file)
     frequency = frequency[data_provider]['day']
     symbol = 'TSLA'
-    risk_free_rate = RiskFreeRate().get_risk_free_rate()
+    risk_free_rate = RiskFreeRate().get_metric()
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
         "%Y-%m-%d %H:%M:%S")
