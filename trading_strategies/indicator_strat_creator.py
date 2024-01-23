@@ -8,8 +8,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
-import yfinance as yf
-from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Alpha, Beta
+from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Alpha, Beta, \
+    LogReturns, Returns, CumulativeReturns, CumulativeLogReturns
 from signal_generator.ml_predictor import MLPredictor
 from data_loader.data_retriever import DataRetriever
 import warnings
@@ -41,8 +41,10 @@ class StrategyCreator:
                 [['open', 'high', 'low', 'close', 'volume']]
             # DataRetriever(self.start_date, self.end_date).write_data(raw)
             # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
-            raw['returns'] = np.log(raw['close'] / raw['close'].shift(1))
-            raw['creturns'] = self.amount * raw['returns'].cumsum().apply(np.exp)
+            raw['returns']=Returns().get_metric(raw['close'])
+            raw['log_returns']=LogReturns().get_metric(raw['returns'])
+            raw['creturns']=CumulativeReturns().get_metric(self.amount, raw['returns'])
+            raw['log_creturns']=CumulativeLogReturns().get_metric(self.amount, raw['log_returns'])
             return raw
 
     def select_data(self, start, end):
@@ -223,26 +225,18 @@ class StrategyCreator:
     def calculate_performance(self, data):
         """ Calculate performance and return a DataFrame with results. """
         # get relevant columns
-        data = data[['returns', 'creturns', 'regularized_position', 'orders']]
+        data = data[['returns', 'creturns', 'log_returns', 'log_creturns', 'regularized_position', 'orders']]
         # Calculate strategy return
         data['strategy'] = data['regularized_position'].shift(1) * data['returns']
+        data['log_strategy']=data['regularized_position'].shift(1) * data['log_returns']
         data['strategy'].iloc[0] = 0
         data['orders'].iloc[0] = data['regularized_position'].iloc[0]
 
         # Subtract transaction costs from return when trade takes place
         data.loc[data['orders'] != 0, 'strategy'] -= self.transaction_costs * abs(data['orders'])
 
-        # Annualize the mean log return
-        data['an_mean_log_returns'] = data[['returns', 'strategy']].mean() * self.frequency['annualized_coefficient']
-        # Convert log returns to regular returns for comparison
-        data['an_mean_returns'] = np.exp(data['an_mean_log_returns']) - 1
-
-        # Annualize the standard deviation of log returns
-        data['an_std_log_returns'] = data[['returns', 'strategy']].std() * self.frequency[
-            'annualized_coefficient'] ** 0.5
-
-        # Calculate cumulative returns
-        data['cstrategy'] = self.amount * data['strategy'].cumsum().apply(np.exp)
+        # Calculate cumulative returns of the strategy
+        data['cstrategy']=CumulativeReturns().get_metric(self.amount, data['strategy'])
 
         # Save results for further output or plot
         self.results = data
@@ -268,12 +262,13 @@ class StrategyCreator:
         try:
             beta = Beta().calculate(data['strategy'], data['returns'])
             alpha = Alpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
+
+
         except Exception as e:
             beta = 0
             alpha = 0
 
-        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2), round(sortino_ratio, 2), round(calmar_ratio,
-                                                                                                        2), \
+        return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2), round(sortino_ratio, 2), round(calmar_ratio,2), \
                round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
 
     def position_holding_time(self, data):
