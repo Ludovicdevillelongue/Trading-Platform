@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Alpha, Beta, \
     LogReturns, Returns, CumulativeReturns, CumulativeLogReturns
 from signal_generator.ml_predictor import MLPredictor
-from data_loader.data_retriever import DataRetriever
+from data_loader.data_retriever import DataManager
 import warnings
 
 # To deactivate all warnings:
@@ -37,7 +37,7 @@ class StrategyCreator:
         ''' Retrieves and prepares the data'''
         if data_provider == 'yfinance':
             # raw = pd.read_hdf(DataRetriever(self.start_date, self.end_date).read_data())
-            raw = DataRetriever(self.frequency, self.start_date, self.end_date).yfinance_download(self.symbol) \
+            raw = DataManager(self.frequency, self.start_date, self.end_date).yfinance_download(self.symbol) \
                 [['open', 'high', 'low', 'close', 'volume']]
             # DataRetriever(self.start_date, self.end_date).write_data(raw)
             # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
@@ -342,7 +342,6 @@ class SMAVectorBacktester(StrategyCreator):
                  'v', markersize=7, color='k')
         plt.legend(["Price", "Short mavg", "Long mavg", "Buy", "Sell"])
         plt.title("Simple Moving Average Trading Strategy")
-        # plt.show()
 
     def run_strategy(self, predictive_strat=False):
 

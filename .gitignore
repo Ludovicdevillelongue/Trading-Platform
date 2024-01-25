@@ -5,6 +5,7 @@ config/data_provider_config.yml
 data_frequency_path
 config/data_frequency.yml
 strat_tester_path
-launcher/strat_tester_recap.csv
+backtester_tracker/strat_tester_recap.csv
 error_log_path
 launcher/error_log.txt
+positions_pnl_tracker/self.symbol_position_history

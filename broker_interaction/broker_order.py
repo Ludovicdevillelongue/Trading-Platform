@@ -21,38 +21,17 @@ class AlpacaTradingBot:
 
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
 
-    def submit_order(self, symbol, qty, side, order_type='market', time_in_force='day'):
-        try:
-            self.api.submit_order(
-                symbol=symbol,
-                qty=qty,
-                side=side,
-                type=order_type,
-                time_in_force=time_in_force
-            )
-            print(f"Order submitted: {side} {qty} shares of {symbol}")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            outstanding_qty=qty
-            while outstanding_qty>0:
-                self.api.submit_order(
-                    symbol=symbol,
-                    qty=1,
-                    side=side,
-                    type=order_type,
-                    time_in_force=time_in_force
-                )
-                outstanding_qty-=1
-                print(f"Order submitted: {side} {outstanding_qty} shares of {symbol}")
+    def submit_order(self, symbol, qty, side, order_type='market', time_in_force='gtc'):
+        self.api.submit_order(
+            symbol=symbol,
+            qty=qty,
+            side=side,
+            type=order_type,
+            time_in_force=time_in_force
+        )
+        print(f"Order submitted: {side} {qty} shares of {symbol}")
 
-    def get_positions(self):
-        try:
-            positions = self.api.list_positions()
-            if not positions:
-                pass
-            if len(positions)==0:
-                pass
-            else:
-                return positions
-        except Exception as e:
-            print(f"An error occurred: {e}")
+
+    def close_open_positions(self):
+        closed_positions=self.api.close_open_positions()
+        return closed_positions
