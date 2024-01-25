@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-from indicators.indicators import RollingIndicator, PerformanceIndicator
-
 
 class RiskFreeRate():
     @staticmethod
@@ -23,10 +21,15 @@ class Returns:
         return res
 
 class CumulativeReturns():
-
     @staticmethod
     def get_metric(amount, returns_array: np.array) -> np.array:
-        return amount * returns_array.cumsum().apply(np.exp)
+        # Convert simple returns to growth factors (1 + return)
+        growth_factors = 1 + returns_array
+        # Calculate the cumulative product of the growth factors
+        cumulative_growth_factors = growth_factors.cumprod()
+        # The cumulative value is the initial amount times the cumulative growth factors
+        cumulative_values = amount * cumulative_growth_factors
+        return cumulative_values
 
 class LogReturns():
     @staticmethod

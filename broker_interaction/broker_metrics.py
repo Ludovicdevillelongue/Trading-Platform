@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+from data_loader.data_retriever import DataManager
 from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha, \
     RiskFreeRate, Returns, CumulativeReturns
 
@@ -83,20 +84,18 @@ class AlpacaPlatform(TradingPlatform):
         portfolio_history=pd.DataFrame(portfolio_history)
         portfolio_history['timestamp'] = portfolio_history['timestamp'].\
             apply(lambda x: pd.Timestamp.fromtimestamp(x))
+        portfolio_history.drop(index=portfolio_history.index[-1],axis=0,inplace=True)
         return portfolio_history
 
 
-    def close_open_positions(self):
-        closed_positions=self.api.close_open_positions()
-        return closed_positions
 
     def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
         dict_key_metrics={}
         df_ptf=self.get_portfolio_history()
         df_ptf.set_index('timestamp', inplace=True)
-        df_ptf=df_ptf.tz_localize('America/New_York')
+        df_ptf=df_ptf.tz_localize('Europe/Paris')
         try:
-            df_benchmark=df_benchmark.tz_localize('America/New_York')
+            df_benchmark=df_benchmark.tz_localize('Europe/Paris')
         except Exception as e:
             pass
         # Calculate returns
