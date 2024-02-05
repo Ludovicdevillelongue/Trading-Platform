@@ -1,3 +1,4 @@
+import threading
 from datetime import datetime, time
 import pandas as pd
 import pytz
@@ -33,6 +34,8 @@ class LiveStrategyRunner:
         self.current_positions = {name: 0 for name in optimization_results}
         self.contract_multiplier = contract_multiplier
         self.real_time_data = None
+        self.threads=[]
+        self.dashboard_open=False
         if self.trading_platform == 'Alpaca':
             self.broker = AlpacaTradingBot(broker_config)
 
@@ -57,13 +60,14 @@ class LiveStrategyRunner:
             if self.real_time_data is None:
                 pass
             opti_results_strategy = self.optimization_results[strategy_name]['params']
-            self.signal = strategy_class(self.frequency, self.real_time_data, self.symbol, self.risk_free_rate, self.start_date, self.end_date,
+            self.signal = strategy_class(self.frequency, self.real_time_data, self.symbol,
+                                         self.risk_free_rate, self.start_date, self.end_date,
                                          amount=self.amount, transaction_costs=self.transaction_costs,
                                          predictive_strat=self.predictive_strat,
                                          **opti_results_strategy).generate_signal()
 
             if self.signal != 0:
-                self.execute_trade(strategy_name, self.signal)
+                return self.execute_trade(strategy_name, self.signal)
             # Removed break; now it will loop continuously
         except Exception as e:
             self.logger_monitor(f"Error in strategy application: {e}")
@@ -73,13 +77,13 @@ class LiveStrategyRunner:
         current_position = 0
         broker_symbol=self.symbol.replace("-", "")
         if broker_positions.empty:
-            self.place_order(strategy_name, signal, current_position)
+            return self.place_order(strategy_name, signal, current_position)
         else:
             for i in range(len(broker_positions)):
                 if broker_positions.loc[i,'symbol'] == broker_symbol:
                     current_position = float(broker_positions.loc[i,'qty'])
                     if signal*self.contract_multiplier != current_position:
-                        self.place_order(strategy_name, signal, current_position)
+                        return self.place_order(strategy_name, signal, current_position)
 
 
     def place_order(self, strategy_name, signal, current_position):
@@ -89,7 +93,7 @@ class LiveStrategyRunner:
 
         #check if the requested position changed sufficiently compared to the old one -> regularize positions!!
         pct_change=(new_position-current_position)/new_position
-        if pct_change>0.5:
+        if abs(pct_change)>0.5:
             qty = ((float(new_position)) - float(current_position))
         else:
             qty = 0
@@ -103,30 +107,12 @@ class LiveStrategyRunner:
             self.broker.submit_order(self.symbol, abs(qty), side)
 
         #save position
-        dict_pos['time']=datetime.now().replace(second=0, microsecond=0)
         dict_pos['symbol']=self.symbol
         dict_pos['position']=new_position
         dict_pos['order']=qty
         df_pos = pd.DataFrame.from_dict(dict_pos, orient='index').T
-        pos_tracker_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                       f'positions_pnl_tracker/{self.symbol}_position_history.csv')
-        if not os.path.exists(pos_tracker_csv) or \
-                os.path.getsize(pos_tracker_csv) == 0:
-            # If the file doesn't exist or is empty, write with header
-            df_pos.to_csv(pos_tracker_csv, mode='w', header=True, index=False)
-        else:
-            # If the file exists read it
-            df_previous_positions = pd.read_csv(pos_tracker_csv)
-            #if the position is already registered do not add it again
-            if (dict_pos['time'] in df_previous_positions['time'].values) \
-                    and (dict_pos['symbol'] in df_previous_positions['symbol'].values):
-                pass
-            #add new position
-            else:
-                df_pos.to_csv(pos_tracker_csv, mode='a', header=False, index=False)
-        with open('.gitignore', 'a') as file:
-            file.write(f"\n{self.symbol}{'_position_history.csv'}")
         self.report_trade(self.symbol, strategy_name, side, abs(qty))
+        return df_pos
 
     def logger_monitor(self, message, *args, **kwargs):
         print(message)
@@ -136,34 +122,59 @@ class LiveStrategyRunner:
                             f'{symbol} following the {strategy_name} strategy: {order_type} {qty} units')
 
     def stop_loss(self):
-        portfolio_history = AlpacaPlatform(self.broker_config).get_portfolio_history().iloc[-1]
+        portfolio_history = AlpacaPlatform(self.broker_config).get_broker_portfolio_history().iloc[-1]
         #0.1% of initial portfolio value
         if portfolio_history['base_value']-portfolio_history['equity']>0.001*portfolio_history['base_value']:
             return True
 
-    def tracker(self):
+    def tracker(self, df_pos):
         #manual recap
-        LiveStrategyTracker(self.data_provider, self.symbol, self.frequency_yaml[self.data_provider]['minute'],
-                                                 self.start_date, self.end_date, self.amount).\
-            get_asset_metrics(self.frequency, self.risk_free_rate)
-        #brokerage platform recap
+        try:
+            LiveStrategyTracker(self.data_provider, self.symbol, self.frequency_yaml[self.data_provider]['minute'],
+                                                     self.start_date, self.end_date, self.amount).\
+                get_asset_metrics(self.frequency, self.risk_free_rate, df_pos)
+        except Exception as e:
+            pass
         alpaca_platform = AlpacaPlatform(self.broker_config)
-        alpaca_platform.get_portfolio_metrics(self.frequency, self.symbol, self.risk_free_rate,self.real_time_data['returns'])
+        alpaca_platform.get_portfolio_metrics(self.frequency, self.symbol, self.risk_free_rate, self.real_time_data['returns'])
+        #brokerage platform reca
+        # if not self.dashboard_open:
+        #     alpaca_platform = AlpacaPlatform(self.broker_config)
+        #     alpaca_platform.get_portfolio_metrics(self.frequency, self.symbol, self.risk_free_rate, self.real_time_data['returns'])
+        #     portfolio_manager_app = PortfolioManagementApp(alpaca_platform, self.frequency, self.symbol,
+        #                                                    self.risk_free_rate, self.real_time_data['returns'])
+        #     portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
+        #     portfolio_server_thread.start()
+        #     self.threads.append(portfolio_server_thread)
+        #
+        #     # Start the PortfolioManagementApp browser thread
+        #     portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
+        #     portfolio_browser_thread.start()
+        #     self.threads.append(portfolio_browser_thread)
+        #
+        #     self.dashboard_open = True
+
+    def tracker_thread(self, df_pos):
+        """Function to run the tracker in a separate thread."""
+        self.tracker(df_pos)
 
 
     def run(self):
         if self.frequency['interval']=='1d':
             self.fetch_and_update_real_time_data()
-            self.apply_strategy(self.strategy_name, self.strategy_class)
-            self.tracker()
+            df_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
+            tracker_tread=threading.Thread(target=self.tracker_thread, args=(df_pos,))
+            tracker_tread.start()
+            self.threads.append(tracker_tread)
         else:
             current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
             stop_time = time(22, 0, 0)
             if self.symbol!="BTC-USD":
                 while current_time < stop_time:
                     self.fetch_and_update_real_time_data()
-                    self.apply_strategy(self.strategy_name, self.strategy_class)
-                    self.tracker()
+                    df_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
+                    tracker_tread=threading.Thread(target=self.tracker_thread, args=(df_pos,)).start()
+                    self.threads.append(tracker_tread)
                     if self.stop_loss():
                         print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
                         closed_positions = self.broker.close_open_positions()
@@ -173,14 +184,17 @@ class LiveStrategyRunner:
             else:
                 while True:
                     self.fetch_and_update_real_time_data()
-                    self.apply_strategy(self.strategy_name, self.strategy_class)
-                    self.tracker()
+                    df_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
+                    self.tracker(df_pos)
+                    # tracker_tread=threading.Thread(target=self.tracker_thread, args=(df_pos,)).start()
+                    # self.threads.append(tracker_tread)
                     if self.stop_loss():
                         print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
                         closed_positions = self.broker.close_open_positions()
                         for i in range(len(closed_positions)):
                             print(f'Positions closed at {self.real_time_data.index[-1]} on {closed_positions[i]["symbol"]}')
                     counter.sleep(60)
+
 
 
 

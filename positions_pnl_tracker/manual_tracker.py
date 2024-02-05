@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -7,51 +9,72 @@ from indicators.performances_indicators import Returns, CumulativeReturns, Sharp
 
 
 class LiveStrategyTracker():
-    def __init__(self, data_provider:str, symbol:str, frequency:dict, start_date, end_date, amount):
-        self.data_provider=data_provider
-        self.symbol=symbol
-        self.frequency=frequency
-        self.start_date=start_date
-        self.end_date=end_date
-        self.amount=amount
-
+    def __init__(self, data_provider: str, symbol: str, frequency: dict, start_date, end_date, amount):
+        self.data_provider = data_provider
+        self.symbol = symbol
+        self.frequency = frequency
+        self.start_date = start_date
+        self.end_date = end_date
+        self.amount = amount
+        self.strat_tracker_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                              f'positions_pnl_tracker/{self.symbol}_strat_positions_history.csv')
 
     def get_data(self):
-        if self.data_provider=='yfinance':
-            historical_close_price=pd.DataFrame(DataManager(self.frequency, self.start_date, self.end_date).
-                                                yfinance_download(self.symbol)['close'])
+        if self.data_provider == 'yfinance':
+            historical_close_price = pd.DataFrame(DataManager(self.frequency, self.start_date, self.end_date).
+                                                  yfinance_download(self.symbol)['close'])
         else:
-            historical_close_price=pd.DataFrame()
+            historical_close_price = pd.DataFrame()
         return historical_close_price
 
-    def get_positions(self):
-        positions_recap=pd.read_csv(f'../positions_pnl_tracker/{self.symbol}_position_history.csv')
-        positions_recap['time']=pd.to_datetime(positions_recap['time'])
-        return (positions_recap.set_index('time')).tz_localize('Europe/Paris')
+    def get_previous_positions(self):
+        if not os.path.exists(self.strat_tracker_csv) or \
+                os.path.getsize(self.strat_tracker_csv) == 0:
+            previous_asset_positions = pd.DataFrame()
 
+        else:
+            previous_asset_positions = pd.read_csv(self.strat_tracker_csv,header=[0], index_col=[0])
+            previous_asset_positions.index = pd.to_datetime(previous_asset_positions.index).tz_convert('Europe/Paris')
+        return previous_asset_positions.sort_index()
 
-    def get_asset_history(self):
-        positions_recap=self.get_positions()
-        historical_close_price=self.get_data()
-        asset_history=positions_recap.merge(historical_close_price, left_index=True,
-                                             right_index=True, how='outer').ffill(axis=0).dropna()
-        asset_history['amount']=asset_history['close']*asset_history['position']
-        asset_history['returns']=Returns().get_metric(asset_history['close'])
-        asset_history['strategy']=asset_history['position'].shift(1) * asset_history['returns']
-        asset_history['cstrategy'] = CumulativeReturns().get_metric(self.amount, asset_history['strategy'])
-        asset_history['p&l'] = 0
-        for position_date in positions_recap.index:
-            mask = asset_history.index >= position_date
-            asset_history.loc[mask, 'p&l'] += ((asset_history.loc[mask, 'close'] - asset_history.at[position_date, 'close']) *
-                    asset_history.at[position_date, 'order'])
-        asset_history=asset_history.dropna(axis=0)
-        return asset_history
+    def get_asset_history(self, new_position):
+        previous_asset_positions = self.get_previous_positions()
+        historical_close_price = self.get_data()
+        try:
+            new_position['time'] = historical_close_price.index[-1]
+            new_position.set_index('time', inplace=True)
+        #no change in position/ position is none
+        except Exception as e:
+            new_position=pd.DataFrame()
+        try:
+            last_pos=pd.DataFrame(previous_asset_positions[['symbol', 'position', 'order']][previous_asset_positions['position']!=0].iloc[-1]).T
+            last_new_pos=pd.concat([last_pos, new_position], axis=0)
+        #no record of last position
+        except Exception as e:
+            last_new_pos=new_position
+        last_new_pos_close=last_new_pos.merge(historical_close_price, left_index=True,
+                                              right_index=True, how='outer').ffill().dropna(axis=0)
+        total_asset_history=pd.concat([last_new_pos_close, previous_asset_positions], axis=0).drop_duplicates().sort_index()
+        total_asset_history = total_asset_history.fillna(0)
+        total_asset_history.to_csv(self.strat_tracker_csv, mode='w', header=True, index=True)
+        total_asset_history['amount'] = total_asset_history['close'] * total_asset_history['position']
+        total_asset_history['returns'] = Returns().get_metric(total_asset_history['close'])
+        total_asset_history['strategy'] = (total_asset_history['position'].shift(1) * total_asset_history['returns']).fillna(0)
+        total_asset_history['cstrategy'] = CumulativeReturns().get_metric(self.amount, total_asset_history['strategy'])
+        total_asset_history['p&l'] = 0
+        # add p&l of last position to historical p&l
+        position_changes = total_asset_history['position'].diff().fillna(1) != 0
+        position_changes.iloc[0] = True
+        for position_date in position_changes[position_changes].index:
+            mask = total_asset_history.index >= position_date
+            total_asset_history.loc[mask, 'p&l'] += ((total_asset_history.loc[mask, 'close'] -
+                                                      total_asset_history.at[position_date, 'close']) *
+                                                     total_asset_history.at[position_date, 'order'])
+        return total_asset_history
 
-
-
-    def get_asset_metrics(self, frequency, risk_free_rate):
+    def get_asset_metrics(self, frequency, risk_free_rate, new_position):
         dict_key_metrics = {}
-        df_asset = self.get_asset_history()
+        df_asset = self.get_asset_history(new_position)
 
         # Calculate Performance Indicators
         try:
@@ -76,6 +99,3 @@ class LiveStrategyTracker():
         df_key_metrics = pd.DataFrame.from_dict(dict_key_metrics, orient='index').T
 
         return df_key_metrics
-
-
-

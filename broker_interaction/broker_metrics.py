@@ -1,3 +1,5 @@
+import os
+
 import alpaca_trade_api as tradeapi
 from datetime import datetime
 import numpy as np
@@ -24,7 +26,7 @@ class TradingPlatform:
     def get_positions(self):
         raise NotImplementedError
 
-    def get_portfolio_history(self):
+    def get_broker_portfolio_history(self):
         raise NotImplementedError
 
     def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
@@ -35,6 +37,8 @@ class AlpacaPlatform(TradingPlatform):
     def __init__(self, config):
         self.config=config
         self.get_api_connection()
+        self.broker_tracker_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                              f'positions_pnl_tracker/broker_ptf_history.csv')
 
     def get_api_connection(self):
         api_key = self.config['alpaca']['api_key']
@@ -79,7 +83,7 @@ class AlpacaPlatform(TradingPlatform):
         assets=self.api.list_assets()
         return assets
 
-    def get_portfolio_history(self):
+    def get_broker_portfolio_history(self):
         portfolio_history=self.api.get_daily_portfolio_history()
         portfolio_history=pd.DataFrame(portfolio_history)
         portfolio_history['timestamp'] = portfolio_history['timestamp'].\
@@ -87,28 +91,39 @@ class AlpacaPlatform(TradingPlatform):
         portfolio_history.drop(index=portfolio_history.index[-1],axis=0,inplace=True)
         return portfolio_history
 
+    def get_all_portfolio_history(self):
+        df_ptf_last_day = self.get_broker_portfolio_history()
+        df_ptf_last_day.set_index('timestamp', inplace=True)
+        df_ptf_last_day = df_ptf_last_day.tz_localize('Europe/Paris')
+        try:
+            df_ptf_history = pd.read_csv(self.broker_tracker_csv, header=[0], index_col=[0])
+            df_ptf_history.index = pd.to_datetime(df_ptf_history.index).tz_convert('Europe/Paris')
+            df_ptf = df_ptf_last_day.combine_first(df_ptf_history)
+        except Exception as e:
+            df_ptf = df_ptf_last_day
+        df_ptf.to_csv(self.broker_tracker_csv, mode='w', header=True, index=True)
+        return df_ptf
+
 
 
     def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
         dict_key_metrics={}
-        df_ptf=self.get_portfolio_history()
-        df_ptf.set_index('timestamp', inplace=True)
-        df_ptf=df_ptf.tz_localize('Europe/Paris')
-        try:
-            df_benchmark=df_benchmark.tz_localize('Europe/Paris')
-        except Exception as e:
-            pass
+        df_ptf=self.get_all_portfolio_history()
         # Calculate returns
         df_ptf['ptf_returns'] =Returns().get_metric(df_ptf['equity'])
         df_ptf['ptf_creturns'] = CumulativeReturns().get_metric(df_ptf['base_value'].iloc[0], df_ptf['ptf_returns'])
         df_ptf=df_ptf.dropna(axis=0)
+        try:
+            df_benchmark=df_benchmark.tz_localize('Europe/Paris')
+        except Exception as e:
+            pass
         df_ptf_vs_bench = df_ptf.merge(df_benchmark, left_index=True, right_index=True, how='outer')
         df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
 
         # Calculate Performance Indicators
 
         try:
-            dict_key_metrics['sharpe_ratio']  = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])
+            dict_key_metrics['sharpe_ratio'] = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])
         except Exception as e:
             dict_key_metrics['sharpe_ratio'] =0
         dict_key_metrics['sortino_ratio'] =SortinoRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])

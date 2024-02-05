@@ -12,7 +12,7 @@ class PortfolioDashboard:
     @staticmethod
     def create_portfolio_value_graph(portfolio_history):
         fig = go.Figure(data=[
-            go.Scatter(x=portfolio_history['timestamp'], y=portfolio_history['equity'])
+            go.Scatter(x=portfolio_history.index, y=portfolio_history['equity'])
         ])
         fig.update_layout(
             title='Portfolio Value Over Time',
@@ -49,6 +49,7 @@ class PortfolioManagementApp:
         self.setup_layout()
         self.setup_callbacks()
 
+
     def setup_layout(self):
         self.app.layout = html.Div([
             html.H1("Portfolio Management Dashboard", style={'textAlign': 'center'}),
@@ -77,7 +78,7 @@ class PortfolioManagementApp:
                 portfolio_data = self.platform.get_account_info()  # Assuming DataFrame
                 orders_data = self.platform.get_orders()          # Assuming DataFrame
                 positions_data = self.platform.get_positions()    # Assuming DataFrame
-                portfolio_history = self.platform.get_portfolio_history()
+                portfolio_history = self.platform.get_all_portfolio_history()
                 portfolio_metrics=self.platform.get_portfolio_metrics(self.frequency, self.symbol, self.risk_free_rate, self.benchmark)
 
                 graph = PortfolioDashboard.create_portfolio_value_graph(portfolio_history)
