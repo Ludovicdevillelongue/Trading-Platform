@@ -8,4 +8,6 @@ strat_tester_path
 backtester_tracker/strat_tester_recap.csv
 error_log_path
 launcher/error_log.txt
-positions_pnl_tracker/self.symbol_position_history
+broker_ptf_history_path
+positions_pnl_tracker/broker_ptf_history.csv
+
