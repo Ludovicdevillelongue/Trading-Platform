@@ -20,9 +20,9 @@ warnings.filterwarnings('ignore')
 
 # A base backtesting class with common functionality
 class StrategyCreator:
-    def __init__(self, strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+    def __init__(self, strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                  predictive_strat):
-        self.strat_type=strat_type
+        self.strat_type_pos=strat_type_pos
         self.frequency = frequency
         self.symbol = symbol
         self.risk_free_rate = risk_free_rate
@@ -160,7 +160,7 @@ class StrategyCreator:
 
             model.fit(X, y)
             predictions = model.predict(X)
-            if self.strat_type==0:
+            if self.strat_type_pos==0:
                 # Apply the constraint: Ensure that predictions do not go below 0
                 predictions = np.maximum(predictions, 0)
             else:
@@ -315,10 +315,10 @@ class StrategyCreator:
 
 # Now define specific strategy backtesters
 class SMAVectorBacktester(StrategyCreator):
-    def __init__(self,strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, sma_short, sma_long, reg_method,
+    def __init__(self,strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, sma_short, sma_long, reg_method,
                  amount, transaction_costs,
                  predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.sma_short = sma_short
@@ -357,7 +357,7 @@ class SMAVectorBacktester(StrategyCreator):
         '''
         self.set_parameters(int(self.sma_short), int(self.sma_long))
         data_strat = self.data.copy().dropna()
-        data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, self.strat_type)
+        data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, self.strat_type_pos)
         data_strat['diff_SMA'] = data_strat['SMA1'] - data_strat['SMA2']
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['SMA1', 'SMA2'], 1).run()
@@ -375,10 +375,10 @@ class SMAVectorBacktester(StrategyCreator):
 
 
 class BollingerBandsBacktester(StrategyCreator):
-    def __init__(self,strat_type, frequency, data, symbol, risk_free_rate,
+    def __init__(self,strat_type_pos, frequency, data, symbol, risk_free_rate,
                  start_date, end_date, window_size, num_std_dev, reg_method, amount, transaction_costs,
                  predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.window_size = window_size
@@ -443,10 +443,10 @@ class BollingerBandsBacktester(StrategyCreator):
 
 
 class RSIVectorBacktester(StrategyCreator):
-    def __init__(self,strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, RSI_period, overbought_threshold,
+    def __init__(self,strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, RSI_period, overbought_threshold,
                  oversold_threshold,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.RSI_period = RSI_period
@@ -495,7 +495,7 @@ class RSIVectorBacktester(StrategyCreator):
 
         # Define trading signals
         data_strat['position'] = np.where(data_strat['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
-        data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, self.strat_type,
+        data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, self.strat_type_pos,
                                           data_strat['position'])  # sell signal
 
         if predictive_strat:
@@ -514,9 +514,9 @@ class RSIVectorBacktester(StrategyCreator):
 
 
 class MomVectorBacktester(StrategyCreator):
-    def __init__(self,strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, momentum, reg_method, amount,
+    def __init__(self,strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, momentum, reg_method, amount,
                  transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.momentum = momentum
@@ -561,9 +561,9 @@ class MomVectorBacktester(StrategyCreator):
 
 
 class MRVectorBacktester(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, sma, threshold, reg_method,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, sma, threshold, reg_method,
                  amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.sma = sma
@@ -598,7 +598,7 @@ class MRVectorBacktester(StrategyCreator):
         data_strat['distance'] = data_strat['close'] - data_strat['sma']
         # sell signals
         data_strat['position'] = np.where(data_strat['distance'] > self.threshold,
-                                          self.strat_type, np.nan)
+                                          self.strat_type_pos, np.nan)
         # buy signals
         data_strat['position'] = np.where(data_strat['distance'] < -self.threshold,
                                           1, data_strat['position'])
@@ -624,9 +624,9 @@ class MRVectorBacktester(StrategyCreator):
 
 
 class TurtleVectorBacktester(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, window_size, reg_method, amount,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, window_size, reg_method, amount,
                  transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.window_size = window_size
@@ -672,10 +672,10 @@ class TurtleVectorBacktester(StrategyCreator):
                 data.orders.values[k] = 1
                 data.position.values[k] = 1
             elif data['short_entry'][k] and data['position'][k - 1] == 0:
-                data.orders.values[k] = self.strat_type
-                data.position.values[k] = self.strat_type
+                data.orders.values[k] = self.strat_type_pos
+                data.position.values[k] = self.strat_type_pos
             elif data['short_exit'][k] and data['position'][k - 1] > 0:
-                data.orders.values[k] = self.strat_type
+                data.orders.values[k] = self.strat_type_pos
                 data.position.values[k] = 0
             elif data['long_exit'][k] and data['position'][k - 1] < 0:
                 data.orders.values[k] = 1
@@ -702,10 +702,10 @@ class TurtleVectorBacktester(StrategyCreator):
 
 
 class ParabolicSARBacktester(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, SAR_step, SAR_max, reg_method,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, SAR_step, SAR_max, reg_method,
                  amount,
                  transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.SAR_step = SAR_step
@@ -733,7 +733,7 @@ class ParabolicSARBacktester(StrategyCreator):
                     data['AF'][i] = data['AF'][i - 1]
 
                 if data['close'][i] < data['SAR'][i]:
-                    data['trend'][i] = self.strat_type  # Switch to downtrend
+                    data['trend'][i] = self.strat_type_pos  # Switch to downtrend
                     data['SAR'][i] = data['EP'][i - 1]
                     data['EP'][i] = data['close'][i]
                     data['AF'][i] = self.SAR_step
@@ -781,7 +781,7 @@ class ParabolicSARBacktester(StrategyCreator):
 
         # Define trading signals
         data_strat['position'] = np.where(data_strat['trend'] == 1, 1,
-                                          self.strat_type)  # Long when trend is up, short when trend is down
+                                          self.strat_type_pos)  # Long when trend is up, short when trend is down
 
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['trend'], 1).run()
@@ -799,9 +799,9 @@ class ParabolicSARBacktester(StrategyCreator):
 
 
 class MACDStrategy(StrategyCreator):
-    def __init__(self,strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, short_window, long_window,
+    def __init__(self,strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, short_window, long_window,
                  signal_window, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.short_window = short_window
@@ -835,7 +835,7 @@ class MACDStrategy(StrategyCreator):
         data_strat['ema_long'] = data_strat['close'].ewm(span=self.long_window, adjust=False).mean()
         data_strat['macd'] = data_strat['ema_short'] - data_strat['ema_long']
         data_strat['signal'] = data_strat['macd'].ewm(span=self.signal_window, adjust=False).mean()
-        data_strat['position'] = np.where(data_strat['macd'] > data_strat['signal'], 1, self.strat_type)
+        data_strat['position'] = np.where(data_strat['macd'] > data_strat['signal'], 1, self.strat_type_pos)
 
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['macd', 'signal'], 1).run()
@@ -853,10 +853,10 @@ class MACDStrategy(StrategyCreator):
 
 
 class IchimokuStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, conversion_line_period,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, conversion_line_period,
                  base_line_period,
                  leading_span_b_period, displacement, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.conversion_line_period = conversion_line_period
@@ -920,7 +920,7 @@ class IchimokuStrategy(StrategyCreator):
                                           (data_strat['close'] > data_strat['leading_span_B']), 1, 0)
         data_strat['position'] = np.where((data_strat['conversion_line'] < data_strat['base_line']) &
                                           (data_strat['close'] < data_strat['leading_span_A']) &
-                                          (data_strat['close'] < data_strat['leading_span_B']), self.strat_type,
+                                          (data_strat['close'] < data_strat['leading_span_B']), self.strat_type_pos,
                                           data_strat['position'])
         if predictive_strat:
             data_pred = MLPredictor(data_strat,
@@ -940,9 +940,9 @@ class IchimokuStrategy(StrategyCreator):
 
 
 class StochasticOscillatorStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, k_window, d_window, buy_threshold,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, k_window, d_window, buy_threshold,
                  sell_threshold, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.k_window = k_window
@@ -984,7 +984,7 @@ class StochasticOscillatorStrategy(StrategyCreator):
 
         # Trading signals based on Stochastic Oscillator
         data_strat['position'] = np.where(data_strat['%K'] < data_strat['%D'], 1, 0)  # Buy signal
-        data_strat['position'] = np.where(data_strat['%K'] > data_strat['%D'], self.strat_type,
+        data_strat['position'] = np.where(data_strat['%K'] > data_strat['%D'], self.strat_type_pos,
                                           data_strat['position'])  # Sell signal
         data_strat['Diff_%K_%D'] = data_strat['%D'] - data_strat['%K']
         if predictive_strat:
@@ -1003,10 +1003,10 @@ class StochasticOscillatorStrategy(StrategyCreator):
 
 
 class ADXStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, adx_period, di_period, threshold,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, adx_period, di_period, threshold,
                  reg_method, amount,
                  transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.adx_period = adx_period
@@ -1064,7 +1064,7 @@ class ADXStrategy(StrategyCreator):
         data_strat['position'] = np.where(
             (data_strat['+DI'] > data_strat['-DI']) & (data_strat['ADX'] > self.threshold), 1, 0)  # Buy signal
         data_strat['position'] = np.where(
-            (data_strat['-DI'] > data_strat['+DI']) & (data_strat['ADX'] > self.threshold), self.strat_type,
+            (data_strat['-DI'] > data_strat['+DI']) & (data_strat['ADX'] > self.threshold), self.strat_type_pos,
             data_strat['position'])  # Sell signal
 
         data_strat['Diff_DI'] = data_strat['+DI'] - data_strat['-DI']
@@ -1084,9 +1084,9 @@ class ADXStrategy(StrategyCreator):
 
 
 class VolumeStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, volume_threshold,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, volume_threshold,
                  volume_window, reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.volume_threshold = volume_threshold
@@ -1122,7 +1122,7 @@ class VolumeStrategy(StrategyCreator):
         data_strat['volume_spike'] = data_strat['volume'] > (data_strat['average_volume'] * self.volume_threshold)
 
         # Define a simple trading logic: buy when there is a volume spike, sell otherwise
-        data_strat['position'] = np.where(data_strat['volume_spike'], 1, self.strat_type)
+        data_strat['position'] = np.where(data_strat['volume_spike'], 1, self.strat_type_pos)
 
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['volume_spike'], 1).run()
@@ -1140,10 +1140,10 @@ class VolumeStrategy(StrategyCreator):
 
 
 class WilliamsRBacktester(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, lookback_period, overbought,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, lookback_period, overbought,
                  oversold,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.lookback_period = lookback_period
@@ -1176,7 +1176,7 @@ class WilliamsRBacktester(StrategyCreator):
         data_strat['%R'] = -100 * (high - data_strat['close']) / (high - low)
 
         data_strat['position'] = np.where(data_strat['%R'] < -self.oversold, 1, 0)
-        data_strat['position'] = np.where(data_strat['%R'] > -self.overbought, self.strat_type, data_strat['position'])
+        data_strat['position'] = np.where(data_strat['%R'] > -self.overbought, self.strat_type_pos, data_strat['position'])
 
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['%R'], 1).run()
@@ -1194,10 +1194,10 @@ class WilliamsRBacktester(StrategyCreator):
 
 
 class VolatilityBreakoutBacktester(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, volatility_window,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, volatility_window,
                  breakout_factor,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.volatility_window = volatility_window
@@ -1242,7 +1242,7 @@ class VolatilityBreakoutBacktester(StrategyCreator):
 
         # Define trading signals
         data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], 1, np.nan)
-        data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], self.strat_type, data_strat['position'])
+        data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], self.strat_type_pos, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
         if predictive_strat:

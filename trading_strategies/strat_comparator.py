@@ -11,7 +11,7 @@ from .strat_optimizer import StrategyOptimizer
 warnings.filterwarnings('ignore')
 
 class StrategyRunner:
-    def __init__(self, strategies, strat_type, data_provider, frequency, symbol, risk_free_rate, start_date, end_date, param_grids, opti_algo,
+    def __init__(self, strategies, strat_type_pos, data_provider, frequency, symbol, risk_free_rate, start_date, end_date, param_grids, opti_algo,
                  amount, transaction_costs, iterations, predictive_strat, strat_tester_csv):
         """
         Initialize the StrategyRunner with given parameters.
@@ -19,7 +19,7 @@ class StrategyRunner:
         :param strategies: Dictionary of strategy names and their corresponding classes.
         :param symbol: The symbol for which the trading_strategies will be run.
         :param risk_free_rate: value of risk free rate
-        :param strat_type: The type of the trading_strategies.
+        :param strat_type_pos: The type of the trading_strategies.
         :param data_provider: source of data
         :param frequency: The frequency of the data.
         :param start_date: The starting date for the trading_strategies.
@@ -32,7 +32,7 @@ class StrategyRunner:
         :param predictive_strat: Whether to use predictive trading_strategies.
         """
         self.strategies = strategies
-        self.strat_type=strat_type
+        self.strat_type_pos=strat_type_pos
         self.data_provider=data_provider
         self.frequency = frequency
         self.symbol = symbol
@@ -49,7 +49,7 @@ class StrategyRunner:
         self.strat_tester_csv=strat_tester_csv
 
         # Load data once and reuse, improving efficiency
-        strat_creator=StrategyCreator(self.strat_type, self.frequency, self.symbol, self.risk_free_rate, self.start_date,
+        strat_creator=StrategyCreator(self.strat_type_pos, self.frequency, self.symbol, self.risk_free_rate, self.start_date,
                                     self.end_date, self.amount, self.transaction_costs,
                                     self.predictive_strat)
         self.data = strat_creator.get_data(self.data_provider)
@@ -59,7 +59,7 @@ class StrategyRunner:
         """
         Private method to optimize a single strategy.
         """
-        optimizer = StrategyOptimizer(strategy_class, self.strat_type, self.frequency, self.data, self.symbol, self.risk_free_rate, self.start_date, self.end_date,
+        optimizer = StrategyOptimizer(strategy_class, self.strat_type_pos, self.frequency, self.data, self.symbol, self.risk_free_rate, self.start_date, self.end_date,
                                       self.param_grids[strategy_name], self.amount, self.transaction_costs, search_type,
                                       self.iterations, self.predictive_strat, self.strat_tester_csv)
         return optimizer.optimize()
@@ -133,7 +133,7 @@ class StrategyRunner:
 
         for strategy_name, optimization_result in self.optimization_results.items():
             strategy_params = optimization_result['params']
-            strategy_tester = self.strategies[strategy_name](self.strat_type, self.frequency, self.data,
+            strategy_tester = self.strategies[strategy_name](self.strat_type_pos, self.frequency, self.data,
                                                              self.symbol, self.risk_free_rate, self.start_date, self.end_date,
                                                              amount=self.amount, transaction_costs=self.transaction_costs,
                                                              predictive_strat=self.predictive_strat,
