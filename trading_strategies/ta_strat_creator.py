@@ -6,9 +6,9 @@ from signal_generator.ml_predictor import MLPredictor
 
 
 class BBandsStrategy(StrategyCreator):
-    def __init__(self,strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, timeperiod, nbdevup,
+    def __init__(self,strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, timeperiod, nbdevup,
                  nbdevdn, reg_method, amount, transaction_costs,predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.timeperiod = timeperiod
@@ -41,7 +41,7 @@ class BBandsStrategy(StrategyCreator):
 
         # Buy when the close prices cross below the lower band, and sell when they cross above the upper band
         data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], 1,
-                                    np.where(data_strat['close'] > data_strat['upper_band'], self.strat_type, 0))
+                                    np.where(data_strat['close'] > data_strat['upper_band'], self.strat_type_pos, 0))
         data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['close', 'lower_band', 'upper_band'], 1).run()
@@ -59,9 +59,9 @@ class BBandsStrategy(StrategyCreator):
 
 
 class MAStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, short_period, long_period,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, short_period, long_period,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.short_period = short_period
@@ -91,7 +91,7 @@ class MAStrategy(StrategyCreator):
 
         # Generate signals based on MA crossover
         data_strat['position'] = np.where(data_strat['short_ma'] > data_strat['long_ma'], 1,
-                                          np.where(data_strat['short_ma'] < data_strat['long_ma'], self.strat_type, 0))
+                                          np.where(data_strat['short_ma'] < data_strat['long_ma'], self.strat_type_pos, 0))
         data_strat = data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['close', 'short_ma', 'long_ma'], 1).run()
@@ -109,9 +109,9 @@ class MAStrategy(StrategyCreator):
 
 
 class DEMAStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, short_period, long_period,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, short_period, long_period,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.short_period = short_period
@@ -141,7 +141,7 @@ class DEMAStrategy(StrategyCreator):
 
         # Generate signals based on DEMA crossover
         data_strat['position'] = np.where(data_strat['short_dema'] > data_strat['long_dema'], 1,
-                                          np.where(data_strat['short_dema'] < data_strat['long_dema'], self.strat_type, 0))
+                                          np.where(data_strat['short_dema'] < data_strat['long_dema'], self.strat_type_pos, 0))
         data_strat = data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['close', 'short_dema', 'long_dema'], 1).run()
@@ -158,9 +158,9 @@ class DEMAStrategy(StrategyCreator):
         return self.data_signal
 
 class EMAStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, short_period, long_period,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, short_period, long_period,
                  reg_method, amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.short_period = short_period
@@ -190,7 +190,7 @@ class EMAStrategy(StrategyCreator):
 
         # Generate signals based on EMA crossover
         data_strat['position'] = np.where(data_strat['short_ema'] > data_strat['long_ema'], 1,
-                                          np.where(data_strat['short_ema'] < data_strat['long_ema'], self.strat_type, 0))
+                                          np.where(data_strat['short_ema'] < data_strat['long_ema'], self.strat_type_pos, 0))
         data_strat = data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['close', 'short_ema', 'long_ema'], 1).run()
@@ -208,9 +208,9 @@ class EMAStrategy(StrategyCreator):
 
 
 class HTTrendlineStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, period, reg_method,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, period, reg_method,
                  amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.period = period
@@ -238,7 +238,7 @@ class HTTrendlineStrategy(StrategyCreator):
 
         # Generate signals based on HT Trendline
         data_strat['position'] = np.where(data_strat['close'] > data_strat['ht_trendline'], 1,
-                                          np.where(data_strat['close'] < data_strat['ht_trendline'], self.strat_type, 0))
+                                          np.where(data_strat['close'] < data_strat['ht_trendline'], self.strat_type_pos, 0))
         data_strat = data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['close', 'ht_trendline'], 1).run()
@@ -256,9 +256,9 @@ class HTTrendlineStrategy(StrategyCreator):
 
 
 class OBVStrategy(StrategyCreator):
-    def __init__(self, strat_type, frequency, data, symbol, risk_free_rate, start_date, end_date, reg_method,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, reg_method,
                  amount, transaction_costs, predictive_strat):
-        super().__init__(strat_type, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
+        super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
         self.reg_method = reg_method

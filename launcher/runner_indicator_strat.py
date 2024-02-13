@@ -71,9 +71,9 @@ if __name__ == '__main__':
     with open(os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml'), 'r') as file:
         frequency_yaml = yaml.safe_load(file)
     frequency = frequency_yaml[data_provider]['minute']
-    with open(os.path.join(os.path.dirname(__file__), '../config/strat_type.yml'), 'r') as file:
-        strat_type_yaml = yaml.safe_load(file)
-    strat_type = float(strat_type_yaml['strat_position']['long_only'])
+    with open(os.path.join(os.path.dirname(__file__), '../config/strat_type_pos.yml'), 'r') as file:
+        strat_type_pos_yaml = yaml.safe_load(file)
+    strat_type_pos = float(strat_type_pos_yaml['long_only'])
 
 
     symbol = 'BTC-USD'
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     strat_tester_csv=os.path.join(os.path.dirname(__file__), '../backtester_tracker/strat_tester_recap.csv')
     with open(strat_tester_csv, 'w') as file:
         pass
-    runner = StrategyRunner(strategies, strat_type, data_provider, frequency, symbol, risk_free_rate, start_date, end_date,
+    runner = StrategyRunner(strategies, strat_type_pos, data_provider, frequency, symbol, risk_free_rate, start_date, end_date,
                             param_grids, opti_algo, invested_amount, transaction_costs, iterations, predictive_strat,
                             strat_tester_csv)
     logging.info("Optimizing trading_strategies...")
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     """
 
     trading_platform = 'Alpaca'
-    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], strat_type, optimization_results, frequency, symbol,
+    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], strat_type_pos, optimization_results, frequency, symbol,
                                    risk_free_rate,start_date, end_date, invested_amount, transaction_costs, predictive_strat,
                                    contract_multiplier, data_provider, trading_platform, broker_config)
     strat_run.run()

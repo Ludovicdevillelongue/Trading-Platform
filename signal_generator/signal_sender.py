@@ -13,12 +13,12 @@ from positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
 
 
 class LiveStrategyRunner:
-    def __init__(self, strategy_name, strategy_class, strat_type, optimization_results, frequency,
+    def __init__(self, strategy_name, strategy_class, strat_type_pos, optimization_results, frequency,
                  symbol, risk_free_rate, start_date, end_date, amount, transaction_costs, predictive_strat,
                  contract_multiplier, data_provider, trading_platform, broker_config):
         self.strategy_name = strategy_name
         self.strategy_class = strategy_class
-        self.strat_type=strat_type
+        self.strat_type_pos=strat_type_pos
         self.optimization_results = optimization_results
         self.frequency = frequency
         self.symbol = symbol
@@ -60,7 +60,7 @@ class LiveStrategyRunner:
             if self.real_time_data is None:
                 pass
             opti_results_strategy = self.optimization_results[strategy_name]['params']
-            self.signal = strategy_class(self.strat_type, self.frequency, self.real_time_data, self.symbol,
+            self.signal = strategy_class(self.strat_type_pos, self.frequency, self.real_time_data, self.symbol,
                                          self.risk_free_rate, self.start_date, self.end_date,
                                          amount=self.amount, transaction_costs=self.transaction_costs,
                                          predictive_strat=self.predictive_strat,
