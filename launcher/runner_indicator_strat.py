@@ -1,17 +1,15 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import logging
 from datetime import timedelta, datetime
 import threading
 import pytz
-import sys
-import os
 import time
 import yaml
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from indicators.performances_indicators import RiskFreeRate
 from broker_interaction.broker_order import GetBrokersConfig
-from broker_interaction.broker_metrics import AlpacaPlatform
-from positions_pnl_tracker.pnl_tracker_dashboard import PortfolioManagementApp
 from trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from trading_strategies.indicator_strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
@@ -21,7 +19,6 @@ from trading_strategies.indicator_strat_creator import SMAVectorBacktester, Boll
 from trading_strategies.strat_comparator import StrategyRunner
 from backtester_tracker.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
-from positions_pnl_tracker.manual_tracker import LiveStrategyTracker
 
 if __name__ == '__main__':
     """
@@ -48,6 +45,7 @@ if __name__ == '__main__':
     }
     regression_methods = ['linear']
 
+
     param_grids = {
         'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
         # 'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5), 'reg_method': regression_methods},
@@ -70,10 +68,14 @@ if __name__ == '__main__':
     opti_algo = [RandomSearchAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
-    data_freq = os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml')
-    with open(data_freq, 'r') as file:
+    with open(os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml'), 'r') as file:
         frequency_yaml = yaml.safe_load(file)
     frequency = frequency_yaml[data_provider]['minute']
+    with open(os.path.join(os.path.dirname(__file__), '../config/strat_type.yml'), 'r') as file:
+        strat_type_yaml = yaml.safe_load(file)
+    strat_type = float(strat_type_yaml['strat_position']['long_only'])
+
+
     symbol = 'BTC-USD'
     risk_free_rate = RiskFreeRate().get_metric()
     start_date = '2023-11-15 00:00:00'
@@ -93,8 +95,9 @@ if __name__ == '__main__':
     strat_tester_csv=os.path.join(os.path.dirname(__file__), '../backtester_tracker/strat_tester_recap.csv')
     with open(strat_tester_csv, 'w') as file:
         pass
-    runner = StrategyRunner(strategies, data_provider, frequency, symbol, risk_free_rate, start_date, end_date,
-                            param_grids, opti_algo, invested_amount, transaction_costs, iterations, predictive_strat, strat_tester_csv)
+    runner = StrategyRunner(strategies, strat_type, data_provider, frequency, symbol, risk_free_rate, start_date, end_date,
+                            param_grids, opti_algo, invested_amount, transaction_costs, iterations, predictive_strat,
+                            strat_tester_csv)
     logging.info("Optimizing trading_strategies...")
     start_time_opti = time.time()
     optimization_results = runner.test_all_search_types()
@@ -118,7 +121,7 @@ if __name__ == '__main__':
     """
 
     trading_platform = 'Alpaca'
-    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], optimization_results, frequency_yaml, frequency, symbol,
+    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], strat_type, optimization_results, frequency, symbol,
                                    risk_free_rate,start_date, end_date, invested_amount, transaction_costs, predictive_strat,
                                    contract_multiplier, data_provider, trading_platform, broker_config)
     strat_run.run()

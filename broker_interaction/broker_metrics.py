@@ -1,14 +1,8 @@
 import os
-
 import alpaca_trade_api as tradeapi
-from datetime import datetime
-import numpy as np
 import pandas as pd
-import yfinance as yf
-
-from data_loader.data_retriever import DataManager
-from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha, \
-    RiskFreeRate, Returns, CumulativeReturns
+from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha,\
+    Returns, CumulativeReturns
 
 
 class TradingPlatform:
@@ -72,8 +66,11 @@ class AlpacaPlatform(TradingPlatform):
                          'asset_class', 'qty', 'filled_qty', 'order_type', 'side', 'filled_avg_price',
                          'time_in_force', 'limit_price', 'stop_price']]
 
+    def get_position(self, symbol):
+        position=self.api.get_position(symbol)
+        return position
 
-    def get_positions(self):
+    def get_all_positions(self):
         positions=self.api.list_positions()
         positions_list=[position._raw for position in positions]
         df_positions=pd.DataFrame(positions_list)
@@ -108,10 +105,10 @@ class AlpacaPlatform(TradingPlatform):
 
     def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
         dict_key_metrics={}
-        df_ptf=self.get_all_portfolio_history()
-        # Calculate returns
-        df_ptf['ptf_returns'] =Returns().get_metric(df_ptf['equity'])
-        df_ptf['ptf_creturns'] = CumulativeReturns().get_metric(df_ptf['base_value'].iloc[0], df_ptf['ptf_returns'])
+        df_ptf_hist=self.get_all_portfolio_history()
+        df_positions=self.get_orders()
+        df_ptf=df_ptf_hist.join(df_positions)
+        (df_ptf['position'].shift(1) * df_ptf['returns']).fillna(0)
         df_ptf=df_ptf.dropna(axis=0)
         try:
             df_benchmark=df_benchmark.tz_localize('Europe/Paris')
@@ -119,17 +116,22 @@ class AlpacaPlatform(TradingPlatform):
             pass
         df_ptf_vs_bench = df_ptf.merge(df_benchmark, left_index=True, right_index=True, how='outer')
         df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
+        # Calculate returns
+        df_ptf_vs_bench['ptf_returns'] =Returns().get_metric(df_ptf_vs_bench['position'].shift(1) *
+                                                             df_ptf_vs_bench[f'{symbol}_returns']).fillna(0)
+        df_ptf_vs_bench['ptf_creturns'] = CumulativeReturns().get_metric(df_ptf_vs_bench['base_value'].iloc[0],
+                                                                         df_ptf_vs_bench['ptf_returns'])
 
         # Calculate Performance Indicators
 
         try:
-            dict_key_metrics['sharpe_ratio'] = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])
+            dict_key_metrics['sharpe_ratio'] = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
         except Exception as e:
             dict_key_metrics['sharpe_ratio'] =0
-        dict_key_metrics['sortino_ratio'] =SortinoRatio(frequency, risk_free_rate).calculate(df_ptf['ptf_returns'])
+        dict_key_metrics['sortino_ratio'] =SortinoRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
 
-        dict_key_metrics['max_drawdown'] =MaxDrawdown().calculate(df_ptf['ptf_creturns'])
-        dict_key_metrics['calmar_ratio'] =CalmarRatio(frequency).calculate(df_ptf['ptf_returns'], dict_key_metrics['max_drawdown'])
+        dict_key_metrics['max_drawdown'] =MaxDrawdown().calculate(df_ptf_vs_bench['ptf_creturns'])
+        dict_key_metrics['calmar_ratio'] =CalmarRatio(frequency).calculate(df_ptf_vs_bench['ptf_returns'], dict_key_metrics['max_drawdown'])
         try:
             dict_key_metrics['beta']=Beta().calculate(df_ptf_vs_bench['ptf_returns'], df_ptf_vs_bench[f'{symbol}_returns'])
             dict_key_metrics['alpha']=Alpha(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'],
@@ -140,5 +142,5 @@ class AlpacaPlatform(TradingPlatform):
 
         df_key_metrics=pd.DataFrame.from_dict(dict_key_metrics, orient='index').T
 
-        return df_key_metrics
+        return  df_key_metrics
 

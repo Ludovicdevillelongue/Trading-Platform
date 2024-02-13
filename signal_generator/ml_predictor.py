@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, TimeSeriesSplit
+from sklearn.model_selection import GridSearchCV, cross_val_score, TimeSeriesSplit
 from sklearn.ensemble import RandomForestClassifier, StackingClassifier
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC
@@ -9,7 +9,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from tpot import TPOTClassifier
-import mlflow
 from imblearn.over_sampling import SMOTE
 
 class MLPredictor:
@@ -54,9 +53,13 @@ class MLPredictor:
     def run(self):
         # Handling class imbalance only if necessary
         if self.is_imbalanced():
-            print("Imbalance detected. Applying SMOTE.")
-            smote = SMOTE()
-            X_train_smote, y_train_smote = smote.fit_resample(self.X_train, self.y_train)
+            try:
+                print("Imbalance detected. Applying SMOTE.")
+                smote = SMOTE()
+                X_train_smote, y_train_smote = smote.fit_resample(self.X_train, self.y_train)
+            except Exception as e:
+                print(e)
+                X_train_smote, y_train_smote = self.X_train, self.y_train
         else:
             print("No significant imbalance detected.")
             X_train_smote, y_train_smote = self.X_train, self.y_train

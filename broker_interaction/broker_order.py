@@ -1,8 +1,6 @@
 import os
-
 import alpaca_trade_api as tradeapi
 import yaml
-
 class GetBrokersConfig:
 
     @staticmethod
@@ -14,22 +12,24 @@ class GetBrokersConfig:
 
 class AlpacaTradingBot:
     def __init__(self, config):
-
+        self.config=config
         api_key = config['alpaca']['api_key']
         api_secret = config['alpaca']['api_secret']
         base_url = "https://paper-api.alpaca.markets"
 
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
 
-    def submit_order(self, symbol, qty, side, order_type='market', time_in_force='gtc'):
+    def submit_order(self, symbol, order_qty, side, order_type='market'):
         self.api.submit_order(
             symbol=symbol,
-            qty=qty,
+            qty=abs(order_qty),
             side=side,
             type=order_type,
-            time_in_force=time_in_force
+            time_in_force=self.config['alpaca']['time_in_force'][symbol]
         )
-        print(f"Order submitted: {side} {qty} shares of {symbol}")
+        print(f"Order submitted: {side} {abs(order_qty)} shares of {symbol}")
+
+
 
 
     def close_open_positions(self):

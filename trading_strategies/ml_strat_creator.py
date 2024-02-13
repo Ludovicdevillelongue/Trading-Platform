@@ -1,8 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import linear_model
-
-from backtester.indicator_strat_creator import StrategyCreator
+from .indicator_strat_creator import StrategyCreator
 
 
 class LRVectorBacktester(StrategyCreator):
