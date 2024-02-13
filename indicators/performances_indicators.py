@@ -54,6 +54,18 @@ class SharpeRatio():
         self.risk_free_rate = risk_free_rate
 
     def calculate(self, returns):
+        excess_returns = returns - (self.risk_free_rate/self.frequency['annualized_coefficient'])
+        mean_excess_return = np.mean(excess_returns)
+        std_return = np.std(returns)
+
+        return mean_excess_return / std_return if std_return != 0 else 0
+
+class AnnualizedSharpeRatio():
+    def __init__(self, frequency, risk_free_rate):
+        self.frequency = frequency
+        self.risk_free_rate = risk_free_rate
+
+    def calculate(self, returns):
         excess_returns = returns - (self.risk_free_rate / self.frequency['annualized_coefficient'])
         annualized_mean_excess_return = np.mean(excess_returns) * self.frequency['annualized_coefficient']
         annualized_std_return = np.std(returns) * np.sqrt(self.frequency['annualized_coefficient'])
@@ -61,7 +73,6 @@ class SharpeRatio():
         return annualized_mean_excess_return / annualized_std_return if annualized_std_return != 0 else 0
 
 
-# Class for Sortino Ratio
 class SortinoRatio():
     def __init__(self, frequency, risk_free_rate):
         self.frequency = frequency
@@ -72,15 +83,38 @@ class SortinoRatio():
         target_return = self.risk_free_rate / self.frequency['annualized_coefficient']
         downside_returns = returns[returns < target_return]
         # Annualizing the downside deviation
+        downside_deviation = np.std(downside_returns)
+        excess_returns = returns - target_return
+        mean_excess_return = np.mean(excess_returns)
+        # Calculating the Sortino Ratio using the annualized downside deviation
+        return mean_excess_return / downside_deviation if downside_deviation != 0 else 0
+
+class AnnualizedSortinoRatio():
+    def __init__(self, frequency, risk_free_rate):
+        self.frequency = frequency
+        self.risk_free_rate = risk_free_rate
+
+    def calculate(self, returns):
+        # Setting the target return, typically 0 or the risk-free rate
+        target_return = self.risk_free_rate / self.frequency['annualized_coefficient']
+        downside_returns = returns[returns < target_return]
+        # Annualizing the downside deviation
         annualized_downside_deviation = np.std(downside_returns) * np.sqrt(self.frequency['annualized_coefficient'])
-        excess_returns = returns - (self.risk_free_rate / self.frequency['annualized_coefficient'])
+        excess_returns = returns - target_return
         annualized_mean_excess_return = np.mean(excess_returns) * self.frequency['annualized_coefficient']
         # Calculating the Sortino Ratio using the annualized downside deviation
         return annualized_mean_excess_return / annualized_downside_deviation if annualized_downside_deviation != 0 else 0
 
 
-# Class for Calmar Ratio
 class CalmarRatio():
+    def __init__(self, frequency):
+        self.frequency = frequency
+
+    def calculate(self, returns, max_drawdown):
+        total_return = np.prod(1 + returns) - 1
+        return total_return / abs(max_drawdown) if max_drawdown != 0 else 0
+
+class AnnualizedCalmarRatio():
     def __init__(self, frequency):
         self.frequency = frequency
 
@@ -88,7 +122,7 @@ class CalmarRatio():
         annualized_return = ((1 + np.mean(returns)) ** self.frequency['annualized_coefficient']) - 1
         return annualized_return / abs(max_drawdown) if max_drawdown != 0 else 0
 
-# Class for Maximum Drawdown
+
 class MaxDrawdown:
     @staticmethod
     def calculate(cumulative_returns):
@@ -96,8 +130,26 @@ class MaxDrawdown:
         drawdown = cumulative_returns / roll_max - 1.0
         return drawdown.min()
 
-# Class for Alpha
+
 class Alpha():
+    def __init__(self, frequency, risk_free_rate):
+        self.frequency = frequency
+        self.risk_free_rate = risk_free_rate
+
+    def calculate(self, portfolio_returns, benchmark_returns, beta):
+        portfolio_total_return = np.prod(1 + portfolio_returns) - 1
+        benchmark_total_return = np.prod(1 + benchmark_returns) - 1
+
+        # Calculate expected portfolio return based on CAPM
+
+        expected_portfolio_return = (self.risk_free_rate / self.frequency['annualized_coefficient']) + beta * \
+                                    (benchmark_total_return - (self.risk_free_rate / self.frequency['annualized_coefficient']))
+
+        # Alpha is the difference between the portfolio's total return and its expected return
+        alpha = portfolio_total_return - expected_portfolio_return
+        return alpha if not np.isnan(alpha) else 0
+
+class AnnualizedAlpha():
     def __init__(self, frequency, risk_free_rate):
         self.frequency = frequency
         self.risk_free_rate = risk_free_rate
@@ -112,7 +164,7 @@ class Alpha():
         alpha = excess_portfolio_return - beta * excess_benchmark_return
         return alpha if not np.isnan(alpha) else 0
 
-# Class for Beta
+
 class Beta:
     @staticmethod
     def calculate(portfolio_returns, benchmark_returns):

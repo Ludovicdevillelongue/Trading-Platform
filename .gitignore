@@ -10,4 +10,5 @@ error_log_path
 launcher/error_log.txt
 broker_ptf_history_path
 positions_pnl_tracker/broker_ptf_history.csv
-
+strat_type_path
+config/strat_type.yml

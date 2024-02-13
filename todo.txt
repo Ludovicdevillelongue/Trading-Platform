@@ -1,0 +1,5 @@
+-> reduce order when usd balance not sufficient
+-> verify when possible to use long short
+-> modify all strat in long only
+-> calculate cumulative returns of portfolio vs cumulative return of bench for pnl tracker dashboard + replace
+graph of equity and perf metrics

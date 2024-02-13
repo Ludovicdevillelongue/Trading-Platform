@@ -26,7 +26,7 @@ class BacktestDashboard:
             fig = px.line(positions,
                           x=positions.index,
                           y=column,  # Plot each column individually
-                          title=f'{column}')  # Title for each column
+                          title=f'{column}', render_mode='svg')  # Title for each column
 
             # Append the figure to the list
             figures.append(fig)
@@ -113,11 +113,11 @@ class BacktestApp:
 
 
     def run_server(self):
-        serve(self.app.server, host='0.0.0.0', port=8080)
+        serve(self.app.server, host='0.0.0.0', port=8090)
 
     def open_browser(self):
         sleep(1)  # Short delay before opening the browser
-        webbrowser.open("http://127.0.0.1:8080")
+        webbrowser.open("http://127.0.0.1:8090")
 
 
 

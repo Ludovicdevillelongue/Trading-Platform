@@ -1,21 +1,38 @@
 import logging
+import os
 import traceback
+import pandas as pd
 from dash import dcc, html, Input, Output, dash_table
 import plotly.graph_objs as go
 from waitress import serve
 import dash
 import webbrowser
 from time import sleep
-import pandas as pd
 
 class PortfolioDashboard:
     @staticmethod
     def create_portfolio_value_graph(portfolio_history):
         fig = go.Figure(data=[
-            go.Scatter(x=portfolio_history.index, y=portfolio_history['equity'])
+            go.Scatter(x=portfolio_history.index, y=portfolio_history['ptf_value'])
         ])
         fig.update_layout(
             title='Portfolio Value Over Time',
+            xaxis_title='Time',
+            yaxis_title='Value',
+            plot_bgcolor='white',
+            paper_bgcolor='lightgray'
+        )
+        return fig
+
+    @staticmethod
+    def create_portfolio_vs_bench_graph(portfolio_history):
+        # Assuming 'creturns' and 'cstrategy' are column names in `portfolio_history`
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=portfolio_history.index, y=portfolio_history['creturns'], name='Benchmark'))
+        fig.add_trace(go.Scatter(x=portfolio_history.index, y=portfolio_history['cstrategy'], name='Strategy'))
+
+        fig.update_layout(
+            title='Portfolio Cumulative Returns vs Benchmark Cumulative Returns',
             xaxis_title='Time',
             yaxis_title='Value',
             plot_bgcolor='white',
@@ -39,13 +56,10 @@ class PortfolioDashboard:
         )
 
 class PortfolioManagementApp:
-    def __init__(self, platform, frequency, symbol, risk_free_rate, benchmark):
+    def __init__(self, platform, symbol):
         self.platform = platform
-        self.frequency=frequency
         self.symbol=symbol
-        self.risk_free_rate=risk_free_rate
-        self.benchmark=benchmark
-        self.app = dash.Dash(__name__, suppress_callback_exceptions=True)
+        self.app = dash.Dash(__name__, suppress_callback_exceptions=False)
         self.setup_layout()
         self.setup_callbacks()
 
@@ -59,6 +73,7 @@ class PortfolioManagementApp:
             html.Div(id='orders-recap', style={'padding': '10px'}),
             html.Div(id='positions-recap', style={'padding': '10px'}),
             html.Div(id='portfolio-value-graph', style={'padding': '10px'}),
+            html.Div(id='portfolio-vs-bench-graph', style={'padding': '10px'}),
 
             dcc.Interval(id='interval-component', interval=60 * 1000, n_intervals=0),
         ], style={'backgroundColor': '#f5f5f5', 'fontFamily': 'Arial'})
@@ -69,19 +84,28 @@ class PortfolioManagementApp:
             Output('portfolio-metrics', 'children'),
              Output('orders-recap', 'children'),
              Output('positions-recap', 'children'),
-             Output('portfolio-value-graph', 'children')],
+             Output('portfolio-value-graph', 'children'),
+             Output('portfolio-vs-bench-graph', 'children')],
             [Input('update-data-button', 'n_clicks'),
              Input('interval-component', 'n_intervals')]
         )
         def update_data(n_clicks, n_intervals):
             try:
-                portfolio_data = self.platform.get_account_info()  # Assuming DataFrame
-                orders_data = self.platform.get_orders()          # Assuming DataFrame
-                positions_data = self.platform.get_positions()    # Assuming DataFrame
-                portfolio_history = self.platform.get_all_portfolio_history()
-                portfolio_metrics=self.platform.get_portfolio_metrics(self.frequency, self.symbol, self.risk_free_rate, self.benchmark)
+                portfolio_data = self.platform.get_account_info()
+                orders_data = self.platform.get_orders()
+                positions_data = self.platform.get_all_positions()
+                portfolio_history = pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                              f'positions_pnl_tracker/{self.symbol}_strat_history.csv'),header=[0],
+                                                index_col=[0])
+                portfolio_history.index = pd.to_datetime(portfolio_history.index).tz_convert(
+                    'Europe/Paris')
+                portfolio_history=portfolio_history.sort_index()
+                portfolio_metrics= pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                              f'positions_pnl_tracker/{self.symbol}_strat_metric.csv'), header=[0],
+                                                index_col=[0])
 
-                graph = PortfolioDashboard.create_portfolio_value_graph(portfolio_history)
+                value_graph = PortfolioDashboard.create_portfolio_value_graph(portfolio_history)
+                creturns_graph=PortfolioDashboard.create_portfolio_vs_bench_graph(portfolio_history)
                 portfolio_metrics_table=PortfolioDashboard.create_data_table(portfolio_metrics)
                 portfolio_table = PortfolioDashboard.create_data_table(portfolio_data)
                 orders_table = PortfolioDashboard.create_data_table(orders_data)
@@ -92,16 +116,19 @@ class PortfolioManagementApp:
                     html.Div([html.H3("Portfolio Metrics"), portfolio_metrics_table]),
                     html.Div([html.H3("Orders Recap"), orders_table]),
                     html.Div([html.H3("Positions Recap"), positions_table]),
-                    html.Div([html.H3("Portfolio Value Graph"), dcc.Graph(figure=graph)])
+                    html.Div([html.H3("Portfolio Value Graph"), dcc.Graph(figure=value_graph)]),
+                    html.Div([html.H3("Portfolio vs Bench Graph"), dcc.Graph(figure=creturns_graph)])
                 )
             except Exception as e:
                 logging.error(f"An error occurred: {str(e)}")
                 traceback.print_exc()
-                return (html.Div, html.Div(), html.Div(), html.Div(), html.Div())
+                return (html.Div, html.Div(), html.Div(), html.Div(), html.Div(), html.Div())
 
     def run_server(self):
-        serve(self.app.server, host='0.0.0.0', port=8090)
+        serve(self.app.server, host='0.0.0.0', port=8070)
 
     def open_browser(self):
         sleep(1)
-        webbrowser.open("http://127.0.0.1:8090")
+        webbrowser.open("http://127.0.0.1:8070")
+
+
