@@ -1,6 +1,6 @@
 import os
 
-import fxcmpy
+# import fxcmpy
 import quandl as q
 import pandas as pd
 import yaml
@@ -36,20 +36,20 @@ class DataManager(object):
         h5 = pd.HDFStore('data.h5', 'r')
         return h5
 
-    def fxcm_download(self, symbol):
-        try:
-            # Connect to the FXCM API
-            api_key = self.read_key['fxmcm']['api_key']
-            con = fxcmpy.fxcmpy(access_token=api_key, server='demo')
-
-            # Get the latest data
-            data_fxcm = con.get_candles(symbol, period='m1',
-                                          number=1)  # 'm1' for 1-minute data, number=1 for the latest candle
-            con.close()
-            return data_fxcm
-        except Exception as e:
-            print(f"Error fetching latest data from FXCM: {e}")
-            return None
+    # def fxcm_download(self, symbol):
+    #     try:
+    #         # Connect to the FXCM API
+    #         api_key = self.read_key['fxmcm']['api_key']
+    #         con = fxcmpy.fxcmpy(access_token=api_key, server='demo')
+    #
+    #         # Get the latest data
+    #         data_fxcm = con.get_candles(symbol, period='m1',
+    #                                       number=1)  # 'm1' for 1-minute data, number=1 for the latest candle
+    #         con.close()
+    #         return data_fxcm
+    #     except Exception as e:
+    #         print(f"Error fetching latest data from FXCM: {e}")
+    #         return None
 
     def quandl_download(self, symbol:str):
         data_quandl = q.get(symbol, start_date=self.start_date,

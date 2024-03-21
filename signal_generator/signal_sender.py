@@ -65,9 +65,7 @@ class LiveStrategyRunner:
                                          amount=self.amount, transaction_costs=self.transaction_costs,
                                          predictive_strat=self.predictive_strat,
                                          **opti_results_strategy).generate_signal()
-
-            if self.signal != 0:
-                return self.execute_trade(strategy_name, self.signal)
+            return self.execute_trade(strategy_name, self.signal)
             # Removed break; now it will loop continuously
         except Exception as e:
             self.logger_monitor(f"Error in strategy application: {e}")
@@ -151,9 +149,11 @@ class LiveStrategyRunner:
         if self.frequency['interval']=='1d':
             self.fetch_and_update_real_time_data()
             new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
-            tracker_tread=threading.Thread(target=self.tracker_thread, args=(new_pos,))
-            tracker_tread.start()
-            self.threads.append(tracker_tread)
+            while True:
+                tracker_tread=threading.Thread(target=self.tracker_thread, args=(new_pos,))
+                tracker_tread.start()
+                self.threads.append(tracker_tread)
+                counter.sleep(60)
         else:
             current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
             stop_time = time(22, 0, 0)

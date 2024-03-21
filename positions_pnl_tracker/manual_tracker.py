@@ -40,7 +40,21 @@ class LiveStrategyTracker():
 
     def get_asset_history(self, new_position):
         previous_asset_positions = self.get_previous_positions()
-        historical_close_price = self.get_data()
+        if self.frequency['interval']=='1d':
+            # get minute data
+            minute_data_dict = self.frequency
+            minute_data_dict['interval'] = '1m'
+            minute_data_dict['period'] = '7d'
+            if self.data_provider == 'yfinance':
+                historical_close_price = DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download(self.symbol) \
+                    ['close']
+            else:
+                historical_close_price = \
+                DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download(self.symbol) \
+                    ['close']
+        else:
+            historical_close_price = self.get_data()
+
         try:
             new_position['time'] = historical_close_price.index[-1]
             new_position.set_index('time', inplace=True)

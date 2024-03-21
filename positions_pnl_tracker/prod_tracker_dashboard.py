@@ -100,9 +100,9 @@ class PortfolioManagementApp:
                 portfolio_history.index = pd.to_datetime(portfolio_history.index).tz_convert(
                     'Europe/Paris')
                 portfolio_history=portfolio_history.sort_index()
-                portfolio_metrics= pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                portfolio_metrics= (pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                               f'positions_pnl_tracker/{self.symbol}_strat_metric.csv'), header=[0],
-                                                index_col=[0])
+                                                index_col=[0])).round(2)
 
                 value_graph = PortfolioDashboard.create_portfolio_value_graph(portfolio_history)
                 creturns_graph=PortfolioDashboard.create_portfolio_vs_bench_graph(portfolio_history)

@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from broker_interaction.broker_order import GetBrokersConfig
 from broker_interaction.broker_metrics import AlpacaPlatform
 from positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
-from backtester.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
+from trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from backtester.ml_strat_creator import LRVectorBacktester, ScikitVectorBacktester
 from backtester.strat_comparator import StrategyRunner

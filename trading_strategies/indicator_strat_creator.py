@@ -395,8 +395,8 @@ class BollingerBandsBacktester(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
         # data["close"].plot(ax=ax1, color='b', lw=.5)
@@ -465,20 +465,20 @@ class RSIVectorBacktester(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='b', lw=.5)
-        data["RSI"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "RSI", "Buy", "Sell"])
-        plt.title("RSI Trading Strategy")
+        # data["close"].plot(ax=ax1, color='b', lw=.5)
+        # data["RSI"].plot(ax=ax1, color='g', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "RSI", "Buy", "Sell"])
+        # plt.title("RSI Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -524,19 +524,19 @@ class MomVectorBacktester(StrategyCreator):
         self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "Buy", "Sell"])
-        plt.title("Momentum Trading Strategy")
+        # data["close"].plot(ax=ax1, color='g', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "Buy", "Sell"])
+        # plt.title("Momentum Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -576,20 +576,20 @@ class MRVectorBacktester(StrategyCreator):
             self.data['sma'] = self.data['close'].rolling(SMA).mean()
 
     def analyse_strategy(self, data):
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='b', lw=.5)
-        data["sma"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "SMA", "Buy", "Sell"])
-        plt.title("Mean Reversion Trading Strategy")
+        # data["close"].plot(ax=ax1, color='b', lw=.5)
+        # data["sma"].plot(ax=ax1, color='g', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "SMA", "Buy", "Sell"])
+        # plt.title("Mean Reversion Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -634,20 +634,22 @@ class TurtleVectorBacktester(StrategyCreator):
         self.predictive_strat = predictive_strat
 
     def analyse_strategy(self, data):
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
-        data["close"].plot(ax=ax1, color='b', lw=.5)
-        data["high"].plot(ax=ax1, color='g', lw=2.)
-        data["low"].plot(ax=ax1, color='r', lw=2.)
-        data["avg"].plot(ax=ax1, color='y', lw=2.)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "Highs", "Lows", "Average", "Buy", "Sell"])
-        plt.title("Turtle Trading Strategy")
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        data['orders'] = data['regularized_position'].diff()
+        data = data.dropna(axis=0)
+        # data["close"].plot(ax=ax1, color='b', lw=.5)
+        # data["high"].plot(ax=ax1, color='g', lw=2.)
+        # data["low"].plot(ax=ax1, color='r', lw=2.)
+        # data["avg"].plot(ax=ax1, color='y', lw=2.)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "Highs", "Lows", "Average", "Buy", "Sell"])
+        # plt.title("Turtle Trading Strategy")
         # plt.show()
 
     def calculate_turtle(self):
@@ -759,20 +761,20 @@ class ParabolicSARBacktester(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='b', lw=.5)
-        data["SAR"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "SAR", "Buy", "Sell"])
-        plt.title("Parabolic SAR Trading Strategy")
+        # data["close"].plot(ax=ax1, color='b', lw=.5)
+        # data["SAR"].plot(ax=ax1, color='g', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "SAR", "Buy", "Sell"])
+        # plt.title("Parabolic SAR Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -812,20 +814,20 @@ class MACDStrategy(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["macd"].plot(ax=ax1, color='g', lw=.5)
-        data["signal"].plot(ax=ax1, color='r', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["macd"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["macd"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["MACD", "Signal", "Buy", "Sell"])
-        plt.title("MACD Trading Strategy")
+        # data["macd"].plot(ax=ax1, color='g', lw=.5)
+        # data["signal"].plot(ax=ax1, color='r', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["macd"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["macd"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["MACD", "Signal", "Buy", "Sell"])
+        # plt.title("MACD Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -892,21 +894,21 @@ class IchimokuStrategy(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='b', lw=.5)
-        data["leading_span_A"].plot(ax=ax1, color='r', lw=0.5)
-        data["leading_span_B"].plot(ax=ax1, color='g', lw=0.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "Span A", "Span B", "Buy", "Sell"])
-        plt.title("Ichimoku Trading Strategy")
+        # data["close"].plot(ax=ax1, color='b', lw=.5)
+        # data["leading_span_A"].plot(ax=ax1, color='r', lw=0.5)
+        # data["leading_span_B"].plot(ax=ax1, color='g', lw=0.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "Span A", "Span B", "Buy", "Sell"])
+        # plt.title("Ichimoku Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -962,21 +964,21 @@ class StochasticOscillatorStrategy(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data['close'].plot(ax=ax1, color='b', lw=.5)
-        data["%K"].plot(ax=ax1, color='b', lw=.5)
-        data['%D'].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["%K", "%D", "Buy", "Sell"])
-        plt.title("Stochastic Oscillator Trading Strategy")
+        # data['close'].plot(ax=ax1, color='b', lw=.5)
+        # data["%K"].plot(ax=ax1, color='b', lw=.5)
+        # data['%D'].plot(ax=ax1, color='g', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["%K", "%D", "Buy", "Sell"])
+        # plt.title("Stochastic Oscillator Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -1017,21 +1019,21 @@ class ADXStrategy(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='b', lw=.5)
-        data['+DI'].plot(ax=ax1, color='g', lw=.5)
-        data['-DI'].plot(ax=ax1, color='r', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "+DI", "-DI", "Buy", "Sell"])
-        plt.title("ADX Trading Strategy")
+        # data["close"].plot(ax=ax1, color='b', lw=.5)
+        # data['+DI'].plot(ax=ax1, color='g', lw=.5)
+        # data['-DI'].plot(ax=ax1, color='r', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "+DI", "-DI", "Buy", "Sell"])
+        # plt.title("ADX Trading Strategy")
         # plt.show()
 
     def calculate_adx(self):
@@ -1096,20 +1098,20 @@ class VolumeStrategy(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["volume"].plot(ax=ax1, color='g', lw=.5)
-        data["average_volume"].plot(ax=ax1, color='r', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["volume"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["volume"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Volume", "Average Volume", "Buy", "Sell"])
-        plt.title("Volume Trading Strategy")
+        # data["volume"].plot(ax=ax1, color='g', lw=.5)
+        # data["average_volume"].plot(ax=ax1, color='r', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["volume"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["volume"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Volume", "Average Volume", "Buy", "Sell"])
+        # plt.title("Volume Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -1154,19 +1156,19 @@ class WilliamsRBacktester(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "Buy", "Sell"])
-        plt.title("William R Trading Strategy")
+        # data["close"].plot(ax=ax1, color='g', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "Buy", "Sell"])
+        # plt.title("William R Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
@@ -1214,21 +1216,21 @@ class VolatilityBreakoutBacktester(StrategyCreator):
 
     def analyse_strategy(self, data):
         ''' Visualization of the strategy trades. '''
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111, ylabel=f'{self.symbol} price in $')
         data['orders'] = data['regularized_position'].diff()
         data = data.dropna(axis=0)
-        data["close"].plot(ax=ax1, color='b', lw=.5)
-        data["lower_band"].plot(ax=ax1, color='r', lw=.5)
-        data["upper_band"].plot(ax=ax1, color='g', lw=.5)
-        ax1.plot(data.loc[data.orders >= 1.0].index,
-                 data["close"][data.orders >= 1.0],
-                 '^', markersize=7, color='k')
-        ax1.plot(data.loc[data.orders <= -1.0].index,
-                 data["close"][data.orders <= -1.0],
-                 'v', markersize=7, color='k')
-        plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
-        plt.title("Volatility Breakout Trading Strategy")
+        # data["close"].plot(ax=ax1, color='b', lw=.5)
+        # data["lower_band"].plot(ax=ax1, color='r', lw=.5)
+        # data["upper_band"].plot(ax=ax1, color='g', lw=.5)
+        # ax1.plot(data.loc[data.orders >= 1.0].index,
+        #          data["close"][data.orders >= 1.0],
+        #          '^', markersize=7, color='k')
+        # ax1.plot(data.loc[data.orders <= -1.0].index,
+        #          data["close"][data.orders <= -1.0],
+        #          'v', markersize=7, color='k')
+        # plt.legend(["Price", "Lower Band", "Upper Band", "Buy", "Sell"])
+        # plt.title("Volatility Breakout Trading Strategy")
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
