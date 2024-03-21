@@ -1,4 +1,6 @@
 # Compare and Run Strategies
+import threading
+
 import pandas as pd
 
 from indicators.performances_indicators import RiskFreeRate
@@ -47,6 +49,7 @@ class StrategyRunner:
         self.iterations=iterations
         self.predictive_strat=predictive_strat
         self.strat_tester_csv=strat_tester_csv
+        self.lock = threading.Lock()
 
         # Load data once and reuse, improving efficiency
         strat_creator=StrategyCreator(self.strat_type_pos, self.frequency, self.symbol, self.risk_free_rate, self.start_date,
@@ -86,10 +89,11 @@ class StrategyRunner:
         :return: A dictionary of optimization results for each strategy.
         """
         for strategy_name, strategy_class in self.strategies.items():
-            try:
-                best_params, best_performance, best_sharpe=self._optimize_strategy(strategy_name, strategy_class, search_type)
-            except Exception as e:
-                print(f"Error optimizing {strategy_name}: {e}")
+            with self.lock:
+                try:
+                    best_params, best_performance, best_sharpe=self._optimize_strategy(strategy_name, strategy_class, search_type)
+                except Exception as e:
+                    print(f"Error optimizing {strategy_name}: {e}")
             self._update_optimization_results(strategy_name, search_type, best_params, best_performance, best_sharpe)
         return self.optimization_results
 

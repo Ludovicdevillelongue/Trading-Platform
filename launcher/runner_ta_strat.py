@@ -14,9 +14,7 @@ from broker_interaction.broker_metrics import AlpacaPlatform
 from positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
 from trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
-from trading_strategies.ta_strat_creator import BBandsStrategy, DEMAStrategy, EMAStrategy, HTTrendlineStrategy,\
-    KAMAStrategy, MAStrategy, MAMAStrategy, MAVPStrategy, MIDPOINTStrategy, MIDPRICEStrategy, SARStrategy, SAREXTStrategy,\
-    SMAStrategy, T3Strategy, TEMAStrategy, TRIMAStrategy, WMAStrategy, ADStrategy, ADOSCStrategy, OBVStrategy
+from trading_strategies.ta_strat_creator import BBandsStrategy
 from trading_strategies.strat_comparator import StrategyRunner
 from backtester_tracker.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
@@ -89,7 +87,7 @@ if __name__ == '__main__':
     frequency = frequency_yaml[data_provider]['minute']
     with open(os.path.join(os.path.dirname(__file__), '../config/strat_type_pos.yml'), 'r') as file:
         strat_type_pos_yaml = yaml.safe_load(file)
-    strat_type_pos = float(strat_type_pos_yaml['strat_position']['long_short'])
+    strat_type_pos = float(strat_type_pos_yaml['long_only'])
 
 
     symbol = 'TSLA'
@@ -137,7 +135,7 @@ if __name__ == '__main__':
     """
 
     trading_platform = 'Alpaca'
-    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], strat_type_pos, optimization_results, frequency_yaml, frequency, symbol,
+    strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], strat_type_pos, optimization_results, frequency, symbol,
                                    risk_free_rate,start_date, end_date, invested_amount, transaction_costs, predictive_strat,
                                    contract_multiplier, data_provider, trading_platform, broker_config)
     strat_run.run()
