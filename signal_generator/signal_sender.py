@@ -85,7 +85,6 @@ class LiveStrategyRunner:
 
 
     def place_order(self, strategy_name, signal, current_position):
-        dict_pos={}
         new_position = (float(signal * self.contract_multiplier))
         self.logger_monitor(f'\nCurrent Position: {current_position}\nRequested Position: {new_position}', False)
         # Calculate the percentage change between the new and current positions
@@ -156,7 +155,7 @@ class LiveStrategyRunner:
                 counter.sleep(60)
         else:
             current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
-            stop_time = time(22, 0, 0)
+            stop_time = time(21, 0, 0)
             if self.symbol!="BTC-USD":
                 while current_time < stop_time:
                     self.fetch_and_update_real_time_data()

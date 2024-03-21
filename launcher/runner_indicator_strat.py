@@ -28,19 +28,19 @@ if __name__ == '__main__':
     """
 
     strategies = {
-        'SMA': SMAVectorBacktester,
+        # 'SMA': SMAVectorBacktester,
         'BB': BollingerBandsBacktester,
-        'RSI': RSIVectorBacktester,
-        'MOM': MomVectorBacktester,
-        'MeanRev': MRVectorBacktester,
-        'Turtle': TurtleVectorBacktester,
-        'ParabolicSAR': ParabolicSARBacktester,
-        'MACD': MACDStrategy,
-        'Ichimoku': IchimokuStrategy,
-        'StochasticOscillator': StochasticOscillatorStrategy,
-        'ADX': ADXStrategy,
-        'Volume': VolumeStrategy,
-        'WilliamR': WilliamsRBacktester,
+        # 'RSI': RSIVectorBacktester,
+        # 'MOM': MomVectorBacktester,
+        # 'MeanRev': MRVectorBacktester,
+        # 'Turtle': TurtleVectorBacktester,
+        # 'ParabolicSAR': ParabolicSARBacktester,
+        # 'MACD': MACDStrategy,
+        # 'Ichimoku': IchimokuStrategy,
+        # 'StochasticOscillator': StochasticOscillatorStrategy,
+        # 'ADX': ADXStrategy,
+        # 'Volume': VolumeStrategy,
+        # 'WilliamR': WilliamsRBacktester,
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
     regression_methods = ['linear', 'poly', 'logistic', 'ridge', 'lasso', 'elastic_net', 'bayesian', 'svr',
@@ -48,21 +48,21 @@ if __name__ == '__main__':
 
 
     param_grids = {
-        'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
+        # 'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
         'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5), 'reg_method': regression_methods},
-        'RSI': {'RSI_period': (5, 15), 'overbought_threshold': (65, 75), 'oversold_threshold': (25, 35), 'reg_method': regression_methods},
-        'MOM': {'momentum': (5, 15), 'reg_method': regression_methods},
-        'MeanRev': {'sma': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
-        'Turtle': {'window_size': (10, 30), 'reg_method': regression_methods},
-        'ParabolicSAR': {'SAR_step': (0.01, 0.1), 'SAR_max': (0.1, 0.4), 'reg_method': regression_methods},
-        'MACD': {'short_window': (3, 8), 'long_window': (10, 20), 'signal_window': (3, 9), 'reg_method': regression_methods},
-        'Ichimoku': {'conversion_line_period': (3, 6), 'base_line_period': (10, 20), 'leading_span_b_period': (20, 40),
-                     'displacement': (10, 20), 'reg_method': regression_methods},
-        'StochasticOscillator': {'k_window': (5, 15), 'd_window': (2, 5), 'buy_threshold': (15, 30),
-                                 'sell_threshold': (70, 85), 'reg_method': regression_methods},
-        'ADX': {'adx_period': (5, 15), 'di_period': (5, 15), 'threshold': (15, 25), 'reg_method': regression_methods},
-        'Volume': {'volume_threshold': (1.0, 4.0), 'volume_window': (2, 30), 'reg_method': regression_methods},
-        'WilliamR': {'lookback_period': (5, 15), 'overbought': (10, 20), 'oversold': (80, 90), 'reg_method': regression_methods},
+        # 'RSI': {'RSI_period': (5, 15), 'overbought_threshold': (65, 75), 'oversold_threshold': (25, 35), 'reg_method': regression_methods},
+        # 'MOM': {'momentum': (5, 15), 'reg_method': regression_methods},
+        # 'MeanRev': {'sma': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
+        # 'Turtle': {'window_size': (10, 30), 'reg_method': regression_methods},
+        # 'ParabolicSAR': {'SAR_step': (0.01, 0.1), 'SAR_max': (0.1, 0.4), 'reg_method': regression_methods},
+        # 'MACD': {'short_window': (3, 8), 'long_window': (10, 20), 'signal_window': (3, 9), 'reg_method': regression_methods},
+        # 'Ichimoku': {'conversion_line_period': (3, 6), 'base_line_period': (10, 20), 'leading_span_b_period': (20, 40),
+        #              'displacement': (10, 20), 'reg_method': regression_methods},
+        # 'StochasticOscillator': {'k_window': (5, 15), 'd_window': (2, 5), 'buy_threshold': (15, 30),
+        #                          'sell_threshold': (70, 85), 'reg_method': regression_methods},
+        # 'ADX': {'adx_period': (5, 15), 'di_period': (5, 15), 'threshold': (15, 25), 'reg_method': regression_methods},
+        # 'Volume': {'volume_threshold': (1.0, 4.0), 'volume_window': (2, 30), 'reg_method': regression_methods},
+        # 'WilliamR': {'lookback_period': (5, 15), 'overbought': (10, 20), 'oversold': (80, 90), 'reg_method': regression_methods},
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
@@ -71,10 +71,10 @@ if __name__ == '__main__':
     broker_config = GetBrokersConfig.key_secret_tc_url()
     with open(os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml'), 'r') as file:
         frequency_yaml = yaml.safe_load(file)
-    frequency = frequency_yaml[data_provider]['day']
+    frequency = frequency_yaml[data_provider]['minute']
     with open(os.path.join(os.path.dirname(__file__), '../config/strat_type_pos.yml'), 'r') as file:
         strat_type_pos_yaml = yaml.safe_load(file)
-    strat_type_pos = float(strat_type_pos_yaml['long_short'])
+    strat_type_pos = float(strat_type_pos_yaml['long_only'])
 
 
     symbol = 'TSLA'
@@ -85,8 +85,8 @@ if __name__ == '__main__':
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
     contract_multiplier = 10
-    iterations = 50
-    predictive_strat=True
+    iterations = 5
+    predictive_strat=False
 
     """
     --------------------------------------------------------------------------------------------------------------------
