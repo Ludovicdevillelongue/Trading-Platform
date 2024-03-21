@@ -62,7 +62,7 @@ class LiveStrategyTracker():
         except Exception as e:
             new_position=pd.DataFrame()
         try:
-            last_pos=pd.DataFrame(previous_asset_positions[['symbol', 'position', 'order']][previous_asset_positions['position']!=0].iloc[-1]).T
+            last_pos=pd.DataFrame(previous_asset_positions[['symbol', 'position', 'order']].iloc[-1]).T
             last_new_pos=pd.concat([last_pos, new_position], axis=0)
         #no record of last position
         except Exception as e:
