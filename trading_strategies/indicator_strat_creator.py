@@ -8,8 +8,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
-from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Alpha, Beta, \
-    LogReturns, Returns, CumulativeReturns, CumulativeLogReturns
+from indicators.performances_indicators import (AnnualizedSharpeRatio, AnnualizedSortinoRatio, MaxDrawdown,
+                                                AnnualizedCalmarRatio, AnnualizedAlpha,
+                                                Beta, LogReturns, Returns, CumulativeReturns, CumulativeLogReturns)
 from signal_generator.ml_predictor import MLPredictor
 from data_loader.data_retriever import DataManager
 import warnings
@@ -166,6 +167,7 @@ class StrategyCreator:
             else:
                 pass
             data_regression["sized_position"] = predictions
+            data_regression.loc[data_regression[position_type] == 0, 'sized_position'] = 0
             return self.__finalize_data(data_strat, data_regression)
 
         except Exception as e:
@@ -259,22 +261,20 @@ class StrategyCreator:
             if data['regularized_position'].eq(0).all():
                 sharpe_ratio = 0
             else:
-                sharpe_ratio = SharpeRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
+                sharpe_ratio = AnnualizedSharpeRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
         except Exception as e:
             sharpe_ratio = 0
-        sortino_ratio = SortinoRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
 
+        sortino_ratio = AnnualizedSortinoRatio(self.frequency, 0).calculate(data['strategy'])
         max_drawdown = MaxDrawdown().calculate(data['cstrategy'])
-        calmar_ratio = CalmarRatio(self.frequency).calculate(data['strategy'], max_drawdown)
+        calmar_ratio = AnnualizedCalmarRatio(self.frequency).calculate(data['strategy'], max_drawdown)
+
         try:
             beta = Beta().calculate(data['strategy'], data['returns'])
-            alpha = Alpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
-
-
+            alpha = AnnualizedAlpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
         except Exception as e:
             beta = 0
             alpha = 0
-
         return round(aperf, 0), round(operf, 0), round(sharpe_ratio, 2), round(sortino_ratio, 2), round(calmar_ratio,2), \
                round(max_drawdown, 0), round(alpha, 2), round(beta, 2)
 
@@ -497,7 +497,7 @@ class RSIVectorBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
         data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, self.strat_type_pos,
                                           data_strat['position'])  # sell signal
-
+        data_strat=data_strat.dropna()
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['RSI'], 1).run()
             data_sized = self.regression_positions(data_pred, "RSI", "pred_position", self.reg_method)

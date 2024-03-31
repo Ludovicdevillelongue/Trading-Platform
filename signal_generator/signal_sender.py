@@ -68,7 +68,10 @@ class LiveStrategyRunner:
             return self.execute_trade(strategy_name, self.signal)
             # Removed break; now it will loop continuously
         except Exception as e:
-            self.logger_monitor(f"Error in strategy application: {e}")
+            if e.args[0]=='qty must be > 0':
+                pass
+            else:
+                self.logger_monitor(f"Error in strategy application: {e}")
 
     def execute_trade(self, strategy_name, signal):
         broker_positions = AlpacaPlatform(self.broker_config).get_all_positions()
@@ -103,7 +106,8 @@ class LiveStrategyRunner:
             trade_info.update({'position': new_position, 'order': order_qty})
             self.report_trade(self.symbol, strategy_name, side, abs(order_qty))
         else:
-            trade_info.update({'position': current_position, 'order': 0})
+            trade_info.update({'position': current_position, 'order':
+                (AlpacaPlatform(self.broker_config).get_orders()).at[0, 'qty']})
             self.logger_monitor('Change In Position Not Sufficient: No Trade Executed')
         df_trade_info = pd.DataFrame([trade_info])
         return df_trade_info
@@ -130,7 +134,7 @@ class LiveStrategyRunner:
         livestrat.get_asset_metrics(self.frequency, self.risk_free_rate, new_pos)
         if not self.dashboard_open:
             alpaca_platform = AlpacaPlatform(self.broker_config)
-            portfolio_manager_app = PortfolioManagementApp(alpaca_platform, self.symbol)
+            portfolio_manager_app = PortfolioManagementApp(alpaca_platform, self.symbol, self.frequency)
             portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
             portfolio_server_thread.start()
             self.threads.append(portfolio_server_thread)
@@ -175,7 +179,8 @@ class LiveStrategyRunner:
                     new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
                     tracker_tread = threading.Thread(target=self.tracker_thread, args=(new_pos,))
                     tracker_tread.start()
-                    self.threads.append(tracker_tread)                   # if self.stop_loss():
+                    self.threads.append(tracker_tread)
+                    # if self.stop_loss():
                     #     print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
                     #     closed_positions = self.broker.close_open_positions()
                     #     for i in range(len(closed_positions)):

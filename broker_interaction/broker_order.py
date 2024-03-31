@@ -30,8 +30,7 @@ class AlpacaTradingBot:
         print(f"Order submitted: {side} {abs(order_qty)} shares of {symbol}")
 
 
-
-
     def close_open_positions(self):
-        closed_positions=self.api.close_open_positions()
+        #TODO: close only positions for one symbol
+        closed_positions=self.api.close_all_positions()
         return closed_positions

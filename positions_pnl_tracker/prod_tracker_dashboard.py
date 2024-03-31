@@ -56,9 +56,10 @@ class PortfolioDashboard:
         )
 
 class PortfolioManagementApp:
-    def __init__(self, platform, symbol):
+    def __init__(self, platform, symbol, frequency):
         self.platform = platform
         self.symbol=symbol
+        self.frequency=frequency
         self.app = dash.Dash(__name__, suppress_callback_exceptions=False)
         self.setup_layout()
         self.setup_callbacks()
@@ -95,13 +96,13 @@ class PortfolioManagementApp:
                 orders_data = self.platform.get_orders()
                 positions_data = self.platform.get_all_positions()
                 portfolio_history = pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_strat_history.csv'),header=[0],
+                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_history.csv'),header=[0],
                                                 index_col=[0])
                 portfolio_history.index = pd.to_datetime(portfolio_history.index).tz_convert(
                     'Europe/Paris')
                 portfolio_history=portfolio_history.sort_index()
                 portfolio_metrics= (pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_strat_metric.csv'), header=[0],
+                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_metric.csv'), header=[0],
                                                 index_col=[0])).round(2)
 
                 value_graph = PortfolioDashboard.create_portfolio_value_graph(portfolio_history)
