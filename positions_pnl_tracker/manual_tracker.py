@@ -4,7 +4,7 @@ from data_loader.data_retriever import DataManager
 from indicators.performances_indicators import (Returns, CumulativeReturns, AnnualizedSharpeRatio,
                                                 AnnualizedSortinoRatio, MaxDrawdown,
                                                 AnnualizedCalmarRatio, Beta, AnnualizedAlpha)
-
+import pytz
 
 class LiveStrategyTracker():
     def __init__(self, data_provider: str, symbol: str, frequency: dict, start_date, end_date, amount):
@@ -35,8 +35,11 @@ class LiveStrategyTracker():
             previous_asset_positions = pd.DataFrame()
 
         else:
-            previous_asset_positions = pd.read_csv(self.strat_pos_tracker_csv,header=[0], index_col=[0])
-            previous_asset_positions.index = pd.to_datetime(previous_asset_positions.index).tz_convert('Europe/Paris')
+            previous_asset_positions = pd.read_csv(self.strat_pos_tracker_csv, header=[0], index_col=[0])
+            previous_asset_positions.index = pd.DatetimeIndex(pd.to_datetime
+                                                              (previous_asset_positions.index, utc=True))
+            previous_asset_positions.index = (previous_asset_positions.
+                                              index.tz_convert(pytz.timezone('Europe/Paris')))
         return previous_asset_positions.sort_index()
 
     def get_asset_history(self, new_position):
@@ -78,7 +81,6 @@ class LiveStrategyTracker():
             pass
         total_asset_history = total_asset_history.fillna(0)
         total_asset_history.to_csv(self.strat_pos_tracker_csv, mode='w', header=True, index=True)
-        #TODO: replace close of amount by best ask (long) or best bid(short)
         total_asset_history['amount'] = total_asset_history['close'] * total_asset_history['position']
         total_asset_history['returns'] = Returns().get_metric(total_asset_history['close'])
         total_asset_history['creturns'] = CumulativeReturns().get_metric(self.amount, total_asset_history['returns'])

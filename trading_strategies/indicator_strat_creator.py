@@ -325,13 +325,11 @@ class SMAVectorBacktester(StrategyCreator):
         self.sma_long = sma_long
         self.reg_method = reg_method
 
-    def set_parameters(self, SMA1=None, SMA2=None):
-        if SMA1 is not None:
-            self.SMA1 = SMA1
-            self.data['SMA1'] = self.data['close'].rolling(self.SMA1).mean()
-        if SMA2 is not None:
-            self.SMA2 = SMA2
-            self.data['SMA2'] = self.data['close'].rolling(self.SMA2).mean()
+    def set_parameters(self, sma_short=None, sma_long=None):
+        if sma_short is not None:
+            self.sma1= self.data['close'].rolling(sma_short).mean()
+        if sma_long is not None:
+            self.sma2 = self.data['close'].rolling(sma_long).mean()
 
     def analyse_strategy(self, data):
         # fig = plt.figure()
@@ -357,6 +355,8 @@ class SMAVectorBacktester(StrategyCreator):
         '''
         self.set_parameters(int(self.sma_short), int(self.sma_long))
         data_strat = self.data.copy().dropna()
+        data_strat['SMA1']=self.sma1
+        data_strat['SMA2']=self.sma2
         data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, self.strat_type_pos)
         data_strat['diff_SMA'] = data_strat['SMA1'] - data_strat['SMA2']
         if predictive_strat:
@@ -423,7 +423,7 @@ class BollingerBandsBacktester(StrategyCreator):
         data_strat['upper_band'] = data_strat['middle_band'] + (data_strat['std_dev'] * self.num_std_dev)
         data_strat['lower_band'] = data_strat['middle_band'] - (data_strat['std_dev'] * self.num_std_dev)
         data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], 1, np.nan)  # buy signal
-        data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], 0,
+        data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], self.strat_type_pos,
                                           data_strat['position'])  # sell signal
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
 
@@ -544,6 +544,8 @@ class MomVectorBacktester(StrategyCreator):
         '''
         data_strat = self.data.copy().dropna()
         data_strat['position'] = np.sign(data_strat['returns'].rolling(self.momentum).mean())
+        if self.strat_type_pos==0:
+            data_strat['position']=data_strat['position'].replace(-1,0)
         data_strat = data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['returns'], 1).run()
@@ -561,19 +563,19 @@ class MomVectorBacktester(StrategyCreator):
 
 
 class MRVectorBacktester(StrategyCreator):
-    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, sma, threshold, reg_method,
+    def __init__(self, strat_type_pos, frequency, data, symbol, risk_free_rate, start_date, end_date, sma_window, threshold, reg_method,
                  amount, transaction_costs, predictive_strat):
         super().__init__(strat_type_pos, frequency, symbol, risk_free_rate, start_date, end_date, amount, transaction_costs,
                          predictive_strat)
         self.data = data
-        self.sma = sma
+        self.sma_window = sma_window
         self.threshold = threshold
         self.reg_method = reg_method
         self.predictive_strat = predictive_strat
 
-    def set_parameters(self, SMA=None):
-        if SMA is not None:
-            self.data['sma'] = self.data['close'].rolling(SMA).mean()
+    def set_parameters(self, sma_window=None):
+        if sma_window is not None:
+            self.sma = self.data['close'].rolling(sma_window).mean()
 
     def analyse_strategy(self, data):
         # fig = plt.figure()
@@ -593,8 +595,9 @@ class MRVectorBacktester(StrategyCreator):
         # plt.show()
 
     def run_strategy(self, predictive_strat=False):
-        self.set_parameters(int(self.sma))
+        self.set_parameters(int(self.sma_window))
         data_strat = self.data.copy().dropna()
+        data_strat['sma']=self.sma
         data_strat['distance'] = data_strat['close'] - data_strat['sma']
         # sell signals
         data_strat['position'] = np.where(data_strat['distance'] > self.threshold,
