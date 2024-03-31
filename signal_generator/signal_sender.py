@@ -65,6 +65,9 @@ class LiveStrategyRunner:
                                          amount=self.amount, transaction_costs=self.transaction_costs,
                                          predictive_strat=self.predictive_strat,
                                          **opti_results_strategy).generate_signal()
+            if self.strat_type_pos==-1:
+                #short selling only accept non-fractional order
+                self.signal=round(self.signal)
             return self.execute_trade(strategy_name, self.signal)
             # Removed break; now it will loop continuously
         except Exception as e:
@@ -159,7 +162,7 @@ class LiveStrategyRunner:
                 counter.sleep(60)
         else:
             current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
-            stop_time = time(21, 0, 0)
+            stop_time = time(22, 0, 0)
             if self.symbol!="BTC-USD":
                 while current_time < stop_time:
                     self.fetch_and_update_real_time_data()

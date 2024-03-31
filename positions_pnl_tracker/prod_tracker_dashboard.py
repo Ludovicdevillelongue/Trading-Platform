@@ -98,8 +98,8 @@ class PortfolioManagementApp:
                 portfolio_history = pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                               f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_history.csv'),header=[0],
                                                 index_col=[0])
-                portfolio_history.index = pd.to_datetime(portfolio_history.index).tz_convert(
-                    'Europe/Paris')
+                portfolio_history.index = pd.DatetimeIndex(pd.to_datetime(portfolio_history.index, utc=True).
+                tz_convert('Europe/Paris'))
                 portfolio_history=portfolio_history.sort_index()
                 portfolio_metrics= (pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                               f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_metric.csv'), header=[0],
