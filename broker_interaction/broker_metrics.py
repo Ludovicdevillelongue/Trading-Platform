@@ -1,8 +1,9 @@
 import os
 import alpaca_trade_api as tradeapi
 import pandas as pd
-from indicators.performances_indicators import SharpeRatio, SortinoRatio, MaxDrawdown, CalmarRatio, Beta, Alpha,\
-    Returns, CumulativeReturns
+from indicators.performances_indicators import (AnnualizedSharpeRatio, AnnualizedCalmarRatio,
+                                                MaxDrawdown, AnnualizedSortinoRatio, Beta,
+                                                AnnualizedAlpha, Returns, CumulativeReturns)
 
 
 class TradingPlatform:
@@ -81,7 +82,7 @@ class AlpacaPlatform(TradingPlatform):
         return assets
 
     def get_broker_portfolio_history(self):
-        portfolio_history=self.api.get_daily_portfolio_history()
+        portfolio_history=self.api.get_portfolio_history()
         portfolio_history=pd.DataFrame(portfolio_history)
         portfolio_history['timestamp'] = portfolio_history['timestamp'].\
             apply(lambda x: pd.Timestamp.fromtimestamp(x))
@@ -125,16 +126,16 @@ class AlpacaPlatform(TradingPlatform):
         # Calculate Performance Indicators
 
         try:
-            dict_key_metrics['sharpe_ratio'] = SharpeRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
+            dict_key_metrics['sharpe_ratio'] = AnnualizedSharpeRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
         except Exception as e:
             dict_key_metrics['sharpe_ratio'] =0
-        dict_key_metrics['sortino_ratio'] =SortinoRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
+        dict_key_metrics['sortino_ratio'] =AnnualizedSortinoRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
 
         dict_key_metrics['max_drawdown'] =MaxDrawdown().calculate(df_ptf_vs_bench['ptf_creturns'])
-        dict_key_metrics['calmar_ratio'] =CalmarRatio(frequency).calculate(df_ptf_vs_bench['ptf_returns'], dict_key_metrics['max_drawdown'])
+        dict_key_metrics['calmar_ratio'] =AnnualizedCalmarRatio(frequency).calculate(df_ptf_vs_bench['ptf_returns'], dict_key_metrics['max_drawdown'])
         try:
             dict_key_metrics['beta']=Beta().calculate(df_ptf_vs_bench['ptf_returns'], df_ptf_vs_bench[f'{symbol}_returns'])
-            dict_key_metrics['alpha']=Alpha(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'],
+            dict_key_metrics['alpha']=AnnualizedAlpha(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'],
                                                         df_ptf_vs_bench[f'{symbol}_returns'], dict_key_metrics['beta'])
         except Exception as e:
             dict_key_metrics['beta']=0

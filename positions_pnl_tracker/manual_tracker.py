@@ -1,8 +1,9 @@
 import os
 import pandas as pd
 from data_loader.data_retriever import DataManager
-from indicators.performances_indicators import Returns, CumulativeReturns, SharpeRatio, SortinoRatio, MaxDrawdown, \
-    CalmarRatio, Beta, Alpha
+from indicators.performances_indicators import (Returns, CumulativeReturns, AnnualizedSharpeRatio,
+                                                AnnualizedSortinoRatio, MaxDrawdown,
+                                                AnnualizedCalmarRatio, Beta, AnnualizedAlpha)
 
 
 class LiveStrategyTracker():
@@ -14,11 +15,11 @@ class LiveStrategyTracker():
         self.end_date = end_date
         self.amount = amount
         self.strat_pos_tracker_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_strat_positions_history.csv')
+                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_positions_history.csv')
         self.strat_equity_ret_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_strat_history.csv')
+                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_history.csv')
         self.strat_metrics_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_strat_metric.csv')
+                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_metric.csv')
 
     def get_data(self):
         if self.data_provider == 'yfinance':
@@ -42,7 +43,7 @@ class LiveStrategyTracker():
         previous_asset_positions = self.get_previous_positions()
         if self.frequency['interval']=='1d':
             # get minute data
-            minute_data_dict = self.frequency
+            minute_data_dict = self.frequency.copy()
             minute_data_dict['interval'] = '1m'
             minute_data_dict['period'] = '7d'
             if self.data_provider == 'yfinance':
@@ -66,7 +67,7 @@ class LiveStrategyTracker():
             last_new_pos=pd.concat([last_pos, new_position], axis=0)
         #no record of last position
         except Exception as e:
-            last_new_pos=new_position
+            last_new_pos=pd.DataFrame([{'symbol': self.symbol,'position': 0,'order': 0}])
         last_new_pos_close=last_new_pos.merge(historical_close_price, left_index=True,
                                               right_index=True, how='outer').ffill().dropna(axis=0)
         total_asset_history=pd.concat([last_new_pos_close, previous_asset_positions], axis=0)
@@ -77,6 +78,7 @@ class LiveStrategyTracker():
             pass
         total_asset_history = total_asset_history.fillna(0)
         total_asset_history.to_csv(self.strat_pos_tracker_csv, mode='w', header=True, index=True)
+        #TODO: replace close of amount by best ask (long) or best bid(short)
         total_asset_history['amount'] = total_asset_history['close'] * total_asset_history['position']
         total_asset_history['returns'] = Returns().get_metric(total_asset_history['close'])
         total_asset_history['creturns'] = CumulativeReturns().get_metric(self.amount, total_asset_history['returns'])
@@ -88,6 +90,7 @@ class LiveStrategyTracker():
         position_changes.iloc[0] = True
         for position_date in position_changes[position_changes].index:
             mask = total_asset_history.index >= position_date
+            # TODO: replace close at position date by best ask (long) or best bid(short)
             total_asset_history.loc[mask, 'p&l'] += ((total_asset_history.loc[mask, 'close'] -
                                                       total_asset_history.at[position_date, 'close']) *
                                                      total_asset_history.at[position_date, 'order'])
@@ -103,18 +106,18 @@ class LiveStrategyTracker():
 
         # Calculate Performance Indicators
         try:
-            dict_key_metrics['sharpe_ratio'] = SharpeRatio(frequency, risk_free_rate).calculate(df_asset['strategy'])
+            dict_key_metrics['sharpe_ratio'] = AnnualizedSharpeRatio(frequency, risk_free_rate).calculate(df_asset['strategy'])
         except Exception as e:
             dict_key_metrics['sharpe_ratio'] = 0
-        dict_key_metrics['sortino_ratio'] = SortinoRatio(frequency, risk_free_rate).calculate(df_asset['strategy'])
+        dict_key_metrics['sortino_ratio'] = AnnualizedSortinoRatio(frequency, risk_free_rate).calculate(df_asset['strategy'])
 
         dict_key_metrics['max_drawdown'] = MaxDrawdown().calculate(df_asset['cstrategy'])
-        dict_key_metrics['calmar_ratio'] = CalmarRatio(frequency).calculate(df_asset['strategy'],
+        dict_key_metrics['calmar_ratio'] = AnnualizedCalmarRatio(frequency).calculate(df_asset['strategy'],
                                                                             dict_key_metrics['max_drawdown'])
         try:
             dict_key_metrics['beta'] = Beta().calculate(df_asset['strategy'],
                                                         df_asset['returns'])
-            dict_key_metrics['alpha'] = Alpha(frequency, risk_free_rate).calculate(df_asset['strategy'],
+            dict_key_metrics['alpha'] = AnnualizedAlpha(frequency, risk_free_rate).calculate(df_asset['strategy'],
                                                                                    df_asset['returns'],
                                                                                    dict_key_metrics['beta'])
         except Exception as e:

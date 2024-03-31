@@ -28,9 +28,9 @@ if __name__ == '__main__':
     """
 
     strategies = {
-        # 'SMA': SMAVectorBacktester,
-        'BB': BollingerBandsBacktester,
-        # 'RSI': RSIVectorBacktester,
+        'SMA': SMAVectorBacktester,
+        # 'BB': BollingerBandsBacktester,
+        'RSI': RSIVectorBacktester,
         # 'MOM': MomVectorBacktester,
         # 'MeanRev': MRVectorBacktester,
         # 'Turtle': TurtleVectorBacktester,
@@ -43,14 +43,14 @@ if __name__ == '__main__':
         # 'WilliamR': WilliamsRBacktester,
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
-    regression_methods = ['linear', 'poly', 'logistic', 'ridge', 'lasso', 'elastic_net', 'bayesian', 'svr',
-                          'no_regression']
+    regression_methods = ['linear']
 
 
     param_grids = {
-        # 'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
-        'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5), 'reg_method': regression_methods},
-        # 'RSI': {'RSI_period': (5, 15), 'overbought_threshold': (65, 75), 'oversold_threshold': (25, 35), 'reg_method': regression_methods},
+        'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': regression_methods},
+        # 'BB': {'window_size': (10, 30), 'num_std_dev': (1.0, 2.5), 'reg_method': regression_methods},
+        'RSI': {'RSI_period': (5, 15), 'overbought_threshold': (65, 75),
+                'oversold_threshold': (25, 35), 'reg_method': regression_methods},
         # 'MOM': {'momentum': (5, 15), 'reg_method': regression_methods},
         # 'MeanRev': {'sma': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
         # 'Turtle': {'window_size': (10, 30), 'reg_method': regression_methods},
@@ -77,14 +77,14 @@ if __name__ == '__main__':
     strat_type_pos = float(strat_type_pos_yaml['long_only'])
 
 
-    symbol = 'TSLA'
+    symbol = 'BTC-USD'
     risk_free_rate = RiskFreeRate().get_metric()
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
         "%Y-%m-%d %H:%M:%S")
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
-    contract_multiplier = 10
+    contract_multiplier = 1
     iterations = 5
     predictive_strat=False
 
