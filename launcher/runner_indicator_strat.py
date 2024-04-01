@@ -75,7 +75,7 @@ if __name__ == '__main__':
     frequency = frequency_yaml[data_provider]['minute']
     with open(os.path.join(os.path.dirname(__file__), '../config/strat_type_pos.yml'), 'r') as file:
         strat_type_pos_yaml = yaml.safe_load(file)
-    strat_type_pos = float(strat_type_pos_yaml['long_only'])
+    strat_type_pos = float(strat_type_pos_yaml['long_short'])
 
 
     symbol = 'TSLA'

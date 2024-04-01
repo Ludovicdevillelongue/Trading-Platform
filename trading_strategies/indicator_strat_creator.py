@@ -359,6 +359,7 @@ class SMAVectorBacktester(StrategyCreator):
         data_strat['SMA2']=self.sma2
         data_strat['position'] = np.where(data_strat['SMA1'] > data_strat['SMA2'], 1, self.strat_type_pos)
         data_strat['diff_SMA'] = data_strat['SMA1'] - data_strat['SMA2']
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['SMA1', 'SMA2'], 1).run()
             data_sized = self.regression_positions(data_pred, "diff_SMA", "pred_position", self.reg_method)
@@ -426,7 +427,7 @@ class BollingerBandsBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], self.strat_type_pos,
                                           data_strat['position'])  # sell signal
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
-
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['close', 'lower_band', 'upper_band'], 1).run()
             data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)
@@ -497,7 +498,7 @@ class RSIVectorBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['RSI'] < self.oversold_threshold, 1, 0)  # buy signal
         data_strat['position'] = np.where(data_strat['RSI'] > self.overbought_threshold, self.strat_type_pos,
                                           data_strat['position'])  # sell signal
-        data_strat=data_strat.dropna()
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['RSI'], 1).run()
             data_sized = self.regression_positions(data_pred, "RSI", "pred_position", self.reg_method)
@@ -610,7 +611,7 @@ class MRVectorBacktester(StrategyCreator):
                                           data_strat['distance'].shift(1) < 0,
                                           0, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
-
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['distance'], 1).run()
             data_sized = self.regression_positions(data_pred, "distance", "pred_position", self.reg_method)
@@ -691,6 +692,7 @@ class TurtleVectorBacktester(StrategyCreator):
 
     def run_strategy(self, predictive_strat=False):
         data_strat = self.calculate_turtle()
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['long_exit', 'long_entry', 'short_exit', 'short_entry'], 1).run()
             data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)
@@ -787,7 +789,7 @@ class ParabolicSARBacktester(StrategyCreator):
         # Define trading signals
         data_strat['position'] = np.where(data_strat['trend'] == 1, 1,
                                           self.strat_type_pos)  # Long when trend is up, short when trend is down
-
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['trend'], 1).run()
             data_sized = self.regression_positions(data_pred, "trend", "pred_position", self.reg_method)
@@ -841,7 +843,7 @@ class MACDStrategy(StrategyCreator):
         data_strat['macd'] = data_strat['ema_short'] - data_strat['ema_long']
         data_strat['signal'] = data_strat['macd'].ewm(span=self.signal_window, adjust=False).mean()
         data_strat['position'] = np.where(data_strat['macd'] > data_strat['signal'], 1, self.strat_type_pos)
-
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['macd', 'signal'], 1).run()
             data_sized = self.regression_positions(data_pred, "macd", "pred_position", self.reg_method)
@@ -927,6 +929,7 @@ class IchimokuStrategy(StrategyCreator):
                                           (data_strat['close'] < data_strat['leading_span_A']) &
                                           (data_strat['close'] < data_strat['leading_span_B']), self.strat_type_pos,
                                           data_strat['position'])
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat,
                                     ['close', 'conversion_line', 'base_line', 'leading_span_A', 'leading_span_B'],
@@ -992,6 +995,7 @@ class StochasticOscillatorStrategy(StrategyCreator):
         data_strat['position'] = np.where(data_strat['%K'] > data_strat['%D'], self.strat_type_pos,
                                           data_strat['position'])  # Sell signal
         data_strat['Diff_%K_%D'] = data_strat['%D'] - data_strat['%K']
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['%K', '%D'], 1).run()
             data_sized = self.regression_positions(data_pred, "Diff_%K_%D", "pred_position", self.reg_method)
@@ -1073,6 +1077,7 @@ class ADXStrategy(StrategyCreator):
             data_strat['position'])  # Sell signal
 
         data_strat['Diff_DI'] = data_strat['+DI'] - data_strat['-DI']
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['-DI', '+DI', 'ADX'], 1).run()
             data_sized = self.regression_positions(data_pred, "Diff_DI", "pred_position", self.reg_method)
@@ -1128,7 +1133,7 @@ class VolumeStrategy(StrategyCreator):
 
         # Define a simple trading logic: buy when there is a volume spike, sell otherwise
         data_strat['position'] = np.where(data_strat['volume_spike'], 1, self.strat_type_pos)
-
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['volume_spike'], 1).run()
             data_sized = self.regression_positions(data_pred, "volume_spike", "pred_position", self.reg_method)
@@ -1182,7 +1187,7 @@ class WilliamsRBacktester(StrategyCreator):
 
         data_strat['position'] = np.where(data_strat['%R'] < -self.oversold, 1, 0)
         data_strat['position'] = np.where(data_strat['%R'] > -self.overbought, self.strat_type_pos, data_strat['position'])
-
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['%R'], 1).run()
             data_sized = self.regression_positions(data_pred, "%R", "pred_position", self.reg_method)
@@ -1249,7 +1254,7 @@ class VolatilityBreakoutBacktester(StrategyCreator):
         data_strat['position'] = np.where(data_strat['close'] > data_strat['upper_band'], 1, np.nan)
         data_strat['position'] = np.where(data_strat['close'] < data_strat['lower_band'], self.strat_type_pos, data_strat['position'])
         data_strat['position'] = data_strat['position'].ffill().fillna(0)
-
+        data_strat=data_strat.dropna(axis=0)
         if predictive_strat:
             data_pred = MLPredictor(data_strat, ['close', 'upper_band', 'lower_band'], 1).run()
             data_sized = self.regression_positions(data_pred, "close", "pred_position", self.reg_method)

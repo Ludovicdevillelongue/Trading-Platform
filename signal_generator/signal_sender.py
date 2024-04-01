@@ -15,7 +15,7 @@ from positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
 class LiveStrategyRunner:
     def __init__(self, strategy_name, strategy_class, strat_type_pos, optimization_results, frequency,
                  symbol, risk_free_rate, start_date, end_date, amount, transaction_costs, predictive_strat,
-                 contract_multiplier, data_provider, trading_platform, broker_config):
+                 contract_multiplier, data_provider, trading_platform_name, broker_config):
         self.strategy_name = strategy_name
         self.strategy_class = strategy_class
         self.strat_type_pos=strat_type_pos
@@ -29,15 +29,17 @@ class LiveStrategyRunner:
         self.transaction_costs = transaction_costs
         self.predictive_strat=predictive_strat
         self.data_provider = data_provider
-        self.trading_platform = trading_platform
+        self.trading_platform_name = trading_platform_name
         self.broker_config = broker_config
         self.current_positions = {name: 0 for name in optimization_results}
+        self.broker_symbol= self.symbol.replace("-", "/") if '-' in self.symbol else self.symbol
         self.contract_multiplier = contract_multiplier
         self.real_time_data = None
         self.threads=[]
         self.dashboard_open=False
-        if self.trading_platform == 'Alpaca':
+        if self.trading_platform_name == 'Alpaca':
             self.broker = AlpacaTradingBot(broker_config)
+            self.trading_platform=AlpacaPlatform(self.broker_config, self.symbol, self.frequency)
 
     def fetch_and_update_real_time_data(self):
         try:
@@ -77,17 +79,17 @@ class LiveStrategyRunner:
                 self.logger_monitor(f"Error in strategy application: {e}")
 
     def execute_trade(self, strategy_name, signal):
-        broker_positions = AlpacaPlatform(self.broker_config).get_all_positions()
+        try:
+            broker_position = self.trading_platform.get_symbol_position(self.broker_symbol)
+        except Exception as e:
+            broker_position=pd.DataFrame()
         current_position = 0
-        broker_symbol=self.symbol.replace("-", "")
-        if broker_positions.empty:
+        if broker_position.empty:
             return self.place_order(strategy_name, signal, current_position)
         else:
-            for i in range(len(broker_positions)):
-                if broker_positions.loc[i,'symbol'] == broker_symbol:
-                    current_position = float(broker_positions.loc[i,'qty'])
-                    if signal*self.contract_multiplier != current_position:
-                        return self.place_order(strategy_name, signal, current_position)
+            current_position = float(broker_position['qty'])
+            if signal*self.contract_multiplier != current_position:
+                return self.place_order(strategy_name, signal, current_position)
 
 
     def place_order(self, strategy_name, signal, current_position):
@@ -101,16 +103,15 @@ class LiveStrategyRunner:
         # Initialize a dictionary to store trade information
         trade_info = {'symbol': self.symbol,'position': None,'order': None}
         # Determine if the change in position is significant enough to warrant a trade
-        if abs(pct_change) > 0.5:
+        if abs(pct_change) > 0.5 and new_position!=current_position:
             order_qty = new_position - current_position
             side = 'buy' if order_qty > 0 else 'sell'
-            broker_symbol = self.symbol.replace("-", "/") if '-' in self.symbol else self.symbol
-            self.broker.submit_order(broker_symbol, order_qty, side)
+            self.broker.submit_order(self.broker_symbol, order_qty, side)
             trade_info.update({'position': new_position, 'order': order_qty})
             self.report_trade(self.symbol, strategy_name, side, abs(order_qty))
         else:
             trade_info.update({'position': current_position, 'order':
-                (AlpacaPlatform(self.broker_config).get_orders()).at[0, 'qty']})
+                (self.trading_platform.get_symbol_orders(self.broker_symbol)).at[0, 'qty']})
             self.logger_monitor('Change In Position Not Sufficient: No Trade Executed')
         df_trade_info = pd.DataFrame([trade_info])
         return df_trade_info
@@ -124,7 +125,8 @@ class LiveStrategyRunner:
                             f'{symbol} following the {strategy_name} strategy: {order_type} {qty} units')
 
     def stop_loss(self):
-        portfolio_history = AlpacaPlatform(self.broker_config).get_broker_portfolio_history().iloc[-1]
+        portfolio_history = self.trading_platform.\
+                            get_broker_portfolio_history().iloc[-1]
         #0.1% of initial portfolio value
         if portfolio_history['base_value']-portfolio_history['equity']>0.001*portfolio_history['base_value']:
             return True
@@ -133,11 +135,9 @@ class LiveStrategyRunner:
         #manual recap
         livestrat = LiveStrategyTracker(self.data_provider, self.symbol, self.frequency,
                                         self.start_date, self.end_date, self.amount)
-        livestrat.get_asset_history(new_pos)
         livestrat.get_asset_metrics(self.frequency, self.risk_free_rate, new_pos)
         if not self.dashboard_open:
-            alpaca_platform = AlpacaPlatform(self.broker_config)
-            portfolio_manager_app = PortfolioManagementApp(alpaca_platform, self.symbol, self.frequency)
+            portfolio_manager_app = PortfolioManagementApp(self.trading_platform, self.symbol, self.frequency)
             portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
             portfolio_server_thread.start()
             self.threads.append(portfolio_server_thread)
@@ -185,7 +185,7 @@ class LiveStrategyRunner:
                     self.threads.append(tracker_tread)
                     # if self.stop_loss():
                     #     print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
-                    #     closed_positions = self.broker.close_open_positions()
+                    #     closed_positions = self.broker.close_symbol_position(self.broker_symbol)
                     #     for i in range(len(closed_positions)):
                     #         print(f'Positions closed at {self.real_time_data.index[-1]} on {closed_positions[i]["symbol"]}')
                     counter.sleep(60)

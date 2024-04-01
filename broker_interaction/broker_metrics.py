@@ -15,10 +15,10 @@ class TradingPlatform:
     def get_account_info(self):
         raise NotImplementedError
 
-    def get_orders(self):
+    def get_all_orders(self):
         raise NotImplementedError
 
-    def get_positions(self):
+    def get_all_positions(self):
         raise NotImplementedError
 
     def get_broker_portfolio_history(self):
@@ -29,11 +29,13 @@ class TradingPlatform:
 
 class AlpacaPlatform(TradingPlatform):
     """Alpaca trading platform implementation."""
-    def __init__(self, config):
+    def __init__(self, config, symbol: str, frequency: dict):
+        self.symbol=symbol
+        self.frequency=frequency
         self.config=config
         self.get_api_connection()
         self.broker_tracker_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/broker_ptf_history.csv')
+                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_broker_ptf_history.csv')
 
     def get_api_connection(self):
         api_key = self.config['alpaca']['api_key']
@@ -56,7 +58,7 @@ class AlpacaPlatform(TradingPlatform):
         df_account_info=pd.DataFrame.from_dict(dict_account_info, orient='index').T
         return df_account_info
 
-    def get_orders(self):
+    def get_all_orders(self):
         orders=self.api.list_orders(status='all')
         orders_list=[order._raw for order in orders]
         df_orders=pd.DataFrame(orders_list)
@@ -67,9 +69,16 @@ class AlpacaPlatform(TradingPlatform):
                          'asset_class', 'qty', 'filled_qty', 'order_type', 'side', 'filled_avg_price',
                          'time_in_force', 'limit_price', 'stop_price']]
 
-    def get_position(self, symbol):
-        position=self.api.get_position(symbol)
-        return position
+    def get_symbol_orders(self, symbol):
+        orders = self.api.list_orders(status='all', symbols=[symbol])
+        orders_list = [order._raw for order in orders]
+        df_orders = pd.DataFrame(orders_list)
+        if df_orders.empty:
+            return pd.DataFrame()
+        else:
+            return df_orders[['created_at', 'filled_at', 'asset_id', 'symbol',
+                              'asset_class', 'qty', 'filled_qty', 'order_type', 'side', 'filled_avg_price',
+                              'time_in_force', 'limit_price', 'stop_price']]
 
     def get_all_positions(self):
         positions=self.api.list_positions()
@@ -77,16 +86,17 @@ class AlpacaPlatform(TradingPlatform):
         df_positions=pd.DataFrame(positions_list)
         return df_positions
 
+    def get_symbol_position(self, symbol):
+        position=self.api.get_position(symbol)
+        pos=pd.DataFrame(pd.Series(position._raw)).T
+        return pos
+
     def get_assets(self):
         assets=self.api.list_assets()
         return assets
 
     def get_broker_portfolio_history(self):
-        portfolio_history=self.api.get_portfolio_history()
-        portfolio_history=pd.DataFrame(portfolio_history)
-        portfolio_history['timestamp'] = portfolio_history['timestamp'].\
-            apply(lambda x: pd.Timestamp.fromtimestamp(x))
-        portfolio_history.drop(index=portfolio_history.index[-1],axis=0,inplace=True)
+        portfolio_history=self.api.get_portfolio_history(period='1W', timeframe='1Min', extended_hours=True).df
         return portfolio_history
 
     def get_all_portfolio_history(self):
@@ -107,7 +117,7 @@ class AlpacaPlatform(TradingPlatform):
     def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
         dict_key_metrics={}
         df_ptf_hist=self.get_all_portfolio_history()
-        df_positions=self.get_orders()
+        df_positions=self.get_all_positions()
         df_ptf=df_ptf_hist.join(df_positions)
         (df_ptf['position'].shift(1) * df_ptf['returns']).fillna(0)
         df_ptf=df_ptf.dropna(axis=0)

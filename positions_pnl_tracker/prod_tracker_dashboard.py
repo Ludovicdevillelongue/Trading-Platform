@@ -59,6 +59,7 @@ class PortfolioManagementApp:
     def __init__(self, platform, symbol, frequency):
         self.platform = platform
         self.symbol=symbol
+        self.broker_symbol= self.symbol.replace("-", "/") if '-' in self.symbol else self.symbol
         self.frequency=frequency
         self.app = dash.Dash(__name__, suppress_callback_exceptions=False)
         self.setup_layout()
@@ -93,8 +94,11 @@ class PortfolioManagementApp:
         def update_data(n_clicks, n_intervals):
             try:
                 portfolio_data = self.platform.get_account_info()
-                orders_data = self.platform.get_orders()
-                positions_data = self.platform.get_all_positions()
+                orders_data = self.platform.get_symbol_orders(self.broker_symbol)
+                try:
+                    positions_data = self.platform.get_symbol_position(self.broker_symbol)
+                except Exception as e:
+                    positions_data=pd.DataFrame()
                 portfolio_history = pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                               f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_history.csv'),header=[0],
                                                 index_col=[0])

@@ -1,6 +1,7 @@
 import os
 import alpaca_trade_api as tradeapi
 import yaml
+import time as counter
 class GetBrokersConfig:
 
     @staticmethod
@@ -20,17 +21,34 @@ class AlpacaTradingBot:
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
 
     def submit_order(self, symbol, order_qty, side, order_type='market'):
-        self.api.submit_order(
-            symbol=symbol,
-            qty=abs(order_qty),
-            side=side,
-            type=order_type,
-            time_in_force=self.config['alpaca']['time_in_force'][symbol]
-        )
-        print(f"Order submitted: {side} {abs(order_qty)} shares of {symbol}")
+        try:
+            self.api.submit_order(
+                symbol=symbol,
+                qty=abs(order_qty),
+                side=side,
+                type=order_type,
+                time_in_force=self.config['alpaca']['time_in_force'][symbol]
+            )
+            print(f"Order submitted: {side} {abs(order_qty)} shares of {symbol}")
 
+        except Exception as e:
+            if abs(order_qty)==0:
+                pass
+            else:
+                print(f"An error occurred: {e}")
+                outstanding_qty = abs(order_qty)
+                while outstanding_qty > 0:
+                    self.api.submit_order(
+                        symbol=symbol,
+                        qty=1,
+                        side=side,
+                        type=order_type,
+                        time_in_force=self.config['alpaca']['time_in_force'][symbol]
+                    )
+                    outstanding_qty -= 1
+                    print(f"Order submitted: {side} 1 share of {symbol}")
+                    counter.sleep(0.1)
 
-    def close_open_positions(self):
-        #TODO: close only positions for one symbol
-        closed_positions=self.api.close_all_positions()
+    def close_symbol_position(self, symbol):
+        closed_positions=self.api.close_position(symbol)
         return closed_positions
