@@ -1,3 +1,2 @@
 -> reduce order when usd balance not sufficient
 -> cum pnl per order
--> review set parameters in strat creator to avoid putting sma or other in self.data

@@ -43,7 +43,7 @@ if __name__ == '__main__':
         # 'WilliamR': WilliamsRBacktester,
         # 'VolatilityBreakout': VolatilityBreakoutBacktester
     }
-    regression_methods = ['linear']
+    regression_methods = ['no_regression']
 
 
     param_grids = {
@@ -77,14 +77,14 @@ if __name__ == '__main__':
     strat_type_pos = float(strat_type_pos_yaml['long_short'])
 
 
-    symbol = 'BTC-USD'
+    symbol = 'TSLA'
     risk_free_rate = RiskFreeRate().get_metric()
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(
         "%Y-%m-%d %H:%M:%S")
     invested_amount = 100000
     transaction_costs = broker_config['alpaca']['transaction_costs']
-    contract_multiplier = 1
+    contract_multiplier = 10
     iterations = 5
     predictive_strat=False
 
@@ -121,9 +121,9 @@ if __name__ == '__main__':
     --------------------------------------------------------------------------------------------------------------------
     """
 
-    trading_platform = 'Alpaca'
+    trading_platform_name = 'Alpaca'
     strat_run = LiveStrategyRunner(best_strat, strategies[best_strat], strat_type_pos, optimization_results, frequency, symbol,
                                    risk_free_rate,start_date, end_date, invested_amount, transaction_costs, predictive_strat,
-                                   contract_multiplier, data_provider, trading_platform, broker_config)
+                                   contract_multiplier, data_provider, trading_platform_name, broker_config)
     strat_run.run()
 
