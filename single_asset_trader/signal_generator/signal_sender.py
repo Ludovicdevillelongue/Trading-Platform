@@ -8,8 +8,8 @@ from data_loader.data_retriever import DataManager
 import time as counter
 from indicators.performances_indicators import Returns, LogReturns, CumulativeReturns, \
     CumulativeLogReturns
-from positions_pnl_tracker.manual_tracker import LiveStrategyTracker
-from positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
+from single_asset_trader.positions_pnl_tracker.manual_tracker import LiveStrategyTracker
+from single_asset_trader.positions_pnl_tracker.prod_tracker_dashboard import ProductManagementApp
 
 
 class LiveStrategyRunner:
@@ -47,7 +47,7 @@ class LiveStrategyRunner:
             # Fetch and update data
             if self.data_provider == 'yfinance':
                 self.real_time_data = DataManager(self.frequency, self.start_date, self.end_date) \
-                    .yfinance_download(self.symbol)[['open', 'high', 'low', 'close', 'volume']]
+                    .yfinance_download([self.symbol])[['open', 'high', 'low', 'close', 'volume']]
             else:
                 pass
             self.real_time_data['returns']=Returns().get_metric(self.real_time_data['close'])
@@ -138,13 +138,13 @@ class LiveStrategyRunner:
                                         self.start_date, self.end_date, self.amount)
         livestrat.get_asset_metrics(self.frequency, self.risk_free_rate, new_pos)
         if not self.dashboard_open:
-            portfolio_manager_app = PortfolioManagementApp(self.trading_platform, self.symbol, self.frequency)
-            portfolio_server_thread = threading.Thread(target=portfolio_manager_app.run_server)
-            portfolio_server_thread.start()
-            self.threads.append(portfolio_server_thread)
-            portfolio_browser_thread = threading.Thread(target=portfolio_manager_app.open_browser)
-            portfolio_browser_thread.start()
-            self.threads.append(portfolio_browser_thread)
+            product_manager_app = ProductManagementApp(self.trading_platform, self.symbol, self.frequency)
+            product_server_thread = threading.Thread(target=product_manager_app.run_server)
+            product_server_thread.start()
+            self.threads.append(product_server_thread)
+            product_browser_thread = threading.Thread(target=product_manager_app.open_browser)
+            product_browser_thread.start()
+            self.threads.append(product_browser_thread)
             self.dashboard_open = True
 
     def tracker_thread(self, df_pos):

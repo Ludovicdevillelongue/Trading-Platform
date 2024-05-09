@@ -2,8 +2,8 @@ import os
 import pandas as pd
 from data_loader.data_retriever import DataManager
 from indicators.performances_indicators import (Returns, CumulativeReturns, AnnualizedSharpeRatio,
-                                                AnnualizedSortinoRatio, MaxDrawdown,
-                                                AnnualizedCalmarRatio, Beta, AnnualizedAlpha)
+                        AnnualizedSortinoRatio, MaxDrawdown,
+                        AnnualizedCalmarRatio, Beta, AnnualizedAlpha)
 import pytz
 
 class LiveStrategyTracker():
@@ -24,7 +24,7 @@ class LiveStrategyTracker():
     def get_data(self):
         if self.data_provider == 'yfinance':
             historical_close_price = pd.DataFrame(DataManager(self.frequency, self.start_date, self.end_date).
-                                                  yfinance_download(self.symbol)['close'])
+                                                  yfinance_download([self.symbol])['close'])
         else:
             historical_close_price = pd.DataFrame()
         return historical_close_price
@@ -50,11 +50,11 @@ class LiveStrategyTracker():
             minute_data_dict['interval'] = '1m'
             minute_data_dict['period'] = '7d'
             if self.data_provider == 'yfinance':
-                historical_close_price = DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download(self.symbol) \
+                historical_close_price = DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download([self.symbol]) \
                     ['close']
             else:
                 historical_close_price = \
-                DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download(self.symbol) \
+                DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download([self.symbol]) \
                     ['close']
         else:
             historical_close_price = self.get_data()
@@ -92,7 +92,6 @@ class LiveStrategyTracker():
         position_changes.iloc[0] = True
         for position_date in position_changes[position_changes].index:
             mask = total_asset_history.index >= position_date
-            # TODO: replace close at position date by best ask (long) or best bid(short)
             total_asset_history.loc[mask, 'p&l'] += ((total_asset_history.loc[mask, 'close'] -
                                                       total_asset_history.at[position_date, 'close']) *
                                                      total_asset_history.at[position_date, 'order'])

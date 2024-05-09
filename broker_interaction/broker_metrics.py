@@ -87,6 +87,7 @@ class AlpacaPlatform(TradingPlatform):
         return df_positions
 
     def get_symbol_position(self, symbol):
+        symbol=symbol.replace("/", "") if '/' in symbol else symbol
         position=self.api.get_position(symbol)
         pos=pd.DataFrame(pd.Series(position._raw)).T
         return pos

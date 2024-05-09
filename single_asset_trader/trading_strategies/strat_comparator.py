@@ -3,7 +3,6 @@ import threading
 
 import pandas as pd
 
-from indicators.performances_indicators import RiskFreeRate
 from .indicator_strat_creator import StrategyCreator
 from collections import defaultdict
 import warnings

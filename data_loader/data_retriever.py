@@ -57,8 +57,8 @@ class DataManager(object):
         data_quandl.rename(columns={'Value': symbol.split('/')[1]}, inplace=True)
         return data_quandl
 
-    def yfinance_download(self, symbol:str):
-        data_yfinance = yf.download(symbol, period=self.frequency['period'], interval=self.frequency['interval'])
+    def yfinance_download(self, symbols:list):
+        data_yfinance = yf.download(symbols, period=self.frequency['period'], interval=self.frequency['interval'])
         data_yfinance.rename(columns={'Open':'open', 'High':'high', 'Low':'low', 'Close': 'close', 'Volume':'volume'}, inplace=True)
         if self.frequency['interval']=='1m':
             data_yfinance=self.convert_datetime(data_yfinance)
