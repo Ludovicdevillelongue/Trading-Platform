@@ -53,7 +53,7 @@ if __name__ == '__main__':
         'RSI': {'RSI_period': (5, 15), 'overbought_threshold': (65, 75),
                 'oversold_threshold': (25, 35), 'reg_method': regression_methods},
         'MOM': {'momentum': (5, 15), 'reg_method': regression_methods},
-        'MeanRev': {'sma': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
+        'MeanRev': {'sma_window': (5, 20), 'threshold': (0.01, 0.1), 'reg_method': regression_methods},
         'Turtle': {'window_size': (10, 30), 'reg_method': regression_methods},
         'ParabolicSAR': {'SAR_step': (0.01, 0.1), 'SAR_max': (0.1, 0.4), 'reg_method': regression_methods},
         'MACD': {'short_window': (3, 8), 'long_window': (10, 20), 'signal_window': (3, 9), 'reg_method': regression_methods},

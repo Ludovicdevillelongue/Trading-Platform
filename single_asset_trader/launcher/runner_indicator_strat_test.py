@@ -66,7 +66,7 @@ if __name__ == '__main__':
         # 'VolatilityBreakout': {'volatility_window':(10,30), 'breakout_factor':(1.0, 2.0), 'reg_method': regression_methods}
     }
 
-    opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
+    opti_algo = [RandomSearchAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
     with open(os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml'), 'r') as file:
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     strat_type_pos = float(strat_type_pos_yaml['long_short'])
 
 
-    symbol = 'TSLA'
+    symbol = 'MSFT'
     risk_free_rate = RiskFreeRate().get_metric()
     start_date = '2023-11-15 00:00:00'
     end_date = ((datetime.now(pytz.timezone('US/Eastern')) - timedelta(minutes=2)).replace(second=0)).strftime(

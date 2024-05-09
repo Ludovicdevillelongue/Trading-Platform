@@ -36,6 +36,7 @@ class LiveStrategyRunner:
         self.contract_multiplier = contract_multiplier
         self.real_time_data = None
         self.threads=[]
+        self.stop_thread = False
         self.dashboard_open=False
         if self.trading_platform_name == 'Alpaca':
             self.broker = AlpacaTradingBot(broker_config)
@@ -106,7 +107,7 @@ class LiveStrategyRunner:
         if abs(pct_change) > 0.5 and new_position!=current_position:
             order_qty = new_position - current_position
             side = 'buy' if order_qty > 0 else 'sell'
-            self.broker.submit_order(self.broker_symbol, order_qty, side)
+            self.broker.submit_order(self.broker_symbol, current_position, order_qty, side)
             trade_info.update({'position': new_position, 'order': order_qty})
             self.report_trade(self.symbol, strategy_name, side, abs(order_qty))
         else:
@@ -161,20 +162,26 @@ class LiveStrategyRunner:
                 self.threads.append(tracker_tread)
                 counter.sleep(60)
         else:
-            current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
-            stop_time = time(22, 0, 0)
-            if self.symbol!="BTC-USD":
-                while current_time < stop_time:
+            stop_time = time(22, 26, 0)
+            if self.symbol != "BTC-USD":
+                while not self.stop_thread:
+                    current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
+                    if current_time >= stop_time:
+                        self.stop_thread = True
+                        break
+
                     self.fetch_and_update_real_time_data()
-                    new_pos =self.apply_strategy(self.strategy_name, self.strategy_class)
+                    new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
                     tracker_tread = threading.Thread(target=self.tracker_thread, args=(new_pos,))
                     tracker_tread.start()
                     self.threads.append(tracker_tread)
+
                     # if self.stop_loss():
                     #     print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
                     #     closed_positions = self.broker.close_open_positions()
                     #     for i in range(len(closed_positions)):
                     #         print(f'Positions closed at {self.real_time_data.index[-1]} on {closed_positions[i]["symbol"]}')
+
                     counter.sleep(60)
             else:
                 while True:
@@ -189,6 +196,7 @@ class LiveStrategyRunner:
                     #     for i in range(len(closed_positions)):
                     #         print(f'Positions closed at {self.real_time_data.index[-1]} on {closed_positions[i]["symbol"]}')
                     counter.sleep(60)
+
 
 
 

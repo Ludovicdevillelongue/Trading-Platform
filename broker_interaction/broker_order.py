@@ -20,7 +20,7 @@ class AlpacaTradingBot:
 
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
 
-    def submit_order(self, symbol, order_qty, side, order_type='market'):
+    def submit_order(self, symbol, current_position, order_qty, side, order_type='market'):
         try:
             self.api.submit_order(
                 symbol=symbol,
@@ -35,19 +35,25 @@ class AlpacaTradingBot:
             if abs(order_qty)==0:
                 pass
             else:
-                print(f"An error occurred: {e}")
-                outstanding_qty = abs(order_qty)
-                while outstanding_qty > 0:
-                    self.api.submit_order(
-                        symbol=symbol,
-                        qty=1,
-                        side=side,
-                        type=order_type,
-                        time_in_force=self.config['alpaca']['time_in_force'][symbol]
-                    )
-                    outstanding_qty -= 1
-                    print(f"Order submitted: {side} 1 share of {symbol}")
-                    counter.sleep(0.1)
+                outstanding_qty = abs(order_qty)-abs(current_position)
+                self.api.submit_order(
+                    symbol=symbol,
+                    qty=abs(current_position),
+                    side=side,
+                    type=order_type,
+                    time_in_force=self.config['alpaca']['time_in_force'][symbol]
+                )
+                print(f"Order submitted: {side} {abs(current_position)} share of {symbol}")
+                counter.sleep(2)
+                self.api.submit_order(
+                    symbol=symbol,
+                    qty=abs(outstanding_qty),
+                    side=side,
+                    type=order_type,
+                    time_in_force=self.config['alpaca']['time_in_force'][symbol]
+                )
+                print(f"Order submitted: {side} {abs(outstanding_qty)} share of {symbol}")
+
 
     def close_symbol_position(self, symbol):
         closed_positions=self.api.close_position(symbol)

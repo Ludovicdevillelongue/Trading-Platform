@@ -576,7 +576,7 @@ class MRVectorBacktester(StrategyCreator):
 
     def set_parameters(self, sma_window=None):
         if sma_window is not None:
-            self.sma = self.data['close'].rolling(sma_window).mean()
+            self.sma_window = self.data['close'].rolling(sma_window).mean()
 
     def analyse_strategy(self, data):
         # fig = plt.figure()
@@ -598,7 +598,7 @@ class MRVectorBacktester(StrategyCreator):
     def run_strategy(self, predictive_strat=False):
         self.set_parameters(int(self.sma_window))
         data_strat = self.data.copy().dropna()
-        data_strat['sma']=self.sma
+        data_strat['sma']=self.sma_window
         data_strat['distance'] = data_strat['close'] - data_strat['sma']
         # sell signals
         data_strat['position'] = np.where(data_strat['distance'] > self.threshold,

@@ -1,0 +1,6 @@
+strat_name,opti,params_strat,sharpe
+SMAVectorBacktester,RandomSearchAlgorithm,"{'sma_short': 3, 'sma_long': 22, 'reg_method': 'no_regression'}",1.73
+SMAVectorBacktester,RandomSearchAlgorithm,"{'sma_short': 2, 'sma_long': 25, 'reg_method': 'no_regression'}",4.01
+SMAVectorBacktester,RandomSearchAlgorithm,"{'sma_short': 5, 'sma_long': 13, 'reg_method': 'no_regression'}",0.02
+SMAVectorBacktester,RandomSearchAlgorithm,"{'sma_short': 6, 'sma_long': 23, 'reg_method': 'no_regression'}",1.08
+SMAVectorBacktester,RandomSearchAlgorithm,"{'sma_short': 10, 'sma_long': 16, 'reg_method': 'no_regression'}",1.2
