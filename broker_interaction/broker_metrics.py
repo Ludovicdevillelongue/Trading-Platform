@@ -24,7 +24,7 @@ class TradingPlatform:
     def get_broker_portfolio_history(self):
         raise NotImplementedError
 
-    def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
+    def get_portfolio_metrics(self,risk_free_rate, df_benchmark):
         raise NotImplementedError
 
 class AlpacaPlatform(TradingPlatform):
@@ -35,7 +35,7 @@ class AlpacaPlatform(TradingPlatform):
         self.config=config
         self.get_api_connection()
         self.broker_tracker_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_broker_ptf_history.csv')
+                                              f'positions_pnl_tracker/{self.frequency['interval']}_broker_ptf_history.csv')
 
     def get_api_connection(self):
         api_key = self.config['alpaca']['api_key']
@@ -101,8 +101,7 @@ class AlpacaPlatform(TradingPlatform):
 
     def get_all_portfolio_history(self):
         df_ptf_last_day = self.get_broker_portfolio_history()
-        df_ptf_last_day.set_index('timestamp', inplace=True)
-        df_ptf_last_day = df_ptf_last_day.tz_localize('Europe/Paris')
+        df_ptf_last_day = df_ptf_last_day.tz_convert('Europe/Paris')
         try:
             df_ptf_history = pd.read_csv(self.broker_tracker_csv, header=[0], index_col=[0])
             df_ptf_history.index = pd.to_datetime(df_ptf_history.index).tz_convert('Europe/Paris')
@@ -114,7 +113,7 @@ class AlpacaPlatform(TradingPlatform):
 
 
 
-    def get_portfolio_metrics(self, frequency, symbol, risk_free_rate, df_benchmark):
+    def get_portfolio_metrics(self, risk_free_rate, df_benchmark):
         dict_key_metrics={}
         df_ptf_hist=self.get_all_portfolio_history()
         df_positions=self.get_all_positions()
@@ -129,24 +128,24 @@ class AlpacaPlatform(TradingPlatform):
         df_ptf_vs_bench=df_ptf_vs_bench.dropna(axis=0)
         # Calculate returns
         df_ptf_vs_bench['ptf_returns'] =Returns().get_metric(df_ptf_vs_bench['position'].shift(1) *
-                                                             df_ptf_vs_bench[f'{symbol}_returns']).fillna(0)
+                                                             df_ptf_vs_bench[f'{self.symbol}_returns']).fillna(0)
         df_ptf_vs_bench['ptf_creturns'] = CumulativeReturns().get_metric(df_ptf_vs_bench['base_value'].iloc[0],
                                                                          df_ptf_vs_bench['ptf_returns'])
 
         # Calculate Performance Indicators
 
         try:
-            dict_key_metrics['sharpe_ratio'] = AnnualizedSharpeRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
+            dict_key_metrics['sharpe_ratio'] = AnnualizedSharpeRatio(self.frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
         except Exception as e:
             dict_key_metrics['sharpe_ratio'] =0
-        dict_key_metrics['sortino_ratio'] =AnnualizedSortinoRatio(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
+        dict_key_metrics['sortino_ratio'] =AnnualizedSortinoRatio(self.frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'])
 
         dict_key_metrics['max_drawdown'] =MaxDrawdown().calculate(df_ptf_vs_bench['ptf_creturns'])
-        dict_key_metrics['calmar_ratio'] =AnnualizedCalmarRatio(frequency).calculate(df_ptf_vs_bench['ptf_returns'], dict_key_metrics['max_drawdown'])
+        dict_key_metrics['calmar_ratio'] =AnnualizedCalmarRatio(self.frequency).calculate(df_ptf_vs_bench['ptf_returns'], dict_key_metrics['max_drawdown'])
         try:
-            dict_key_metrics['beta']=Beta().calculate(df_ptf_vs_bench['ptf_returns'], df_ptf_vs_bench[f'{symbol}_returns'])
-            dict_key_metrics['alpha']=AnnualizedAlpha(frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'],
-                                                        df_ptf_vs_bench[f'{symbol}_returns'], dict_key_metrics['beta'])
+            dict_key_metrics['beta']=Beta().calculate(df_ptf_vs_bench['ptf_returns'], df_ptf_vs_bench[f'{self.symbol}_returns'])
+            dict_key_metrics['alpha']=AnnualizedAlpha(self.frequency, risk_free_rate).calculate(df_ptf_vs_bench['ptf_returns'],
+                                                        df_ptf_vs_bench[f'{self.symbol}_returns'], dict_key_metrics['beta'])
         except Exception as e:
             dict_key_metrics['beta']=0
             dict_key_metrics['alpha']=0
