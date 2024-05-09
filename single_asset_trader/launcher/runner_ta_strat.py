@@ -8,17 +8,13 @@ import time
 import yaml
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from indicators.performances_indicators import RiskFreeRate
+from indicators import RiskFreeRate
 from broker_interaction.broker_order import GetBrokersConfig
-from broker_interaction.broker_metrics import AlpacaPlatform
-from positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
-from trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
-    SimulatedAnnealingAlgorithm, GeneticAlgorithm
-from trading_strategies.ta_strat_creator import BBandsStrategy
-from trading_strategies.strat_comparator import StrategyRunner
-from backtester_tracker.backtester_dashboard import BacktestApp
-from signal_generator.signal_sender import LiveStrategyRunner
-from positions_pnl_tracker.manual_tracker import LiveStrategyTracker
+from single_asset_trader.trading_strategies.strat_optimizer import RandomSearchAlgorithm
+from single_asset_trader.trading_strategies.ta_strat_creator import BBandsStrategy
+from single_asset_trader.trading_strategies.strat_comparator import StrategyRunner
+from single_asset_trader.backtester_tracker.backtester_dashboard import BacktestApp
+from single_asset_trader.signal_generator.signal_sender import LiveStrategyRunner
 
 if __name__ == '__main__':
     """

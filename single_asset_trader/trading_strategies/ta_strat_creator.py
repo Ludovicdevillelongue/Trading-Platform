@@ -1,8 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import talib
-from trading_strategies.indicator_strat_creator import StrategyCreator
-from signal_generator.ml_predictor import MLPredictor
+from single_asset_trader.trading_strategies.indicator_strat_creator import StrategyCreator
+from single_asset_trader.signal_generator.ml_predictor import MLPredictor
 
 
 class BBandsStrategy(StrategyCreator):

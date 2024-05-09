@@ -9,9 +9,9 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
 from indicators.performances_indicators import (AnnualizedSharpeRatio, AnnualizedSortinoRatio, MaxDrawdown,
-                                                AnnualizedCalmarRatio, AnnualizedAlpha,
-                                                Beta, LogReturns, Returns, CumulativeReturns, CumulativeLogReturns)
-from signal_generator.ml_predictor import MLPredictor
+                        AnnualizedCalmarRatio, AnnualizedAlpha,
+                        Beta, LogReturns, Returns, CumulativeReturns, CumulativeLogReturns)
+from single_asset_trader.signal_generator.ml_predictor import MLPredictor
 from data_loader.data_retriever import DataManager
 import warnings
 

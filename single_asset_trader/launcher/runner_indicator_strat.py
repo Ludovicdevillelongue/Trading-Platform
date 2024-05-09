@@ -1,7 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+sys.path.append('C:\\Users\\ludov\\Documents\\pro\\projets\\trading_platform')
 import logging
 from datetime import timedelta, datetime
 import threading
@@ -10,15 +9,15 @@ import time
 import yaml
 from indicators.performances_indicators import RiskFreeRate
 from broker_interaction.broker_order import GetBrokersConfig
-from trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
+from single_asset_trader.trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
-from trading_strategies.indicator_strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
+from single_asset_trader.trading_strategies.indicator_strat_creator import SMAVectorBacktester, BollingerBandsBacktester, RSIVectorBacktester, \
     MomVectorBacktester, MRVectorBacktester, TurtleVectorBacktester, ParabolicSARBacktester, MACDStrategy, \
     IchimokuStrategy, StochasticOscillatorStrategy, ADXStrategy, VolumeStrategy, WilliamsRBacktester, \
     VolatilityBreakoutBacktester
-from trading_strategies.strat_comparator import StrategyRunner
-from backtester_tracker.backtester_dashboard import BacktestApp
-from signal_generator.signal_sender import LiveStrategyRunner
+from single_asset_trader.trading_strategies.strat_comparator import StrategyRunner
+from single_asset_trader.backtester_tracker.backtester_dashboard import BacktestApp
+from single_asset_trader.signal_generator.signal_sender import LiveStrategyRunner
 
 if __name__ == '__main__':
     """
@@ -70,10 +69,10 @@ if __name__ == '__main__':
     opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
-    with open(os.path.join(os.path.dirname(__file__), '../config/data_frequency.yml'), 'r') as file:
+    with open(r'C:/Users/ludov/Documents/pro/projets/trading_platform/config/data_frequency.yml') as file:
         frequency_yaml = yaml.safe_load(file)
     frequency = frequency_yaml[data_provider]['minute']
-    with open(os.path.join(os.path.dirname(__file__), '../config/strat_type_pos.yml'), 'r') as file:
+    with open(r'C:/Users/ludov/Documents/pro/projets/trading_platform/config/strat_type_pos.yml') as file:
         strat_type_pos_yaml = yaml.safe_load(file)
     strat_type_pos = float(strat_type_pos_yaml['long_short'])
 

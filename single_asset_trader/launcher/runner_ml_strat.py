@@ -10,12 +10,12 @@ import yaml
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from broker_interaction.broker_order import GetBrokersConfig
 from broker_interaction.broker_metrics import AlpacaPlatform
-from positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
-from trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
+from single_asset_trader.positions_pnl_tracker.prod_tracker_dashboard import PortfolioManagementApp
+from single_asset_trader.trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
     SimulatedAnnealingAlgorithm, GeneticAlgorithm
-from backtester.ml_strat_creator import LRVectorBacktester, ScikitVectorBacktester
-from backtester.strat_comparator import StrategyRunner
-from backtester_tracker.backtester_dashboard import BacktestApp
+from single_asset_trader.backtester.ml_strat_creator import LRVectorBacktester, ScikitVectorBacktester
+from single_asset_trader.backtester.strat_comparator import StrategyRunner
+from single_asset_trader.backtester_tracker.backtester_dashboard import BacktestApp
 from signal_generator.signal_sender import LiveStrategyRunner
 
 if __name__ == '__main__':
