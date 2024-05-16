@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append('C:\\Users\\ludov\\Documents\\pro\\projets\\trading_platform')
+sys.path.append('C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python\\trading_platform')
 import logging
 from datetime import timedelta, datetime
 import threading
@@ -69,10 +69,10 @@ if __name__ == '__main__':
     opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
     data_provider = 'yfinance'
     broker_config = GetBrokersConfig.key_secret_tc_url()
-    with open(r'C:/Users/ludov/Documents/pro/projets/trading_platform/config/data_frequency.yml') as file:
+    with open(r'C:/Users/Admin/Documents/Pro/projets_code/python/trading_platform/config/data_frequency.yml') as file:
         frequency_yaml = yaml.safe_load(file)
     frequency = frequency_yaml[data_provider]['minute']
-    with open(r'C:/Users/ludov/Documents/pro/projets/trading_platform/config/strat_type_pos.yml') as file:
+    with open(r'C:/Users/Admin/Documents/Pro/projets_code/python/trading_platform/config/strat_type_pos.yml') as file:
         strat_type_pos_yaml = yaml.safe_load(file)
     strat_type_pos = float(strat_type_pos_yaml['long_short'])
 
