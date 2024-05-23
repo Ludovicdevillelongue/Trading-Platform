@@ -12,10 +12,9 @@ from single_asset_trader.positions_pnl_tracker.prod_tracker_dashboard import Pro
 
 
 class LiveStrategyRunner:
-    def __init__(self, data, strategy_name, strategy_class, strat_type_pos, optimization_results, frequency,
+    def __init__(self, strategy_name, strategy_class, strat_type_pos, optimization_results, frequency,
                  symbol, risk_free_rate, start_date, end_date, amount, transaction_costs, predictive_strat,
-                 contract_multiplier, data_provider, trading_platform_name, broker_config, dash_port):
-        self.data=data
+                 contract_multiplier, data_provider, broker_name, broker_config, dash_port):
         self.strategy_name = strategy_name
         self.strategy_class = strategy_class
         self.strat_type_pos=strat_type_pos
@@ -29,7 +28,7 @@ class LiveStrategyRunner:
         self.transaction_costs = transaction_costs
         self.predictive_strat=predictive_strat
         self.data_provider = data_provider
-        self.trading_platform_name = trading_platform_name
+        self.broker_name = broker_name
         self.broker_config = broker_config
         self.current_positions = {name: 0 for name in optimization_results}
         self.broker_symbol= self.symbol.replace("-", "/") if '-' in self.symbol else self.symbol
@@ -38,14 +37,14 @@ class LiveStrategyRunner:
         self.threads=[]
         self.stop_thread = False
         self.dashboard_open=False
-        if self.trading_platform_name == 'Alpaca':
+        if self.broker_name == 'alpaca':
             self.broker = AlpacaTradingBot(broker_config)
             self.trading_platform=AlpacaPlatform(self.broker_config, self.frequency)
         self.dash_port=dash_port
 
-    def update_returns_data(self):
+    def update_returns_data(self, downloaded_data):
         try:
-            self.real_time_data=self.data.copy()
+            self.real_time_data=downloaded_data.copy()
             self.real_time_data['returns']=Returns().get_metric(self.real_time_data['close'])
             self.real_time_data['log_returns']=LogReturns().get_metric(self.real_time_data['returns'])
             self.real_time_data['creturns']=CumulativeReturns().get_metric(1, self.real_time_data['returns'])
@@ -64,14 +63,13 @@ class LiveStrategyRunner:
                                          amount=self.amount, transaction_costs=self.transaction_costs,
                                          predictive_strat=self.predictive_strat,
                                          **opti_results_strategy).generate_signal()
-
             if self.strat_type_pos==-1:
                 #short selling only accept non-fractional order
                 self.signal=round(self.signal)
             return self.execute_trade(strategy_name, self.signal)
             # Removed break; now it will loop continuously
         except Exception as e:
-            if e.args[0]=='qty must be > 0':
+            if e.args[0] in ['qty', 'qty must be > 0']:
                 pass
             else:
                 self.logger_monitor(f"Error in strategy application: {e}")
@@ -92,7 +90,7 @@ class LiveStrategyRunner:
 
     def place_order(self, strategy_name, signal, current_position):
         new_position = (float(signal * self.contract_multiplier))
-        self.logger_monitor(f'\nCurrent Position: {current_position}\nRequested Position: {new_position}', False)
+        self.logger_monitor(f'\nCurrent {self.symbol} Position: {current_position}\nRequested {self.symbol}  Position: {new_position}', False)
         # Calculate the percentage change between the new and current positions
         try:
             pct_change = (new_position - current_position) / (new_position)
@@ -108,9 +106,13 @@ class LiveStrategyRunner:
             trade_info.update({'position': new_position, 'order': order_qty})
             self.report_trade(self.symbol, strategy_name, side, abs(order_qty))
         else:
-            trade_info.update({'position': current_position, 'order':
-                (self.trading_platform.get_symbol_orders(self.broker_symbol)).at[0, 'qty']})
-            self.logger_monitor('Change In Position Not Sufficient: No Trade Executed')
+            order_abs_qty=(self.trading_platform.get_symbol_orders(self.broker_symbol)).at[0, 'qty']
+            if (self.trading_platform.get_symbol_orders(self.broker_symbol)).at[0, 'side']=='buy':
+                order_qty=float(order_abs_qty)
+            else:
+                order_qty=-float(order_abs_qty)
+            trade_info.update({'position': current_position, 'order': order_qty})
+            self.logger_monitor(f'Change In {self.symbol} Position Not Sufficient: No Trade Executed')
         df_trade_info = pd.DataFrame([trade_info])
         return df_trade_info
 
@@ -145,58 +147,9 @@ class LiveStrategyRunner:
             self.threads.append(product_browser_thread)
             self.dashboard_open = True
 
-    def tracker_thread(self, df_pos):
-        """Function to run the tracker in a separate thread."""
-        self.tracker(df_pos)
 
 
-    def run(self):
-        if self.frequency['interval']=='1d':
-            self.update_returns_data()
-            new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
-            while True:
-                tracker_tread=threading.Thread(target=self.tracker_thread, args=(new_pos,))
-                tracker_tread.start()
-                self.threads.append(tracker_tread)
-                counter.sleep(60)
-        else:
-            stop_time = time(22, 2, 0)
-            if self.symbol != "BTC-USD":
-                while not self.stop_thread:
-                    current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
-                    if current_time >= stop_time:
-                        self.stop_thread = True
-                        break
-
-                    self.update_returns_data()
-                    new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
-                    tracker_tread = threading.Thread(target=self.tracker_thread, args=(new_pos,))
-                    tracker_tread.start()
-                    self.threads.append(tracker_tread)
-
-                    # if self.stop_loss():
-                    #     print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
-                    #     closed_positions = self.broker.close_open_positions()
-                    #     for i in range(len(closed_positions)):
-                    #         print(f'Positions closed at {self.real_time_data.index[-1]} on {closed_positions[i]["symbol"]}')
-
-                    counter.sleep(60)
-            else:
-                while True:
-                    self.update_returns_data()
-                    new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
-                    tracker_tread = threading.Thread(target=self.tracker_thread, args=(new_pos,))
-                    tracker_tread.start()
-                    self.threads.append(tracker_tread)
-                    # if self.stop_loss():
-                    #     print('Stop Loss Activated at {}'.format(self.real_time_data.index[-1]))
-                    #     closed_positions = self.broker.close_symbol_position(self.broker_symbol)
-                    #     for i in range(len(closed_positions)):
-                    #         print(f'Positions closed at {self.real_time_data.index[-1]} on {closed_positions[i]["symbol"]}')
-                    counter.sleep(60)
-
-
-
-
-
-
+    def run_once(self, downloaded_data):
+        self.update_returns_data(downloaded_data)
+        new_pos = self.apply_strategy(self.strategy_name, self.strategy_class)
+        self.tracker(new_pos)

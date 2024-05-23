@@ -5,7 +5,8 @@ import threading
 
 import pandas as pd
 import pytz
-import time
+import time as counter
+from datetime import time
 import yaml
 
 from data_loader.data_retriever import DataManager
@@ -53,6 +54,21 @@ class MultiSymbolTrader:
             "%Y-%m-%d %H:%M:%S")
         self.transaction_costs = self.broker_config[self.broker]['transaction_costs']
 
+    def schedule_live_runner(self, strat_run, symbol, interval=60):
+        def run_continuously():
+            stop_time = time(22, 0, 0)  # 10 PM Paris time
+            while True:
+                current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
+                if current_time >= stop_time:
+                    break
+                data_download = self.download_data(self.symbols)
+                symbol_data = data_download.xs(symbol, level=1, axis=1)
+                strat_run.run_once(symbol_data)
+                counter.sleep(interval)
+
+        thread = threading.Thread(target=run_continuously)
+        thread.start()
+        return thread
     def run(self):
         threads = []
         data=self.download_data(self.symbols)
@@ -86,9 +102,9 @@ class MultiSymbolTrader:
             strat_tester_csv)
 
         print(f"Optimizing trading strategies for {symbol}...")
-        start_time_opti = time.time()
+        start_time_opti = counter.time()
         optimization_results = runner.test_all_search_types()
-        end_time_opti = time.time()
+        end_time_opti = counter.time()
         time_diff = end_time_opti - start_time_opti
         print(
             f'Elapsed time for optimization of {symbol}: {int(time_diff // 60)} minutes and {int(time_diff % 60)} seconds')
@@ -100,19 +116,18 @@ class MultiSymbolTrader:
         threading.Thread(target=app.run_server).start()
         threading.Thread(target=app.open_browser).start()
         best_strat = max(best_strats, key=lambda k: best_strats[k]['results']['sharpe_ratio'])
-
-        trading_platform_name = 'Alpaca'
-        data_download=self.download_data(self.symbols)
-        symbol_data = data_download.xs(symbol, level=1, axis=1)
-        strat_run = LiveStrategyRunner(symbol_data, best_strat, self.strategies[best_strat], self.strat_type_pos, optimization_results,
-            self.frequency, symbol, self.risk_free_rate, self.start_date, self.end_date, self.invested_amount,
-            self.transaction_costs, self.predictive_strat, self.contract_multiplier, self.data_provider,
-            trading_platform_name, self.broker_config, port)
-        strat_run.run()
+        strat_run = LiveStrategyRunner(best_strat, self.strategies[best_strat],
+                                       self.strat_type_pos, optimization_results,
+                                       self.frequency, symbol, self.risk_free_rate, self.start_date,
+                                       self.end_date, self.invested_amount,
+                                       self.transaction_costs, self.predictive_strat,
+                                       self.contract_multiplier, self.data_provider,
+                                       self.broker, self.broker_config, port)
+        self.schedule_live_runner(strat_run, symbol)
 
 
 if __name__ == '__main__':
-    symbols = ['MSFT', 'TSLA']
+    symbols = ['TSLA', 'MSFT']
     invested_amount = 100000
     contract_multiplier = 2
     iterations = 5

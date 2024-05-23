@@ -1,6 +1,6 @@
 strat_name,opti,params_strat,sharpe
-indicator_strat_creator,strat_optimizer,"{'sma_short': 2, 'sma_long': 17, 'reg_method': 'no_regression'}",-0.0
-indicator_strat_creator,strat_optimizer,"{'sma_short': 5, 'sma_long': 21, 'reg_method': 'no_regression'}",-0.0
-indicator_strat_creator,strat_optimizer,"{'sma_short': 2, 'sma_long': 28, 'reg_method': 'no_regression'}",0.0
-indicator_strat_creator,strat_optimizer,"{'sma_short': 6, 'sma_long': 20, 'reg_method': 'no_regression'}",-0.01
-indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 12, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 27, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 21, 'reg_method': 'no_regression'}",0.0
+indicator_strat_creator,strat_optimizer,"{'sma_short': 2, 'sma_long': 27, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 18, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 26, 'reg_method': 'no_regression'}",0.0
