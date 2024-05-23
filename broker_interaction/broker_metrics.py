@@ -72,6 +72,10 @@ class AlpacaPlatform(TradingPlatform):
         orders = self.api.list_orders(status='all')
         orders_list = [order._raw for order in orders]
         df_orders = pd.DataFrame(orders_list)
+        df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
+            'Europe/Paris')
+        df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
+            'Europe/Paris')
         if df_orders.empty:
             return pd.DataFrame()
         else:
@@ -83,6 +87,10 @@ class AlpacaPlatform(TradingPlatform):
         orders = self.api.list_orders(status='all', symbols=[symbol])
         orders_list = [order._raw for order in orders]
         df_orders = pd.DataFrame(orders_list)
+        df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
+            'Europe/Paris')
+        df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
+            'Europe/Paris')
         if df_orders.empty:
             return pd.DataFrame()
         else:
@@ -100,6 +108,7 @@ class AlpacaPlatform(TradingPlatform):
         symbol = symbol.replace("/", "") if '/' in symbol else symbol
         position = self.api.get_position(symbol)
         pos = pd.DataFrame(pd.Series(position._raw)).T
+        pos=pos.round(2)
         return pos
 
     def get_assets(self):
@@ -108,7 +117,8 @@ class AlpacaPlatform(TradingPlatform):
 
     def create_positions_pnl_table(self):
         df_positions = self.get_all_positions()
-        return df_positions[['symbol', 'current_price', 'qty', 'side', 'market_value', 'unrealized_pl']]
+        df_positions=df_positions[['symbol', 'current_price', 'qty', 'side', 'market_value', 'unrealized_pl']].round(2)
+        return df_positions
 
     def create_orders_table(self):
         df_orders = self.get_all_orders()
@@ -129,6 +139,7 @@ class AlpacaPlatform(TradingPlatform):
                     df_orders.at[i - 1, 'pnl'] = price_diff * qty
                 elif previous_order['side'] == 'sell' and current_order['side'] == 'buy':
                     df_orders.at[i - 1, 'pnl'] = -price_diff * qty
+        df_orders=df_orders.sort_values('filled_at', ascending=False).round(2)
         return df_orders
 
     def get_broker_portfolio_history(self):
@@ -144,7 +155,7 @@ class AlpacaPlatform(TradingPlatform):
             df_ptf = df_ptf_last_day.combine_first(df_ptf_history)
         except Exception as e:
             df_ptf = df_ptf_last_day
-        df_ptf=df_ptf[df_ptf['equity']>10]
+        df_ptf=df_ptf[df_ptf['equity']>100]
         df_ptf.to_csv(self.equity_value_tracker_csv, mode='w', header=True, index=True)
         return df_ptf
 

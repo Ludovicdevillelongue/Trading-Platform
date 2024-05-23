@@ -1,5 +1,9 @@
 import pandas as pd
 import yaml
+import sys
+import os
+sys.path.append('C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python\\trading_platform')
+
 import time
 from broker_interaction.broker_metrics import AlpacaPlatform
 from broker_interaction.broker_order import GetBrokersConfig
@@ -12,9 +16,6 @@ import plotly.graph_objs as go
 from waitress import serve
 import webbrowser
 from threading import Timer
-import sys
-import os
-sys.path.append('C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python\\trading_platform')
 
 class PortfolioDashboard:
     def __init__(self, config, initial_amount, frequency):
