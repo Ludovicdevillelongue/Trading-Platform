@@ -1,6 +1,0 @@
-strat_name,opti,params_strat,sharpe
-indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 16, 'reg_method': 'no_regression'}",0.02
-indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 21, 'reg_method': 'no_regression'}",0.02
-indicator_strat_creator,strat_optimizer,"{'sma_short': 6, 'sma_long': 29, 'reg_method': 'no_regression'}",0.03
-indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 23, 'reg_method': 'no_regression'}",0.03
-indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 24, 'reg_method': 'no_regression'}",0.02
