@@ -1,6 +1,855 @@
 strat_name,opti,params_strat,sharpe
-indicator_strat_creator,strat_optimizer,"{'sma_short': 4, 'sma_long': 30, 'reg_method': 'no_regression'}",0.03
-indicator_strat_creator,strat_optimizer,"{'sma_short': 4, 'sma_long': 24, 'reg_method': 'no_regression'}",0.02
-indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 10, 'reg_method': 'no_regression'}",0.04
-indicator_strat_creator,strat_optimizer,"{'sma_short': 10, 'sma_long': 22, 'reg_method': 'no_regression'}",0.03
-indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 16, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 29, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 17, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 2, 'sma_long': 18, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 4, 'sma_long': 28, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 21, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 20, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 5, 'sma_long': 10, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 28, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 20, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 14, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 18, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 5, 'sma_long': 18, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 5, 'sma_long': 14, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 10, 'sma_long': 15, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 14, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 4, 'sma_long': 17, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 12, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 15, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 22, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 19, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 19, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 25, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 25, 'reg_method': 'linear'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 10, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 22, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 12, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 5, 'sma_long': 22, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 16, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_short': 10, 'sma_long': 23, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 18, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 5, 'sma_long': 20, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 17, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 10, 'sma_long': 24, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 2, 'sma_long': 29, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 11, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 22, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 10, 'sma_long': 29, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 9, 'sma_long': 21, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 14, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 2, 'sma_long': 11, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 3, 'sma_long': 18, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 8, 'sma_long': 26, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 26, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 20, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 27, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 7, 'sma_long': 30, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 18, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 4, 'sma_long': 12, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 4, 'sma_long': 16, 'reg_method': 'linear'}",0.03
+indicator_strat_creator,strat_optimizer,"{'window_size': 13, 'num_std_dev': 1.5210560420878538, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 27, 'num_std_dev': 1.6313274419147261, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'num_std_dev': 1.4117913970274274, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'num_std_dev': 1.7639172724579364, 'reg_method': 'logistic'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'num_std_dev': 1.1445662005410204, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 11, 'num_std_dev': 1.940631848508302, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'num_std_dev': 1.5078751350383208, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'num_std_dev': 1.9147760593180114, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 2.4170726317485096, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 25, 'num_std_dev': 2.3381384397976657, 'reg_method': 'svr'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 15, 'num_std_dev': 1.1471501331116967, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'num_std_dev': 2.2745265755383413, 'reg_method': 'poly'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 21, 'num_std_dev': 1.7542949575348918, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 24, 'num_std_dev': 2.0779717064026784, 'reg_method': 'bayesian'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 12, 'num_std_dev': 2.117919125426842, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 15, 'num_std_dev': 1.16080563846634, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 17, 'num_std_dev': 2.1226059613869066, 'reg_method': 'lasso'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 29, 'num_std_dev': 2.411450214989874, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 11, 'num_std_dev': 2.456553644140178, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 12, 'num_std_dev': 1.102493947243399, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 30, 'num_std_dev': 1.911802146931779, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 25, 'num_std_dev': 1.9360290096292638, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 16, 'num_std_dev': 2.4483087726912443, 'reg_method': 'no_regression'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'num_std_dev': 2.028601452379368, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'num_std_dev': 1.8268848215878526, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'num_std_dev': 1.3510356061539284, 'reg_method': 'linear'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 21, 'num_std_dev': 1.1126105638445265, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'num_std_dev': 1.1473265826808845, 'reg_method': 'linear'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 18, 'num_std_dev': 1.8145910477272262, 'reg_method': 'logistic'}",-0.04
+indicator_strat_creator,strat_optimizer,"{'window_size': 11, 'num_std_dev': 1.5786336366329463, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'num_std_dev': 2.1610430378396503, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 13, 'num_std_dev': 2.4547203900072967, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 21, 'num_std_dev': 1.0166574275563254, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.9389316611955263, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 16, 'num_std_dev': 1.0607816628319493, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 19, 'num_std_dev': 1.0329026785802646, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'num_std_dev': 1.2160262613424604, 'reg_method': 'logistic'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'window_size': 26, 'num_std_dev': 2.169278554941484, 'reg_method': 'lasso'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 30, 'num_std_dev': 2.4521476956692525, 'reg_method': 'logistic'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'window_size': 16, 'num_std_dev': 1.1304687617482108, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 21, 'num_std_dev': 1.1576690988075113, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 16, 'num_std_dev': 2.471015416940846, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 2.2800712254112714, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'num_std_dev': 2.4598369829552755, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 30, 'num_std_dev': 1.9895273547030445, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 27, 'num_std_dev': 1.1028919038560439, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 12, 'num_std_dev': 1.0379190418162425, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3352206284419932, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 26, 'num_std_dev': 2.016418910595278, 'reg_method': 'logistic'}",-0.04
+indicator_strat_creator,strat_optimizer,"{'window_size': 27, 'num_std_dev': 1.7035607341768029, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 15, 'overbought_threshold': 73, 'oversold_threshold': 27, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 9, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 15, 'overbought_threshold': 75, 'oversold_threshold': 33, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 15, 'overbought_threshold': 72, 'oversold_threshold': 27, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 73, 'oversold_threshold': 32, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 65, 'oversold_threshold': 34, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 15, 'overbought_threshold': 65, 'oversold_threshold': 31, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 9, 'overbought_threshold': 75, 'oversold_threshold': 35, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 8, 'overbought_threshold': 67, 'oversold_threshold': 32, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 69, 'oversold_threshold': 30, 'reg_method': 'svr'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 72, 'oversold_threshold': 28, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 71, 'oversold_threshold': 32, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 8, 'overbought_threshold': 67, 'oversold_threshold': 32, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 7, 'overbought_threshold': 68, 'oversold_threshold': 33, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 70, 'oversold_threshold': 26, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 9, 'overbought_threshold': 73, 'oversold_threshold': 31, 'reg_method': 'poly'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 7, 'overbought_threshold': 73, 'oversold_threshold': 27, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 9, 'overbought_threshold': 66, 'oversold_threshold': 29, 'reg_method': 'no_regression'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 70, 'oversold_threshold': 35, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 8, 'overbought_threshold': 70, 'oversold_threshold': 25, 'reg_method': 'lasso'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 8, 'overbought_threshold': 74, 'oversold_threshold': 32, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 6, 'overbought_threshold': 75, 'oversold_threshold': 25, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 15, 'overbought_threshold': 74, 'oversold_threshold': 35, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 65, 'oversold_threshold': 34, 'reg_method': 'logistic'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 65, 'oversold_threshold': 30, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 8, 'overbought_threshold': 67, 'oversold_threshold': 35, 'reg_method': 'no_regression'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 6, 'overbought_threshold': 69, 'oversold_threshold': 32, 'reg_method': 'linear'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 12, 'overbought_threshold': 75, 'oversold_threshold': 34, 'reg_method': 'lasso'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 7, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 14, 'overbought_threshold': 70, 'oversold_threshold': 34, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 15, 'overbought_threshold': 71, 'oversold_threshold': 25, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 71, 'oversold_threshold': 35, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 6, 'overbought_threshold': 70, 'oversold_threshold': 33, 'reg_method': 'elastic_net'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 6, 'overbought_threshold': 75, 'oversold_threshold': 26, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 70, 'oversold_threshold': 31, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 6, 'overbought_threshold': 67, 'oversold_threshold': 29, 'reg_method': 'bayesian'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 9, 'overbought_threshold': 66, 'oversold_threshold': 25, 'reg_method': 'linear'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 74, 'oversold_threshold': 28, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 66, 'oversold_threshold': 32, 'reg_method': 'logistic'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 66, 'oversold_threshold': 27, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 67, 'oversold_threshold': 25, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 65, 'oversold_threshold': 35, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 74, 'oversold_threshold': 28, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 13, 'overbought_threshold': 71, 'oversold_threshold': 30, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 8, 'overbought_threshold': 70, 'oversold_threshold': 33, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 15, 'overbought_threshold': 71, 'oversold_threshold': 32, 'reg_method': 'lasso'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 14, 'overbought_threshold': 68, 'oversold_threshold': 35, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 11, 'overbought_threshold': 74, 'oversold_threshold': 28, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 9, 'overbought_threshold': 75, 'oversold_threshold': 35, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'momentum': 9, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 8, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'momentum': 9, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 9, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 11, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'momentum': 5, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 14, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 6, 'reg_method': 'logistic'}",0.06
+indicator_strat_creator,strat_optimizer,"{'momentum': 7, 'reg_method': 'logistic'}",0.06
+indicator_strat_creator,strat_optimizer,"{'momentum': 8, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 5, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 8, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 15, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 11, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'momentum': 8, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 9, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 8, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'momentum': 14, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 5, 'reg_method': 'svr'}",0.06
+indicator_strat_creator,strat_optimizer,"{'momentum': 6, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 10, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'momentum': 7, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 13, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 11, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'momentum': 10, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 10, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 7, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 14, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 15, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 11, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 6, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'momentum': 11, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'momentum': 7, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 10, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 8, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 6, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 7, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 11, 'reg_method': 'linear'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 14, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'momentum': 6, 'reg_method': 'logistic'}",0.06
+indicator_strat_creator,strat_optimizer,"{'momentum': 6, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 6, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 12, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 9, 'threshold': 0.08669826478615386, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 10, 'threshold': 0.061278254772552984, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 14, 'threshold': 0.024281637073494934, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_window': 6, 'threshold': 0.06661702997860716, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 20, 'threshold': 0.06647726576352202, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 11, 'threshold': 0.01323869499211283, 'reg_method': 'logistic'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 6, 'threshold': 0.08683632356564668, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 10, 'threshold': 0.06625089049343422, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 8, 'threshold': 0.02347278650910876, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 14, 'threshold': 0.03508224224475914, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_window': 13, 'threshold': 0.02725620602049878, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 14, 'threshold': 0.01911161600988015, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 15, 'threshold': 0.021775367763427485, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_window': 19, 'threshold': 0.09919915710228612, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 11, 'threshold': 0.021584308435888273, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 11, 'threshold': 0.06824115291979528, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 11, 'threshold': 0.0670497078039539, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 9, 'threshold': 0.08010408899514336, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 5, 'threshold': 0.02077070628574672, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'sma_window': 18, 'threshold': 0.022440815514495147, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 17, 'threshold': 0.0628048448043403, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_window': 5, 'threshold': 0.02915847997422872, 'reg_method': 'no_regression'}",0.0
+indicator_strat_creator,strat_optimizer,"{'sma_window': 7, 'threshold': 0.0471363612630529, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 7, 'threshold': 0.03479180917563582, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 5, 'threshold': 0.04393591428730664, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 20, 'threshold': 0.02981148610976079, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_window': 9, 'threshold': 0.024727164119566086, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 15, 'threshold': 0.08806173687720353, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 8, 'threshold': 0.07281735794185444, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 13, 'threshold': 0.06142712760528572, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 7, 'threshold': 0.02810091582089541, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 20, 'threshold': 0.07087979290855946, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 7, 'threshold': 0.04144245809230738, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 5, 'threshold': 0.06210507485768716, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 5, 'threshold': 0.027461183617430295, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'sma_window': 6, 'threshold': 0.036114225205000766, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 13, 'threshold': 0.08901601470187884, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 12, 'threshold': 0.07234095813559732, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 7, 'threshold': 0.014415693779851545, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 6, 'threshold': 0.010580330277831397, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 14, 'threshold': 0.08268839982368398, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 20, 'threshold': 0.01928950646714172, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 20, 'threshold': 0.045950333433299434, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 10, 'threshold': 0.0873408604682296, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 6, 'threshold': 0.050161184936920386, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 19, 'threshold': 0.05777089286105067, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'sma_window': 20, 'threshold': 0.06733606403056587, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 20, 'threshold': 0.05381286083088776, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 6, 'threshold': 0.022852546132139225, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_window': 13, 'threshold': 0.042001317418223716, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 18, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'window_size': 13, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 27, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 28, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'window_size': 28, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 16, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 16, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 24, 'reg_method': 'svr'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 18, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'svr'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 16, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 30, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 11, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'poly'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'poly'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 23, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 20, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'window_size': 15, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 13, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'window_size': 17, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 18, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 19, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 18, 'reg_method': 'poly'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 18, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 15, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 14, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 18, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 17, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 17, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 28, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 26, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 29, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 17, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'reg_method': 'svr'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 24, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 23, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 19, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 22, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08171043960747408, 'SAR_max': 0.29644923239376925, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.06638480195652341, 'SAR_max': 0.39019140652109563, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08460028569241601, 'SAR_max': 0.33560519431415614, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.06466178487234957, 'SAR_max': 0.3075971372704784, 'reg_method': 'svr'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.05290635283130986, 'SAR_max': 0.3536854791297557, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.04382435007482979, 'SAR_max': 0.23143195024746532, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08087477830537461, 'SAR_max': 0.13264848615432404, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.03673635840726919, 'SAR_max': 0.11784838025690583, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.02273375192716444, 'SAR_max': 0.3549666188187087, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.05762611502384984, 'SAR_max': 0.21318345975991038, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08790468781958245, 'SAR_max': 0.18781292338863484, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.012521877829878358, 'SAR_max': 0.39950227523830106, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08980070288504427, 'SAR_max': 0.3673119782247092, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.019724434754810997, 'SAR_max': 0.29304368234480677, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.052523411560328234, 'SAR_max': 0.18518102562432298, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.09762746271599093, 'SAR_max': 0.18380395617462136, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08728116322405455, 'SAR_max': 0.179148972735232, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.07700596370005991, 'SAR_max': 0.129692616659592, 'reg_method': 'svr'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.09941293709915654, 'SAR_max': 0.15265307640753092, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.04478615527890687, 'SAR_max': 0.37829711005542543, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.06908963304025391, 'SAR_max': 0.26391045984470407, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.0831773168750083, 'SAR_max': 0.152741095535858, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08116216938868896, 'SAR_max': 0.17039478219572235, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.05346039346237019, 'SAR_max': 0.28583233740385755, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.0397645194366549, 'SAR_max': 0.11855814043761369, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.028115389271634837, 'SAR_max': 0.3923301322049422, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.05469517317630324, 'SAR_max': 0.12058883127709075, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.04018576518697219, 'SAR_max': 0.316820486563322, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.012537936785784258, 'SAR_max': 0.26363300067252027, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.07908211538686892, 'SAR_max': 0.26808770229553247, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.075401885224589, 'SAR_max': 0.13911558268704177, 'reg_method': 'bayesian'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.03711495050729514, 'SAR_max': 0.39905501566286383, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.03339759313417975, 'SAR_max': 0.1269704683528545, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08650468446259486, 'SAR_max': 0.1762062273516682, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.09090727881559754, 'SAR_max': 0.1772870530476392, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.04147630713331039, 'SAR_max': 0.3434305432534671, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.050222455072807856, 'SAR_max': 0.29856145828596575, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.051042065328601595, 'SAR_max': 0.15853734826671903, 'reg_method': 'lasso'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.055098158818687404, 'SAR_max': 0.3135586514591927, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.010183760072955395, 'SAR_max': 0.3693272069636919, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.01906952058608518, 'SAR_max': 0.11714971940374536, 'reg_method': 'lasso'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.07634980080580868, 'SAR_max': 0.2764820687650452, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.09102224132644754, 'SAR_max': 0.2761771318607372, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.05994083819486775, 'SAR_max': 0.3368480426729672, 'reg_method': 'bayesian'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.05471886514658654, 'SAR_max': 0.15692655412248388, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.029850847128370647, 'SAR_max': 0.26668967881103584, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.08070525699554673, 'SAR_max': 0.24277071153297997, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.0611982822402516, 'SAR_max': 0.2745126438340185, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.01356229775628819, 'SAR_max': 0.15500042778589715, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'SAR_step': 0.06507422705602571, 'SAR_max': 0.14299343191431518, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 19, 'signal_window': 7, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 19, 'signal_window': 6, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 10, 'signal_window': 6, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 13, 'signal_window': 5, 'reg_method': 'no_regression'}",0.06
+indicator_strat_creator,strat_optimizer,"{'short_window': 7, 'long_window': 13, 'signal_window': 4, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 3, 'long_window': 13, 'signal_window': 9, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 12, 'signal_window': 9, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 10, 'signal_window': 7, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 19, 'signal_window': 5, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 18, 'signal_window': 5, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 15, 'signal_window': 6, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 17, 'signal_window': 3, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 17, 'signal_window': 4, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 18, 'signal_window': 6, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 12, 'signal_window': 4, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 17, 'signal_window': 6, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 7, 'long_window': 15, 'signal_window': 5, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 20, 'signal_window': 9, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 18, 'signal_window': 8, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 12, 'signal_window': 5, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 3, 'long_window': 12, 'signal_window': 3, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 3, 'long_window': 14, 'signal_window': 6, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 18, 'signal_window': 8, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 17, 'signal_window': 6, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 14, 'signal_window': 5, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 18, 'signal_window': 5, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 18, 'signal_window': 3, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 16, 'signal_window': 5, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 14, 'signal_window': 8, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 12, 'signal_window': 5, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 15, 'signal_window': 5, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 18, 'signal_window': 4, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 15, 'signal_window': 7, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 11, 'signal_window': 4, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 19, 'signal_window': 5, 'reg_method': 'lasso'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 20, 'signal_window': 9, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 3, 'long_window': 10, 'signal_window': 4, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'short_window': 7, 'long_window': 10, 'signal_window': 7, 'reg_method': 'linear'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 7, 'long_window': 19, 'signal_window': 6, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'short_window': 3, 'long_window': 12, 'signal_window': 8, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 16, 'signal_window': 4, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 19, 'signal_window': 9, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 12, 'signal_window': 8, 'reg_method': 'lasso'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 18, 'signal_window': 7, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 11, 'signal_window': 7, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 4, 'long_window': 20, 'signal_window': 6, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'short_window': 8, 'long_window': 15, 'signal_window': 5, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 5, 'long_window': 16, 'signal_window': 8, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'short_window': 7, 'long_window': 19, 'signal_window': 7, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'short_window': 6, 'long_window': 15, 'signal_window': 8, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 10, 'leading_span_b_period': 22, 'displacement': 13, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 13, 'leading_span_b_period': 24, 'displacement': 20, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 18, 'leading_span_b_period': 34, 'displacement': 12, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 18, 'leading_span_b_period': 37, 'displacement': 15, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 18, 'leading_span_b_period': 25, 'displacement': 20, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 17, 'leading_span_b_period': 39, 'displacement': 11, 'reg_method': 'lasso'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 14, 'leading_span_b_period': 24, 'displacement': 10, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 12, 'leading_span_b_period': 25, 'displacement': 14, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 12, 'leading_span_b_period': 28, 'displacement': 11, 'reg_method': 'poly'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 10, 'leading_span_b_period': 35, 'displacement': 17, 'reg_method': 'lasso'}",0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 17, 'leading_span_b_period': 25, 'displacement': 18, 'reg_method': 'linear'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 20, 'leading_span_b_period': 29, 'displacement': 18, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 19, 'leading_span_b_period': 29, 'displacement': 13, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 15, 'leading_span_b_period': 20, 'displacement': 12, 'reg_method': 'ridge'}",0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 12, 'leading_span_b_period': 33, 'displacement': 13, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 10, 'leading_span_b_period': 29, 'displacement': 17, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 14, 'leading_span_b_period': 31, 'displacement': 18, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 14, 'leading_span_b_period': 34, 'displacement': 10, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 17, 'leading_span_b_period': 28, 'displacement': 14, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 20, 'leading_span_b_period': 31, 'displacement': 15, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 15, 'leading_span_b_period': 34, 'displacement': 14, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 17, 'leading_span_b_period': 34, 'displacement': 14, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 16, 'leading_span_b_period': 25, 'displacement': 17, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 11, 'leading_span_b_period': 38, 'displacement': 16, 'reg_method': 'no_regression'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 19, 'leading_span_b_period': 32, 'displacement': 13, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 19, 'leading_span_b_period': 34, 'displacement': 18, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 13, 'leading_span_b_period': 37, 'displacement': 13, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 12, 'leading_span_b_period': 37, 'displacement': 19, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 18, 'leading_span_b_period': 35, 'displacement': 11, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 16, 'leading_span_b_period': 34, 'displacement': 20, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 14, 'leading_span_b_period': 32, 'displacement': 10, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 19, 'leading_span_b_period': 31, 'displacement': 19, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 11, 'leading_span_b_period': 39, 'displacement': 18, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 19, 'leading_span_b_period': 30, 'displacement': 12, 'reg_method': 'linear'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 13, 'leading_span_b_period': 30, 'displacement': 15, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 19, 'leading_span_b_period': 22, 'displacement': 13, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 17, 'leading_span_b_period': 35, 'displacement': 17, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 19, 'leading_span_b_period': 31, 'displacement': 14, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 15, 'leading_span_b_period': 24, 'displacement': 19, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 17, 'leading_span_b_period': 26, 'displacement': 14, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 19, 'leading_span_b_period': 25, 'displacement': 18, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 18, 'leading_span_b_period': 36, 'displacement': 11, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 15, 'leading_span_b_period': 23, 'displacement': 15, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 4, 'base_line_period': 17, 'leading_span_b_period': 24, 'displacement': 18, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 10, 'leading_span_b_period': 33, 'displacement': 18, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 17, 'leading_span_b_period': 23, 'displacement': 16, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 10, 'leading_span_b_period': 26, 'displacement': 12, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 5, 'base_line_period': 15, 'leading_span_b_period': 33, 'displacement': 13, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 3, 'base_line_period': 18, 'leading_span_b_period': 22, 'displacement': 12, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'conversion_line_period': 6, 'base_line_period': 11, 'leading_span_b_period': 34, 'displacement': 11, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 2, 'buy_threshold': 17, 'sell_threshold': 71, 'reg_method': 'ridge'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 7, 'd_window': 2, 'buy_threshold': 23, 'sell_threshold': 74, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 5, 'buy_threshold': 19, 'sell_threshold': 75, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 2, 'buy_threshold': 16, 'sell_threshold': 78, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 5, 'd_window': 2, 'buy_threshold': 24, 'sell_threshold': 71, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 4, 'buy_threshold': 24, 'sell_threshold': 77, 'reg_method': 'bayesian'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 2, 'buy_threshold': 21, 'sell_threshold': 77, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 4, 'buy_threshold': 24, 'sell_threshold': 73, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 5, 'd_window': 2, 'buy_threshold': 19, 'sell_threshold': 81, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 7, 'd_window': 2, 'buy_threshold': 27, 'sell_threshold': 76, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 5, 'buy_threshold': 15, 'sell_threshold': 83, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 4, 'buy_threshold': 22, 'sell_threshold': 71, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 3, 'buy_threshold': 20, 'sell_threshold': 74, 'reg_method': 'lasso'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 5, 'buy_threshold': 24, 'sell_threshold': 70, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 2, 'buy_threshold': 29, 'sell_threshold': 79, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 5, 'd_window': 4, 'buy_threshold': 28, 'sell_threshold': 72, 'reg_method': 'logistic'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 5, 'buy_threshold': 19, 'sell_threshold': 73, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'k_window': 14, 'd_window': 5, 'buy_threshold': 27, 'sell_threshold': 80, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 4, 'buy_threshold': 17, 'sell_threshold': 70, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 14, 'd_window': 5, 'buy_threshold': 29, 'sell_threshold': 76, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 5, 'buy_threshold': 24, 'sell_threshold': 82, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 4, 'buy_threshold': 23, 'sell_threshold': 79, 'reg_method': 'poly'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 7, 'd_window': 3, 'buy_threshold': 22, 'sell_threshold': 70, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 13, 'd_window': 2, 'buy_threshold': 23, 'sell_threshold': 85, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 4, 'buy_threshold': 28, 'sell_threshold': 78, 'reg_method': 'poly'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 5, 'buy_threshold': 21, 'sell_threshold': 71, 'reg_method': 'no_regression'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 4, 'buy_threshold': 24, 'sell_threshold': 81, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 14, 'd_window': 5, 'buy_threshold': 20, 'sell_threshold': 75, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 2, 'buy_threshold': 17, 'sell_threshold': 72, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 4, 'buy_threshold': 25, 'sell_threshold': 85, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 2, 'buy_threshold': 16, 'sell_threshold': 82, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 8, 'd_window': 4, 'buy_threshold': 16, 'sell_threshold': 72, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 5, 'buy_threshold': 15, 'sell_threshold': 80, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 3, 'buy_threshold': 17, 'sell_threshold': 85, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 3, 'buy_threshold': 19, 'sell_threshold': 78, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 4, 'buy_threshold': 28, 'sell_threshold': 84, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 14, 'd_window': 2, 'buy_threshold': 24, 'sell_threshold': 83, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 7, 'd_window': 5, 'buy_threshold': 27, 'sell_threshold': 71, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 7, 'd_window': 3, 'buy_threshold': 17, 'sell_threshold': 84, 'reg_method': 'poly'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 8, 'd_window': 2, 'buy_threshold': 17, 'sell_threshold': 84, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 4, 'buy_threshold': 26, 'sell_threshold': 76, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 11, 'd_window': 2, 'buy_threshold': 21, 'sell_threshold': 83, 'reg_method': 'bayesian'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 12, 'd_window': 2, 'buy_threshold': 27, 'sell_threshold': 71, 'reg_method': 'no_regression'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 5, 'buy_threshold': 27, 'sell_threshold': 76, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'k_window': 8, 'd_window': 3, 'buy_threshold': 25, 'sell_threshold': 82, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 10, 'd_window': 5, 'buy_threshold': 28, 'sell_threshold': 84, 'reg_method': 'elastic_net'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'k_window': 14, 'd_window': 3, 'buy_threshold': 25, 'sell_threshold': 81, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 14, 'd_window': 5, 'buy_threshold': 16, 'sell_threshold': 73, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 6, 'd_window': 2, 'buy_threshold': 22, 'sell_threshold': 70, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'k_window': 9, 'd_window': 5, 'buy_threshold': 21, 'sell_threshold': 75, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'adx_period': 10, 'di_period': 10, 'threshold': 24, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 8, 'di_period': 5, 'threshold': 18, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'adx_period': 9, 'di_period': 14, 'threshold': 20, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 9, 'di_period': 12, 'threshold': 16, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 10, 'di_period': 9, 'threshold': 17, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 14, 'di_period': 7, 'threshold': 17, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 9, 'di_period': 14, 'threshold': 22, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'adx_period': 10, 'di_period': 10, 'threshold': 18, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 8, 'di_period': 6, 'threshold': 16, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 7, 'di_period': 9, 'threshold': 25, 'reg_method': 'logistic'}",0.01
+indicator_strat_creator,strat_optimizer,"{'adx_period': 10, 'di_period': 7, 'threshold': 25, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 6, 'di_period': 15, 'threshold': 17, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 15, 'di_period': 8, 'threshold': 20, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 6, 'di_period': 6, 'threshold': 17, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 11, 'di_period': 5, 'threshold': 17, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'adx_period': 6, 'di_period': 7, 'threshold': 22, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 13, 'di_period': 12, 'threshold': 16, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 12, 'di_period': 12, 'threshold': 23, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 6, 'di_period': 8, 'threshold': 16, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 8, 'di_period': 15, 'threshold': 17, 'reg_method': 'bayesian'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 14, 'di_period': 10, 'threshold': 18, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 7, 'di_period': 12, 'threshold': 22, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 12, 'di_period': 13, 'threshold': 19, 'reg_method': 'linear'}",0.01
+indicator_strat_creator,strat_optimizer,"{'adx_period': 15, 'di_period': 13, 'threshold': 22, 'reg_method': 'logistic'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 9, 'di_period': 12, 'threshold': 18, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 8, 'di_period': 11, 'threshold': 19, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 10, 'di_period': 14, 'threshold': 22, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 7, 'di_period': 14, 'threshold': 15, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 12, 'di_period': 12, 'threshold': 17, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 13, 'di_period': 15, 'threshold': 21, 'reg_method': 'svr'}",0.01
+indicator_strat_creator,strat_optimizer,"{'adx_period': 9, 'di_period': 12, 'threshold': 15, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 9, 'di_period': 13, 'threshold': 21, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 5, 'di_period': 10, 'threshold': 19, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 8, 'di_period': 7, 'threshold': 16, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 11, 'di_period': 6, 'threshold': 20, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 11, 'di_period': 15, 'threshold': 15, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 7, 'di_period': 6, 'threshold': 22, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 11, 'di_period': 5, 'threshold': 18, 'reg_method': 'bayesian'}",0.05
+indicator_strat_creator,strat_optimizer,"{'adx_period': 13, 'di_period': 13, 'threshold': 17, 'reg_method': 'lasso'}",0.01
+indicator_strat_creator,strat_optimizer,"{'adx_period': 15, 'di_period': 5, 'threshold': 16, 'reg_method': 'no_regression'}",0.06
+indicator_strat_creator,strat_optimizer,"{'adx_period': 12, 'di_period': 11, 'threshold': 17, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 10, 'di_period': 10, 'threshold': 22, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 12, 'di_period': 8, 'threshold': 18, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'adx_period': 5, 'di_period': 6, 'threshold': 24, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'adx_period': 5, 'di_period': 9, 'threshold': 16, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 13, 'di_period': 6, 'threshold': 23, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'adx_period': 15, 'di_period': 13, 'threshold': 20, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'adx_period': 8, 'di_period': 8, 'threshold': 25, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 15, 'di_period': 12, 'threshold': 22, 'reg_method': 'elastic_net'}",0.02
+indicator_strat_creator,strat_optimizer,"{'adx_period': 15, 'di_period': 7, 'threshold': 20, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.1408666772111657, 'volume_window': 6, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.9633944480785543, 'volume_window': 29, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.6007769161613727, 'volume_window': 18, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.7559191658886908, 'volume_window': 10, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.433251198705044, 'volume_window': 27, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.0949837149601205, 'volume_window': 10, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.0896511360989076, 'volume_window': 5, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.5227559650246363, 'volume_window': 19, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.0585941435896802, 'volume_window': 15, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.496292592879426, 'volume_window': 22, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.4597564049402703, 'volume_window': 6, 'reg_method': 'linear'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.199328702345733, 'volume_window': 11, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.0787399349761277, 'volume_window': 30, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.7952660400587184, 'volume_window': 22, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.3731764518024878, 'volume_window': 20, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.276582962162397, 'volume_window': 8, 'reg_method': 'bayesian'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.8413047182813562, 'volume_window': 13, 'reg_method': 'ridge'}",0.0
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.4976030699639062, 'volume_window': 18, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.3140782589435616, 'volume_window': 28, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.6854526163450871, 'volume_window': 18, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.14492074171168, 'volume_window': 7, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.6724051524776513, 'volume_window': 27, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.2425889416533415, 'volume_window': 23, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.35533525809685, 'volume_window': 20, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.6911729055865066, 'volume_window': 13, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.476484163606833, 'volume_window': 23, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.8956452323991386, 'volume_window': 25, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.159635117817172, 'volume_window': 21, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.5799315779043206, 'volume_window': 14, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.634708316161972, 'volume_window': 17, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.4162995981915527, 'volume_window': 9, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.8387799945588554, 'volume_window': 25, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.426298430489471, 'volume_window': 27, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.6864090122085, 'volume_window': 6, 'reg_method': 'ridge'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.7683554480221275, 'volume_window': 5, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.762829532123439, 'volume_window': 29, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.4620333246940147, 'volume_window': 16, 'reg_method': 'bayesian'}",0.05
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.5986865902904126, 'volume_window': 23, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.036522752682339, 'volume_window': 18, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.5057911186672106, 'volume_window': 3, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.6374296715575083, 'volume_window': 22, 'reg_method': 'linear'}",0.03
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.7566619000768617, 'volume_window': 5, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.6615094784994977, 'volume_window': 28, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.0871893448820158, 'volume_window': 18, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 3.9599821532354262, 'volume_window': 14, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.3654693058831104, 'volume_window': 11, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.3659911742813804, 'volume_window': 3, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.027502510182372, 'volume_window': 29, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 1.9948756720572742, 'volume_window': 13, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'volume_threshold': 2.772188648051304, 'volume_window': 6, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 7, 'overbought': 18, 'oversold': 88, 'reg_method': 'lasso'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 20, 'oversold': 83, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 13, 'overbought': 17, 'oversold': 81, 'reg_method': 'no_regression'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 19, 'oversold': 88, 'reg_method': 'elastic_net'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 5, 'overbought': 16, 'oversold': 85, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 9, 'overbought': 11, 'oversold': 80, 'reg_method': 'no_regression'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 14, 'overbought': 15, 'oversold': 90, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 7, 'overbought': 17, 'oversold': 85, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 11, 'overbought': 14, 'oversold': 89, 'reg_method': 'logistic'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 14, 'overbought': 15, 'oversold': 89, 'reg_method': 'poly'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 12, 'oversold': 84, 'reg_method': 'linear'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 7, 'overbought': 16, 'oversold': 89, 'reg_method': 'svr'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 9, 'overbought': 15, 'oversold': 86, 'reg_method': 'svr'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 12, 'overbought': 17, 'oversold': 84, 'reg_method': 'logistic'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 15, 'overbought': 13, 'oversold': 80, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 5, 'overbought': 15, 'oversold': 83, 'reg_method': 'ridge'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 9, 'overbought': 13, 'oversold': 82, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 7, 'overbought': 20, 'oversold': 90, 'reg_method': 'elastic_net'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 6, 'overbought': 13, 'oversold': 90, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 5, 'overbought': 17, 'oversold': 84, 'reg_method': 'lasso'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 6, 'overbought': 14, 'oversold': 85, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 6, 'overbought': 15, 'oversold': 82, 'reg_method': 'linear'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 6, 'overbought': 17, 'oversold': 88, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 15, 'overbought': 19, 'oversold': 85, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 9, 'overbought': 12, 'oversold': 84, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 15, 'overbought': 10, 'oversold': 86, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 13, 'oversold': 88, 'reg_method': 'no_regression'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 13, 'overbought': 13, 'oversold': 88, 'reg_method': 'poly'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 6, 'overbought': 20, 'oversold': 87, 'reg_method': 'logistic'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 7, 'overbought': 10, 'oversold': 84, 'reg_method': 'bayesian'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 12, 'overbought': 19, 'oversold': 88, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 13, 'overbought': 11, 'oversold': 85, 'reg_method': 'poly'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 14, 'oversold': 80, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 9, 'overbought': 11, 'oversold': 81, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 10, 'overbought': 20, 'oversold': 86, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 12, 'oversold': 81, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 12, 'overbought': 12, 'oversold': 84, 'reg_method': 'poly'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 6, 'overbought': 11, 'oversold': 86, 'reg_method': 'bayesian'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 5, 'overbought': 17, 'oversold': 83, 'reg_method': 'bayesian'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 15, 'overbought': 16, 'oversold': 82, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 20, 'oversold': 84, 'reg_method': 'no_regression'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 9, 'overbought': 12, 'oversold': 84, 'reg_method': 'svr'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 8, 'overbought': 12, 'oversold': 85, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 5, 'overbought': 11, 'oversold': 90, 'reg_method': 'poly'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 10, 'overbought': 12, 'oversold': 90, 'reg_method': 'svr'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 14, 'overbought': 11, 'oversold': 85, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 7, 'overbought': 11, 'oversold': 89, 'reg_method': 'elastic_net'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 7, 'overbought': 17, 'oversold': 88, 'reg_method': 'svr'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 10, 'overbought': 16, 'oversold': 87, 'reg_method': 'linear'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'lookback_period': 11, 'overbought': 16, 'oversold': 86, 'reg_method': 'poly'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 28, 'breakout_factor': 1.7639103678196557, 'reg_method': 'no_regression'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 16, 'breakout_factor': 1.468038839745681, 'reg_method': 'poly'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 12, 'breakout_factor': 1.61491946585479, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 16, 'breakout_factor': 1.13590238063644, 'reg_method': 'no_regression'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 29, 'breakout_factor': 1.4627039998477733, 'reg_method': 'svr'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 25, 'breakout_factor': 1.2021647451137887, 'reg_method': 'lasso'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 25, 'breakout_factor': 1.7762203062342246, 'reg_method': 'no_regression'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 21, 'breakout_factor': 1.2185165248029546, 'reg_method': 'lasso'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 12, 'breakout_factor': 1.2900477442894709, 'reg_method': 'ridge'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 30, 'breakout_factor': 1.2799639096105666, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 23, 'breakout_factor': 1.9722402615631225, 'reg_method': 'lasso'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 19, 'breakout_factor': 1.1943503812263314, 'reg_method': 'ridge'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 18, 'breakout_factor': 1.833911198972062, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 11, 'breakout_factor': 1.7006882411939526, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 23, 'breakout_factor': 1.933376374881104, 'reg_method': 'ridge'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 19, 'breakout_factor': 1.5769078112726178, 'reg_method': 'lasso'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 11, 'breakout_factor': 1.1539187186082773, 'reg_method': 'lasso'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 10, 'breakout_factor': 1.9144436140184293, 'reg_method': 'no_regression'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 12, 'breakout_factor': 1.121207165321569, 'reg_method': 'no_regression'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 12, 'breakout_factor': 1.8019902239202303, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 17, 'breakout_factor': 1.834174630003091, 'reg_method': 'linear'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 26, 'breakout_factor': 1.3388082617291737, 'reg_method': 'svr'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 14, 'breakout_factor': 1.0870680883880945, 'reg_method': 'poly'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 23, 'breakout_factor': 1.0505678357709902, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 28, 'breakout_factor': 1.6340413815846357, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 19, 'breakout_factor': 1.3304115983827869, 'reg_method': 'ridge'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 27, 'breakout_factor': 1.5867231013366563, 'reg_method': 'linear'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 10, 'breakout_factor': 1.5473073541053324, 'reg_method': 'ridge'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 16, 'breakout_factor': 1.7199443123869207, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 27, 'breakout_factor': 1.9684374506255402, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 29, 'breakout_factor': 1.0600811159257506, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 29, 'breakout_factor': 1.8046422201164174, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 12, 'breakout_factor': 1.744172623040703, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 29, 'breakout_factor': 1.3781975343033432, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 20, 'breakout_factor': 1.5462440134033681, 'reg_method': 'poly'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 28, 'breakout_factor': 1.7199735325050907, 'reg_method': 'no_regression'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 29, 'breakout_factor': 1.0600072288315388, 'reg_method': 'bayesian'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 12, 'breakout_factor': 1.1387410046115192, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 30, 'breakout_factor': 1.5251002679615606, 'reg_method': 'ridge'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 19, 'breakout_factor': 1.5560919503967128, 'reg_method': 'poly'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 10, 'breakout_factor': 1.8849559031764112, 'reg_method': 'linear'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 22, 'breakout_factor': 1.332214474582362, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 25, 'breakout_factor': 1.4617518090791433, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 30, 'breakout_factor': 1.1023548498718365, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 18, 'breakout_factor': 1.042259649479322, 'reg_method': 'lasso'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 10, 'breakout_factor': 1.6848975392898264, 'reg_method': 'elastic_net'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 14, 'breakout_factor': 1.8983917725050508, 'reg_method': 'linear'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 13, 'breakout_factor': 1.5899378207127812, 'reg_method': 'lasso'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 12, 'breakout_factor': 1.7354759437823324, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'volatility_window': 19, 'breakout_factor': 1.9127922362454295, 'reg_method': 'no_regression'}",0
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'poly'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'ridge'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'lasso'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'elastic_net'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'bayesian'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'svr'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 10, 'reg_method': 'no_regression'}",0.05
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'lasso'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 11, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'logistic'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'lasso'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 12, 'reg_method': 'no_regression'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'linear'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'poly'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'ridge'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'lasso'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'elastic_net'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'bayesian'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'svr'}",0.04
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 13, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'linear'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'elastic_net'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'bayesian'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'svr'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 14, 'reg_method': 'no_regression'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 15, 'reg_method': 'linear'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 15, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 15, 'reg_method': 'logistic'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 15, 'reg_method': 'ridge'}",0.03
+indicator_strat_creator,strat_optimizer,"{'sma_short': 1, 'sma_long': 15, 'reg_method': 'lasso'}",0.03
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'logistic'}",-0.04
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'ridge'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'lasso'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'bayesian'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'svr'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.0, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'logistic'}",-0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'ridge'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'lasso'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'bayesian'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.1, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'linear'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'logistic'}",-0.04
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'ridge'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'lasso'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'elastic_net'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'bayesian'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'svr'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.2000000000000002, 'reg_method': 'no_regression'}",0.0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'linear'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'logistic'}",-0.03
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'lasso'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'svr'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.3000000000000003, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'linear'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'logistic'}",-0.04
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'ridge'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'lasso'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'elastic_net'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'bayesian'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.4000000000000004, 'reg_method': 'no_regression'}",0.01
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.5000000000000004, 'reg_method': 'linear'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.5000000000000004, 'reg_method': 'poly'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.5000000000000004, 'reg_method': 'logistic'}",0
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.5000000000000004, 'reg_method': 'ridge'}",0.02
+indicator_strat_creator,strat_optimizer,"{'window_size': 10, 'num_std_dev': 1.5000000000000004, 'reg_method': 'lasso'}",0.02
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'bayesian'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'svr'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 25, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'bayesian'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 26, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'poly'}",0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'logistic'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'elastic_net'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'bayesian'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 27, 'reg_method': 'no_regression'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 28, 'reg_method': 'no_regression'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'linear'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'ridge'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'lasso'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'elastic_net'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'bayesian'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'svr'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 29, 'reg_method': 'no_regression'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 30, 'reg_method': 'linear'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 30, 'reg_method': 'poly'}",0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 30, 'reg_method': 'logistic'}",-0.01
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 30, 'reg_method': 'ridge'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'RSI_period': 5, 'overbought_threshold': 65, 'oversold_threshold': 30, 'reg_method': 'lasso'}",-0.0
+indicator_strat_creator,strat_optimizer,"{'momentum': 5, 'reg_method': 'linear'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 5, 'reg_method': 'poly'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 5, 'reg_method': 'logistic'}",0.05
+indicator_strat_creator,strat_optimizer,"{'momentum': 5, 'reg_method': 'ridge'}",0.05

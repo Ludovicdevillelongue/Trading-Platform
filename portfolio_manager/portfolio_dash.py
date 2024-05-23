@@ -12,7 +12,9 @@ import plotly.graph_objs as go
 from waitress import serve
 import webbrowser
 from threading import Timer
-
+import sys
+import os
+sys.path.append('C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python\\trading_platform')
 
 class PortfolioDashboard:
     def __init__(self, config, initial_amount, frequency):
@@ -127,12 +129,12 @@ class PortfolioDashboard:
         serve(self.app.server, host='0.0.0.0', port=8070)
 
     def open_browser(self):
-        Timer(1, lambda: webbrowser.open("http://127.0.0.1:8080")).start()
+        Timer(1, lambda: webbrowser.open("http://127.0.0.1:8070")).start()
 
 
 if __name__ == '__main__':
     data_provider = 'yfinance'
-    with open(r'../trading_platform/config/data_frequency.yml') as file:
+    with open(r'C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python/trading_platform/config/data_frequency.yml') as file:
         frequency_yaml = yaml.safe_load(file)
     frequency = frequency_yaml[data_provider]['minute']
     broker_config = GetBrokersConfig.key_secret_tc_url()
