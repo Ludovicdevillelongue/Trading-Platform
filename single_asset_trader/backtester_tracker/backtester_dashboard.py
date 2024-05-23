@@ -1,7 +1,7 @@
 import logging
 import traceback
 import dash
-from dash import dcc, html, Input, Output, State
+from dash import dcc, html, Input, Output
 import plotly.express as px
 from waitress import serve
 from dash import dash_table
@@ -17,20 +17,10 @@ class BacktestDashboard:
 
     @staticmethod
     def plot_positions(positions):
-        # Initialize a list to store the figures
         figures = []
-
-        # Iterate through each column in the DataFrame
         for column in positions.columns:
-            # Generate a line plot for each column
-            fig = px.line(positions,
-                          x=positions.index,
-                          y=column,  # Plot each column individually
-                          title=f'{column}', render_mode='svg')  # Title for each column
-
-            # Append the figure to the list
+            fig = px.line(positions, x=positions.index, y=column, title=f'{column}', render_mode='svg')
             figures.append(fig)
-
         return figures
 
     @staticmethod
@@ -38,21 +28,19 @@ class BacktestDashboard:
         table_data = []
         for strategy_name, strategy_result in best_strat_recap.items():
             table_data.append({'strategy_name': strategy_name,
-                               'search_type':str(strategy_result['search_type']),
+                               'search_type': str(strategy_result['search_type']),
                                'params': str(strategy_result['params']),
                                **strategy_result['results']})
-            table_data = sorted(table_data, key=lambda x: x['sharpe_ratio'], reverse=True)
+        table_data = sorted(table_data, key=lambda x: x['sharpe_ratio'], reverse=True)
         return table_data
 
 
-
-
 class BacktestApp:
-    def __init__(self,best_strats, comparison_data, symbol):
-
-        self.best_strats=best_strats
-        self.comparison_data=comparison_data
-        self.symbol=symbol
+    def __init__(self, best_strats, comparison_data, symbol, port):
+        self.best_strats = best_strats
+        self.comparison_data = comparison_data
+        self.symbol = symbol
+        self.port = port
 
         self.app = dash.Dash(__name__, suppress_callback_exceptions=True)
         self.create_layout()
@@ -60,18 +48,7 @@ class BacktestApp:
 
     def create_layout(self):
         self.app.layout = html.Div([
-            html.H1("Strategy Dashboard"),
-
-            html.Label("Symbol"),
-            dcc.Input(id="symbol", type="text", value=f"{self.symbol}"),
-
-            html.Label("Start Date"),
-            dcc.DatePickerSingle(id="start-date", date=self.comparison_data['returns'].index[0]),
-
-            html.Label("End Date"),
-            dcc.DatePickerSingle(id="end-date", date=self.comparison_data['returns'].index[-1]),
-
-            html.Button("Generate Dashboard", id="generate-dashboard"),
+            html.H1(f"{self.symbol} Strategy Dashboard"),
 
             dcc.Loading(id="loading-output",
                         type="circle",
@@ -79,46 +56,37 @@ class BacktestApp:
                             dcc.Graph(id="cumulative-returns-plot"),
                             dash_table.DataTable(id="strategy-table")
                         ]),
-            html.Div(id="strategy-plots-container")
+            html.Div(id="strategy-plots-container"),
+            # Hidden div to trigger the callback
+            html.Div(id="hidden-trigger", style={"display": "none"})
         ])
 
     def register_callbacks(self):
         @self.app.callback(
             [Output("cumulative-returns-plot", "figure"),
-             Output("strategy-plots-container", "children"),  # Container for multiple plots
+             Output("strategy-plots-container", "children"),
              Output("strategy-table", "data")],
-            [Input("generate-dashboard", "n_clicks")],
-            [State("symbol", "value"),
-             State("start-date", "date"),
-             State("end-date", "date")]
+            [Input("hidden-trigger", "children")]  # Using hidden div as input to trigger the callback
         )
-        def generate_dashboard(n_clicks, symbol, start_date, end_date):
+        def generate_dashboard(_):
             try:
                 dashboard = BacktestDashboard()
-                cumulative_returns_fig = BacktestDashboard.plot_cumulative_returns(self.comparison_data['creturns'])
-                positions_figs = BacktestDashboard.plot_positions(self.comparison_data['positions'])
-                table_data = BacktestDashboard.create_table(self.best_strats)
+                cumulative_returns_fig = dashboard.plot_cumulative_returns(self.comparison_data['creturns'])
+                positions_figs = dashboard.plot_positions(self.comparison_data['positions'])
+                table_data = dashboard.create_table(self.best_strats)
 
-                # Convert each figure to a Graph component and store in a list
                 positions_plots = [dcc.Graph(figure=fig) for fig in positions_figs]
 
                 return cumulative_returns_fig, positions_plots, table_data
 
-
             except Exception as e:
                 logging.error(f"An error occurred: {str(e)}")
                 traceback.print_exc()
-                # Log specific error message
-                return {}, []
-
+                return {}, [], []
 
     def run_server(self):
-        serve(self.app.server, host='0.0.0.0', port=8090)
+        serve(self.app.server, host='0.0.0.0', port=self.port)
 
     def open_browser(self):
-        sleep(1)  # Short delay before opening the browser
-        webbrowser.open("http://127.0.0.1:8090")
-
-
-
-
+        sleep(1)
+        webbrowser.open(f"http://127.0.0.1:{self.port}")
