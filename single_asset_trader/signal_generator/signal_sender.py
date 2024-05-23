@@ -4,7 +4,6 @@ import pandas as pd
 import pytz
 from broker_interaction.broker_order import AlpacaTradingBot
 from broker_interaction.broker_metrics import AlpacaPlatform
-from data_loader.data_retriever import DataManager
 import time as counter
 from indicators.performances_indicators import Returns, LogReturns, CumulativeReturns, \
     CumulativeLogReturns
@@ -13,9 +12,10 @@ from single_asset_trader.positions_pnl_tracker.prod_tracker_dashboard import Pro
 
 
 class LiveStrategyRunner:
-    def __init__(self, strategy_name, strategy_class, strat_type_pos, optimization_results, frequency,
+    def __init__(self, data, strategy_name, strategy_class, strat_type_pos, optimization_results, frequency,
                  symbol, risk_free_rate, start_date, end_date, amount, transaction_costs, predictive_strat,
-                 contract_multiplier, data_provider, trading_platform_name, broker_config):
+                 contract_multiplier, data_provider, trading_platform_name, broker_config, dash_port):
+        self.data=data
         self.strategy_name = strategy_name
         self.strategy_class = strategy_class
         self.strat_type_pos=strat_type_pos
@@ -40,21 +40,17 @@ class LiveStrategyRunner:
         self.dashboard_open=False
         if self.trading_platform_name == 'Alpaca':
             self.broker = AlpacaTradingBot(broker_config)
-            self.trading_platform=AlpacaPlatform(self.broker_config, self.symbol, self.frequency)
+            self.trading_platform=AlpacaPlatform(self.broker_config, self.frequency)
+        self.dash_port=dash_port
 
-    def fetch_and_update_real_time_data(self):
+    def update_returns_data(self):
         try:
-            # Fetch and update data
-            if self.data_provider == 'yfinance':
-                self.real_time_data = DataManager(self.frequency, self.start_date, self.end_date) \
-                    .yfinance_download([self.symbol])[['open', 'high', 'low', 'close', 'volume']]
-            else:
-                pass
+            self.real_time_data=self.data.copy()
             self.real_time_data['returns']=Returns().get_metric(self.real_time_data['close'])
             self.real_time_data['log_returns']=LogReturns().get_metric(self.real_time_data['returns'])
-            self.real_time_data['creturns']=CumulativeReturns().get_metric(self.amount, self.real_time_data['returns'])
-            self.real_time_data['log_creturns']=CumulativeLogReturns().get_metric(self.amount, self.real_time_data['log_returns'])
-            self.logger_monitor(f"Data Available until {self.real_time_data.index[-1]}")
+            self.real_time_data['creturns']=CumulativeReturns().get_metric(1, self.real_time_data['returns'])
+            self.real_time_data['log_creturns']=CumulativeLogReturns().get_metric(1, self.real_time_data['log_returns'])
+            self.logger_monitor(f"\n Data Available until {self.real_time_data.index[-1]}")
         except Exception as e:
             self.logger_monitor(f"Error in data fetching: {e}")
 
@@ -68,6 +64,7 @@ class LiveStrategyRunner:
                                          amount=self.amount, transaction_costs=self.transaction_costs,
                                          predictive_strat=self.predictive_strat,
                                          **opti_results_strategy).generate_signal()
+
             if self.strat_type_pos==-1:
                 #short selling only accept non-fractional order
                 self.signal=round(self.signal)
@@ -136,9 +133,10 @@ class LiveStrategyRunner:
         #manual recap
         livestrat = LiveStrategyTracker(self.data_provider, self.symbol, self.frequency,
                                         self.start_date, self.end_date, self.amount)
-        livestrat.get_asset_metrics(self.frequency, self.risk_free_rate, new_pos)
+        livestrat.get_asset_metrics(self.frequency, self.risk_free_rate,self.real_time_data['close'], new_pos)
         if not self.dashboard_open:
-            product_manager_app = ProductManagementApp(self.trading_platform, self.symbol, self.frequency)
+            product_management_port = self.dash_port + 1000
+            product_manager_app = ProductManagementApp(self.trading_platform, self.symbol, self.frequency, product_management_port)
             product_server_thread = threading.Thread(target=product_manager_app.run_server)
             product_server_thread.start()
             self.threads.append(product_server_thread)
@@ -154,7 +152,7 @@ class LiveStrategyRunner:
 
     def run(self):
         if self.frequency['interval']=='1d':
-            self.fetch_and_update_real_time_data()
+            self.update_returns_data()
             new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
             while True:
                 tracker_tread=threading.Thread(target=self.tracker_thread, args=(new_pos,))
@@ -162,7 +160,7 @@ class LiveStrategyRunner:
                 self.threads.append(tracker_tread)
                 counter.sleep(60)
         else:
-            stop_time = time(22, 26, 0)
+            stop_time = time(22, 2, 0)
             if self.symbol != "BTC-USD":
                 while not self.stop_thread:
                     current_time = datetime.now(pytz.timezone('Europe/Paris')).time()
@@ -170,7 +168,7 @@ class LiveStrategyRunner:
                         self.stop_thread = True
                         break
 
-                    self.fetch_and_update_real_time_data()
+                    self.update_returns_data()
                     new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
                     tracker_tread = threading.Thread(target=self.tracker_thread, args=(new_pos,))
                     tracker_tread.start()
@@ -185,7 +183,7 @@ class LiveStrategyRunner:
                     counter.sleep(60)
             else:
                 while True:
-                    self.fetch_and_update_real_time_data()
+                    self.update_returns_data()
                     new_pos=self.apply_strategy(self.strategy_name, self.strategy_class)
                     tracker_tread = threading.Thread(target=self.tracker_thread, args=(new_pos,))
                     tracker_tread.start()

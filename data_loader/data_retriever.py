@@ -6,12 +6,13 @@ import pandas as pd
 import yaml
 import yfinance as yf
 from tables import *
+from broker_interaction.broker_order import GetBrokersConfig
+
 
 class DataManager(object):
-    def __init__(self,frequency, start_date, end_date):
+    def __init__(self,frequency):
         self.frequency=frequency
-        self.start_date=start_date
-        self.end_date=end_date
+
 
     @property
     def read_key(self):
@@ -65,4 +66,5 @@ class DataManager(object):
         else:
             pass
         return data_yfinance
+
 

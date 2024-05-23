@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-from data_loader.data_retriever import DataManager
 from indicators.performances_indicators import (Returns, CumulativeReturns, AnnualizedSharpeRatio,
                         AnnualizedSortinoRatio, MaxDrawdown,
                         AnnualizedCalmarRatio, Beta, AnnualizedAlpha)
@@ -20,15 +19,6 @@ class LiveStrategyTracker():
                                               f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_history.csv')
         self.strat_metrics_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                               f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_metric.csv')
-
-    def get_data(self):
-        if self.data_provider == 'yfinance':
-            historical_close_price = pd.DataFrame(DataManager(self.frequency, self.start_date, self.end_date).
-                                                  yfinance_download([self.symbol])['close'])
-        else:
-            historical_close_price = pd.DataFrame()
-        return historical_close_price
-
     def get_previous_positions(self):
         if not os.path.exists(self.strat_pos_tracker_csv) or \
                 os.path.getsize(self.strat_pos_tracker_csv) == 0:
@@ -42,23 +32,8 @@ class LiveStrategyTracker():
                                               index.tz_convert(pytz.timezone('Europe/Paris')))
         return previous_asset_positions.sort_index()
 
-    def get_asset_history(self, new_position):
+    def get_asset_history(self, historical_close_price, new_position):
         previous_asset_positions = self.get_previous_positions()
-        if self.frequency['interval']=='1d':
-            # get minute data
-            minute_data_dict = self.frequency.copy()
-            minute_data_dict['interval'] = '1m'
-            minute_data_dict['period'] = '7d'
-            if self.data_provider == 'yfinance':
-                historical_close_price = DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download([self.symbol]) \
-                    ['close']
-            else:
-                historical_close_price = \
-                DataManager(minute_data_dict, self.start_date, self.end_date).yfinance_download([self.symbol]) \
-                    ['close']
-        else:
-            historical_close_price = self.get_data()
-
         try:
             new_position['time'] = historical_close_price.index[-1]
             new_position.set_index('time', inplace=True)
@@ -83,9 +58,9 @@ class LiveStrategyTracker():
         total_asset_history.to_csv(self.strat_pos_tracker_csv, mode='w', header=True, index=True)
         total_asset_history['amount'] = total_asset_history['close'] * total_asset_history['position']
         total_asset_history['returns'] = Returns().get_metric(total_asset_history['close'])
-        total_asset_history['creturns'] = CumulativeReturns().get_metric(self.amount, total_asset_history['returns'])
+        total_asset_history['creturns'] = CumulativeReturns().get_metric(1, total_asset_history['returns'])
         total_asset_history['strategy'] = (total_asset_history['position'].shift(1) * total_asset_history['returns']).fillna(0)
-        total_asset_history['cstrategy'] = CumulativeReturns().get_metric(self.amount, total_asset_history['strategy'])
+        total_asset_history['cstrategy'] = CumulativeReturns().get_metric(1, total_asset_history['strategy'])
         total_asset_history['p&l'] = 0
         # add p&l of last position to historical p&l
         position_changes = total_asset_history['position'].diff().fillna(1) != 0
@@ -96,14 +71,14 @@ class LiveStrategyTracker():
                                                       total_asset_history.at[position_date, 'close']) *
                                                      total_asset_history.at[position_date, 'order'])
 
-        total_asset_history['ptf_value']= self.amount+total_asset_history['p&l']
+        total_asset_history['product_value']= total_asset_history['p&l']
         total_asset_history.dropna(axis=0)
         total_asset_history.to_csv(self.strat_equity_ret_csv, mode='w', header=True, index=True)
         return total_asset_history
 
-    def get_asset_metrics(self, frequency, risk_free_rate, new_position):
+    def get_asset_metrics(self, frequency, risk_free_rate,historical_close_price, new_position):
         dict_key_metrics = {}
-        df_asset = self.get_asset_history(new_position)
+        df_asset = self.get_asset_history(historical_close_price, new_position)
 
         # Calculate Performance Indicators
         try:

@@ -8,11 +8,10 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
-from indicators.performances_indicators import (AnnualizedSharpeRatio, AnnualizedSortinoRatio, MaxDrawdown,
-                        AnnualizedCalmarRatio, AnnualizedAlpha,
+from indicators.performances_indicators import (SharpeRatio, SortinoRatio, MaxDrawdown,
+                        CalmarRatio, Alpha,
                         Beta, LogReturns, Returns, CumulativeReturns, CumulativeLogReturns)
 from single_asset_trader.signal_generator.ml_predictor import MLPredictor
-from data_loader.data_retriever import DataManager
 import warnings
 
 # To deactivate all warnings:
@@ -35,19 +34,14 @@ class StrategyCreator:
         self.data = None  # Will hold historical price data
         self.results = None  # Will hold backtest results
 
-    def get_data(self, data_provider):
+    def calculate_returns(self, downloaded_data):
         ''' Retrieves and prepares the data'''
-        if data_provider == 'yfinance':
-            # raw = pd.read_hdf(DataRetriever(self.start_date, self.end_date).read_data())
-            raw = DataManager(self.frequency, self.start_date, self.end_date).yfinance_download(self.symbol) \
-                [['open', 'high', 'low', 'close', 'volume']]
-            # DataRetriever(self.start_date, self.end_date).write_data(raw)
-            # raw.rename(columns={self.symbol.split('/')[1]: 'price'}, inplace=True)
-            raw['returns']=Returns().get_metric(raw['close'])
-            raw['log_returns']=LogReturns().get_metric(raw['returns'])
-            raw['creturns']=CumulativeReturns().get_metric(self.amount, raw['returns'])
-            raw['log_creturns']=CumulativeLogReturns().get_metric(self.amount, raw['log_returns'])
-            return raw
+        raw=downloaded_data.copy()
+        raw['returns']=Returns().get_metric(raw['close'])
+        raw['log_returns']=LogReturns().get_metric(raw['returns'])
+        raw['creturns']=CumulativeReturns().get_metric(1, raw['returns'])
+        raw['log_creturns']=CumulativeLogReturns().get_metric(1, raw['log_returns'])
+        return raw
 
     def select_data(self, start, end):
         ''' Selects sub-sets of the financial data.
@@ -245,7 +239,7 @@ class StrategyCreator:
         data.loc[data['orders'] != 0, 'strategy'] -= self.transaction_costs * abs(data['orders'])
 
         # Calculate cumulative returns of the strategy
-        data['cstrategy']=CumulativeReturns().get_metric(self.amount, data['strategy'])
+        data['cstrategy']=CumulativeReturns().get_metric(1, data['strategy'])
 
         # Save results for further output or plot
         self.results = data
@@ -261,17 +255,17 @@ class StrategyCreator:
             if data['regularized_position'].eq(0).all():
                 sharpe_ratio = 0
             else:
-                sharpe_ratio = AnnualizedSharpeRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
+                sharpe_ratio = SharpeRatio(self.frequency, risk_free_rate).calculate(data['strategy'])
         except Exception as e:
             sharpe_ratio = 0
 
-        sortino_ratio = AnnualizedSortinoRatio(self.frequency, 0).calculate(data['strategy'])
+        sortino_ratio = SortinoRatio(self.frequency, 0).calculate(data['strategy'])
         max_drawdown = MaxDrawdown().calculate(data['cstrategy'])
-        calmar_ratio = AnnualizedCalmarRatio(self.frequency).calculate(data['strategy'], max_drawdown)
+        calmar_ratio = CalmarRatio(self.frequency).calculate(data['strategy'], max_drawdown)
 
         try:
             beta = Beta().calculate(data['strategy'], data['returns'])
-            alpha = AnnualizedAlpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
+            alpha = Alpha(self.frequency, risk_free_rate).calculate(data['strategy'], data['returns'], beta)
         except Exception as e:
             beta = 0
             alpha = 0

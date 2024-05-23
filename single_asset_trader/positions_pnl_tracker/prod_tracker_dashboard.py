@@ -13,7 +13,7 @@ class ProductDashboard:
     @staticmethod
     def create_product_strat_value_graph(product_strat_history):
         fig = go.Figure(data=[
-            go.Scatter(x=product_strat_history.index, y=product_strat_history['ptf_value'])
+            go.Scatter(x=product_strat_history.index, y=product_strat_history['product_value'])
         ])
         fig.update_layout(
             title='Product_strat Value Over Time',
@@ -56,19 +56,19 @@ class ProductDashboard:
         )
 
 class ProductManagementApp:
-    def __init__(self, platform, symbol, frequency):
+    def __init__(self, platform, symbol, frequency, port):
         self.platform = platform
-        self.symbol=symbol
-        self.broker_symbol= self.symbol.replace("-", "/") if '-' in self.symbol else self.symbol
-        self.frequency=frequency
+        self.symbol = symbol
+        self.broker_symbol = self.symbol.replace("-", "/") if '-' in self.symbol else self.symbol
+        self.frequency = frequency
+        self.port = port
         self.app = dash.Dash(__name__, suppress_callback_exceptions=False)
         self.setup_layout()
         self.setup_callbacks()
 
-
     def setup_layout(self):
         self.app.layout = html.Div([
-            html.H1("Product Management Dashboard", style={'textAlign': 'center'}),
+            html.H1(f"{self.symbol} Product Management Dashboard", style={'textAlign': 'center'}),
             html.Button("Update Data", id="update-data-button", style={'margin': '10px'}),
             html.Div(id='product-strat-metrics', style={'padding': '10px'}),
             html.Div(id='orders-recap', style={'padding': '10px'}),
@@ -95,20 +95,20 @@ class ProductManagementApp:
                 try:
                     positions_data = self.platform.get_symbol_position(self.broker_symbol)
                 except Exception as e:
-                    positions_data=pd.DataFrame()
+                    positions_data = pd.DataFrame()
                 product_strat_history = pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_history.csv'),header=[0],
-                                                index_col=[0])
+                                                                f'positions_pnl_tracker/{self.symbol}_{self.frequency["interval"]}_strat_history.csv'), header=[0],
+                                                    index_col=[0])
                 product_strat_history.index = pd.DatetimeIndex(pd.to_datetime(product_strat_history.index, utc=True).
-                tz_convert('Europe/Paris'))
-                product_strat_history=product_strat_history.sort_index()
-                product_strat_metrics= (pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                              f'positions_pnl_tracker/{self.symbol}_{self.frequency['interval']}_strat_metric.csv'), header=[0],
-                                                index_col=[0])).round(2)
+                                                               tz_convert('Europe/Paris'))
+                product_strat_history = product_strat_history.sort_index()
+                product_strat_metrics = (pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                                                  f'positions_pnl_tracker/{self.symbol}_{self.frequency["interval"]}_strat_metric.csv'), header=[0],
+                                                     index_col=[0])).round(2)
 
                 value_graph = ProductDashboard.create_product_strat_value_graph(product_strat_history)
-                creturns_graph=ProductDashboard.create_product_strat_vs_bench_graph(product_strat_history)
-                product_strat_metrics_table=ProductDashboard.create_data_table(product_strat_metrics)
+                creturns_graph = ProductDashboard.create_product_strat_vs_bench_graph(product_strat_history)
+                product_strat_metrics_table = ProductDashboard.create_data_table(product_strat_metrics)
                 orders_table = ProductDashboard.create_data_table(orders_data)
                 positions_table = ProductDashboard.create_data_table(positions_data)
 
@@ -124,10 +124,9 @@ class ProductManagementApp:
                 traceback.print_exc()
                 return (html.Div(), html.Div(), html.Div(), html.Div(), html.Div())
 
-
     def run_server(self):
-        serve(self.app.server, host='0.0.0.0', port=8070)
+        serve(self.app.server, host='0.0.0.0', port=self.port)
 
     def open_browser(self):
         sleep(1)
-        webbrowser.open("http://127.0.0.1:8070")
+        webbrowser.open(f"http://127.0.0.1:{self.port}")
