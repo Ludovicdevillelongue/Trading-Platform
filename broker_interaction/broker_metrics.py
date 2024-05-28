@@ -137,19 +137,23 @@ class AlpacaPlatform(TradingPlatform):
         # Calculate PnL for each order
         df_orders['pnl'] = 0.0
         symbols = df_orders['symbol'].unique()
+        all_orders_list=[]
         for symbol in symbols:
             symbol_orders = df_orders[df_orders['symbol'] == symbol]
+            symbol_orders = symbol_orders.reset_index(drop=True)
             for i in range(1, len(symbol_orders)):
                 previous_order = symbol_orders.iloc[i - 1]
                 current_order = symbol_orders.iloc[i]
                 price_diff = float(current_order['filled_avg_price']) - float(previous_order['filled_avg_price'])
                 qty = float(previous_order['filled_qty'])
                 if previous_order['side'] == 'buy' and current_order['side'] == 'sell':
-                    df_orders.at[i - 1, 'pnl'] = price_diff * qty
+                    symbol_orders.at[i - 1, 'pnl'] = price_diff * qty
                 elif previous_order['side'] == 'sell' and current_order['side'] == 'buy':
-                    df_orders.at[i - 1, 'pnl'] = -price_diff * qty
-        df_orders = df_orders.sort_values('filled_at', ascending=False).round(2)
-        return df_orders
+                    symbol_orders.at[i - 1, 'pnl'] = -price_diff * qty
+            all_orders_list.append(symbol_orders)
+        all_orders=pd.concat(all_orders_list)
+        all_orders = all_orders.sort_values('filled_at', ascending=False).round(2)
+        return all_orders
 
     def get_broker_portfolio_history(self):
         portfolio_history = self.api.get_portfolio_history(period='1W', timeframe='1Min', extended_hours=True).df

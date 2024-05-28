@@ -146,7 +146,7 @@ if __name__ == '__main__':
     frequency = frequency_yaml[data_provider]['minute']
     broker_config = GetBrokersConfig.key_secret_tc_url()
     initial_amount = 100000
-    dashboard = PortfolioDashboard(broker_config, initial_amount, frequency).update_data()
+    dashboard = PortfolioDashboard(broker_config, initial_amount, frequency)
 
-    # dashboard.open_browser()
-    # dashboard.run_server()
+    dashboard.open_browser()
+    dashboard.run_server()
