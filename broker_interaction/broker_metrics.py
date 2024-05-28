@@ -8,7 +8,9 @@ import yaml
 from data_loader.data_retriever import DataManager
 from indicators.performances_indicators import (AnnualizedSharpeRatio, AnnualizedCalmarRatio,
                                                 MaxDrawdown, AnnualizedSortinoRatio, Beta,
-                                                AnnualizedAlpha, Returns, CumulativeReturns)
+                                                AnnualizedAlpha, Returns, CumulativeReturns, TreynorRatio,
+                                                InformationRatio, TrackingError, ValueAtRisk, ConditionalValueAtRisk,
+                                                JensensAlpha)
 
 
 class TradingPlatform:
@@ -72,13 +74,13 @@ class AlpacaPlatform(TradingPlatform):
         orders = self.api.list_orders(status='all')
         orders_list = [order._raw for order in orders]
         df_orders = pd.DataFrame(orders_list)
-        df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
-            'Europe/Paris')
-        df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
-            'Europe/Paris')
         if df_orders.empty:
             return pd.DataFrame()
         else:
+            df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
+                'Europe/Paris')
+            df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
+                'Europe/Paris')
             return df_orders[['created_at', 'filled_at', 'asset_id', 'symbol',
                               'asset_class', 'qty', 'filled_qty', 'order_type', 'side', 'filled_avg_price',
                               'time_in_force', 'limit_price', 'stop_price']]
@@ -87,13 +89,14 @@ class AlpacaPlatform(TradingPlatform):
         orders = self.api.list_orders(status='all', symbols=[symbol])
         orders_list = [order._raw for order in orders]
         df_orders = pd.DataFrame(orders_list)
-        df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
-            'Europe/Paris')
-        df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
-            'Europe/Paris')
+
         if df_orders.empty:
             return pd.DataFrame()
         else:
+            df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
+                'Europe/Paris')
+            df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
+                'Europe/Paris')
             return df_orders[['created_at', 'filled_at', 'asset_id', 'symbol',
                               'asset_class', 'qty', 'filled_qty', 'order_type', 'side', 'filled_avg_price',
                               'time_in_force', 'limit_price', 'stop_price']]
@@ -108,7 +111,7 @@ class AlpacaPlatform(TradingPlatform):
         symbol = symbol.replace("/", "") if '/' in symbol else symbol
         position = self.api.get_position(symbol)
         pos = pd.DataFrame(pd.Series(position._raw)).T
-        pos=pos.round(2)
+        pos = pos.round(2)
         return pos
 
     def get_assets(self):
@@ -117,7 +120,11 @@ class AlpacaPlatform(TradingPlatform):
 
     def create_positions_pnl_table(self):
         df_positions = self.get_all_positions()
-        df_positions=df_positions[['symbol', 'current_price', 'qty', 'side', 'market_value', 'unrealized_pl']].round(2)
+        try:
+            df_positions = df_positions[
+                ['symbol', 'current_price', 'qty', 'side', 'market_value', 'unrealized_pl']].round(2)
+        except Exception as e:
+            df_positions = pd.DataFrame()
         return df_positions
 
     def create_orders_table(self):
@@ -129,17 +136,19 @@ class AlpacaPlatform(TradingPlatform):
 
         # Calculate PnL for each order
         df_orders['pnl'] = 0.0
-        for i in range(1, len(df_orders)):
-            previous_order = df_orders.iloc[i - 1]
-            current_order = df_orders.iloc[i]
-            if previous_order['symbol'] == current_order['symbol']:
+        symbols = df_orders['symbol'].unique()
+        for symbol in symbols:
+            symbol_orders = df_orders[df_orders['symbol'] == symbol]
+            for i in range(1, len(symbol_orders)):
+                previous_order = symbol_orders.iloc[i - 1]
+                current_order = symbol_orders.iloc[i]
                 price_diff = float(current_order['filled_avg_price']) - float(previous_order['filled_avg_price'])
                 qty = float(previous_order['filled_qty'])
                 if previous_order['side'] == 'buy' and current_order['side'] == 'sell':
                     df_orders.at[i - 1, 'pnl'] = price_diff * qty
                 elif previous_order['side'] == 'sell' and current_order['side'] == 'buy':
                     df_orders.at[i - 1, 'pnl'] = -price_diff * qty
-        df_orders=df_orders.sort_values('filled_at', ascending=False).round(2)
+        df_orders = df_orders.sort_values('filled_at', ascending=False).round(2)
         return df_orders
 
     def get_broker_portfolio_history(self):
@@ -155,14 +164,17 @@ class AlpacaPlatform(TradingPlatform):
             df_ptf = df_ptf_last_day.combine_first(df_ptf_history)
         except Exception as e:
             df_ptf = df_ptf_last_day
-        df_ptf=df_ptf[df_ptf['equity']>100]
+        df_ptf = df_ptf[df_ptf['equity'] > 100]
         df_ptf.to_csv(self.equity_value_tracker_csv, mode='w', header=True, index=True)
         return df_ptf
 
     def get_portfolio_returns(self):
         # get symbols previously and currently traded
         positions_alpaca = self.get_all_positions()
-        symbols_currently_traded = [symbol for symbol in positions_alpaca.symbol]
+        try:
+            symbols_currently_traded = [symbol for symbol in positions_alpaca.symbol]
+        except Exception as e:
+            symbols_currently_traded = []
         # Check if the yml file already exists
         try:
             with open(self.pos_returns_tracker_yml, 'r') as file:
@@ -222,7 +234,7 @@ class AlpacaPlatform(TradingPlatform):
         df_portfolio = pd.concat(all_data).reset_index(drop=True)
         df_portfolio['timestamp'] = pd.to_datetime(df_portfolio['timestamp'])
         portfolio_returns = df_portfolio.groupby('timestamp').sum().reset_index()
-        portfolio_returns = portfolio_returns.rename(columns={'returns': 'bench_returns',  'strategy': 'ptf_returns'})
+        portfolio_returns = portfolio_returns.rename(columns={'returns': 'bench_returns', 'strategy': 'ptf_returns'})
 
         # Save the new 'portfolio' DataFrame to the dict
         dict_returns['portfolio'] = portfolio_returns
@@ -254,7 +266,8 @@ class AlpacaPlatform(TradingPlatform):
 
     def get_portfolio_metrics(self, risk_free_rate, initial_amount):
         df_ptf_returns = self.get_portfolio_returns()['portfolio']
-        df_ptf_returns['bench_creturns'] = CumulativeReturns().get_metric(initial_amount, df_ptf_returns['bench_returns'])
+        df_ptf_returns['bench_creturns'] = CumulativeReturns().get_metric(initial_amount,
+                                                                          df_ptf_returns['bench_returns'])
         df_ptf_returns['ptf_creturns'] = CumulativeReturns().get_metric(initial_amount, df_ptf_returns['ptf_returns'])
 
         # Calculate Performance Indicators
@@ -268,19 +281,38 @@ class AlpacaPlatform(TradingPlatform):
             df_ptf_returns['ptf_returns'])
 
         dict_key_metrics['max_drawdown'] = MaxDrawdown().calculate(df_ptf_returns['ptf_creturns'])
-        dict_key_metrics['calmar_ratio'] = AnnualizedCalmarRatio(self.frequency).calculate(df_ptf_returns['ptf_returns'],
-                                                                                           dict_key_metrics[
-                                                                                               'max_drawdown'])
+        dict_key_metrics['calmar_ratio'] = AnnualizedCalmarRatio(self.frequency).calculate(
+            df_ptf_returns['ptf_returns'],
+            dict_key_metrics[
+                'max_drawdown'])
         try:
-            dict_key_metrics['beta']=Beta().calculate(df_ptf_returns['ptf_returns'], df_ptf_returns['bench_returns'])
-            dict_key_metrics['alpha']=AnnualizedAlpha(self.frequency, risk_free_rate).calculate(df_ptf_returns['ptf_returns'],
-                                                                df_ptf_returns['bench_returns'], dict_key_metrics['beta'])
+            dict_key_metrics['beta'] = Beta().calculate(df_ptf_returns['ptf_returns'], df_ptf_returns['bench_returns'])
+            dict_key_metrics['alpha'] = AnnualizedAlpha(self.frequency, risk_free_rate).calculate(
+                df_ptf_returns['ptf_returns'],
+                df_ptf_returns['bench_returns'], dict_key_metrics['beta'])
         except Exception as e:
-            dict_key_metrics['beta']=0
-            dict_key_metrics['alpha']=0
+            dict_key_metrics['beta'] = 0
+            dict_key_metrics['alpha'] = 0
+
+        dict_key_metrics['treynor_ratio'] = TreynorRatio(risk_free_rate).calculate(df_ptf_returns['ptf_returns'],
+                                                                                   dict_key_metrics['beta'])
+        dict_key_metrics['information_ratio'] = InformationRatio().calculate(df_ptf_returns['ptf_returns'],
+                                                                             df_ptf_returns['bench_returns'])
+        dict_key_metrics['tracking_error'] = TrackingError().calculate(df_ptf_returns['ptf_returns'],
+                                                                       df_ptf_returns['bench_returns'])
+        dict_key_metrics['VaR_95%'] = ValueAtRisk.calculate(df_ptf_returns['ptf_returns'], confidence_level=0.95)
+        dict_key_metrics['VaR_99%'] = ValueAtRisk.calculate(df_ptf_returns['ptf_returns'], confidence_level=0.99)
+        dict_key_metrics['CVaR_95%'] = ConditionalValueAtRisk.calculate(df_ptf_returns['ptf_returns'],
+                                                                        confidence_level=0.95)
+        dict_key_metrics['CVaR_99%'] = ConditionalValueAtRisk.calculate(df_ptf_returns['ptf_returns'],
+                                                                        confidence_level=0.99)
+        dict_key_metrics['jensen_alpha'] = JensensAlpha(self.frequency, risk_free_rate).calculate(
+            df_ptf_returns['ptf_returns'],
+            df_ptf_returns['bench_returns'], dict_key_metrics['beta'])
 
         df_key_metrics = pd.DataFrame.from_dict(dict_key_metrics, orient='index').T
         df_key_metrics.to_csv(self.ptf_metrics_csv, mode='w', header=True, index=True)
-        df_creturns=df_ptf_returns[['timestamp', 'bench_creturns', 'ptf_creturns']]
+        df_creturns = df_ptf_returns[['timestamp', 'bench_creturns', 'ptf_creturns']]
         df_creturns.set_index('timestamp', inplace=True)
+        df_key_metrics = df_key_metrics.round(2)
         return df_creturns, df_key_metrics

@@ -52,16 +52,16 @@ class PortfolioDashboard:
                 dbc.Col(html.H1("Portfolio Dashboard"), className="mb-2")
             ]),
             dbc.Row([
+                dbc.Col(html.H2("Key Metrics"), className="mb-2")
+            ]),
+            dbc.Row([
+                dbc.Col(html.Div(id='key-metrics-table'), width=12)
+            ]),
+            dbc.Row([
                 dbc.Col(html.H2("Positions"), className="mb-2")
             ]),
             dbc.Row([
                 dbc.Col(html.Div(id='positions-table'))
-            ]),
-            dbc.Row([
-                dbc.Col(html.H2("Orders"), className="mb-2")
-            ]),
-            dbc.Row([
-                dbc.Col(html.Div(id='orders-table'))
             ]),
             dbc.Row([
                 dbc.Col(html.H2("Portfolio Value"), className="mb-2")
@@ -76,10 +76,10 @@ class PortfolioDashboard:
                 dbc.Col(dcc.Graph(id='cumulative-returns-graph'), width=12)
             ]),
             dbc.Row([
-                dbc.Col(html.H2("Key Metrics"), className="mb-2")
+                dbc.Col(html.H2("Orders"), className="mb-2")
             ]),
             dbc.Row([
-                dbc.Col(html.Div(id='key-metrics-table'), width=12)
+                dbc.Col(html.Div(id='orders-table'))
             ]),
             dcc.Interval(
                 id='interval-component',
@@ -120,9 +120,15 @@ class PortfolioDashboard:
                 returns_fig.update_layout(title='Benchmark vs Portfolio Cumulative Returns', xaxis_title='Date',
                                           yaxis_title='Cumulative Returns')
 
-            key_metrics_table = dbc.Table.from_dataframe(self.key_metrics, striped=True, bordered=True, hover=True)
+            # Create key metrics table with two rows
+            key_metrics_html = []
+            for i in range(0, len(self.key_metrics), 2):
+                row_data = self.key_metrics.iloc[i:i+2]
+                table = dbc.Table.from_dataframe(row_data, striped=True, bordered=True, hover=True)
+                key_metrics_html.append(table)
+                key_metrics_html.append(html.Br())
 
-            return positions_table, orders_table, equity_fig, returns_fig, key_metrics_table
+            return positions_table, orders_table, equity_fig, returns_fig, key_metrics_html
 
         return app
 
@@ -140,7 +146,7 @@ if __name__ == '__main__':
     frequency = frequency_yaml[data_provider]['minute']
     broker_config = GetBrokersConfig.key_secret_tc_url()
     initial_amount = 100000
-    dashboard = PortfolioDashboard(broker_config, initial_amount, frequency)
+    dashboard = PortfolioDashboard(broker_config, initial_amount, frequency).update_data()
 
-    dashboard.open_browser()
-    dashboard.run_server()
+    # dashboard.open_browser()
+    # dashboard.run_server()

@@ -35,7 +35,6 @@ class LiveStrategyRunner:
         self.contract_multiplier = contract_multiplier
         self.real_time_data = None
         self.threads=[]
-        self.stop_thread = False
         self.dashboard_open=False
         if self.broker_name == 'alpaca':
             self.broker = AlpacaTradingBot(broker_config)

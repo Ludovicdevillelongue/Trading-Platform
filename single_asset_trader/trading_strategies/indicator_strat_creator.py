@@ -594,12 +594,12 @@ class MRVectorBacktester(StrategyCreator):
         data_strat = self.data.copy().dropna()
         data_strat['sma']=self.sma_window
         data_strat['distance'] = data_strat['close'] - data_strat['sma']
+        data_strat['position'] = 0
         # sell signals
-        data_strat['position'] = np.where(data_strat['distance'] > self.threshold,
-                                          self.strat_type_pos, np.nan)
+        data_strat['position'] = np.where(data_strat['distance'] > self.threshold, self.strat_type_pos,
+                                          data_strat['position'])
         # buy signals
-        data_strat['position'] = np.where(data_strat['distance'] < -self.threshold,
-                                          1, data_strat['position'])
+        data_strat['position'] = np.where(data_strat['distance'] < -self.threshold, 1, data_strat['position'])
         # crossing of current price and SMA (zero distance)
         data_strat['position'] = np.where(data_strat['distance'] *
                                           data_strat['distance'].shift(1) < 0,
