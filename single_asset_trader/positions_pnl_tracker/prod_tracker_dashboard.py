@@ -16,7 +16,7 @@ class ProductDashboard:
             go.Scatter(x=product_strat_history.index, y=product_strat_history['product_value'])
         ])
         fig.update_layout(
-            title='Product_strat Value Over Time',
+            title='Product Equity Over Time',
             xaxis_title='Time',
             yaxis_title='Value',
             plot_bgcolor='white',
@@ -32,7 +32,7 @@ class ProductDashboard:
         fig.add_trace(go.Scatter(x=product_strat_history.index, y=product_strat_history['cstrategy'], name='Strategy'))
 
         fig.update_layout(
-            title='Product Strat Cumulative Returns vs Benchmark Cumulative Returns',
+            title='Benchmark vs Product Strat Cumulative Returns',
             xaxis_title='Time',
             yaxis_title='Value',
             plot_bgcolor='white',
@@ -69,12 +69,11 @@ class ProductManagementApp:
     def setup_layout(self):
         self.app.layout = html.Div([
             html.H1(f"{self.symbol} Product Management Dashboard", style={'textAlign': 'center'}),
-            html.Button("Update Data", id="update-data-button", style={'margin': '10px'}),
             html.Div(id='product-strat-metrics', style={'padding': '10px'}),
-            html.Div(id='orders-recap', style={'padding': '10px'}),
             html.Div(id='positions-recap', style={'padding': '10px'}),
             html.Div(id='product-strat-value-graph', style={'padding': '10px'}),
             html.Div(id='product-strat-vs-bench-graph', style={'padding': '10px'}),
+            html.Div(id='orders-recap', style={'padding': '10px'}),
 
             dcc.Interval(id='interval-component', interval=60 * 1000, n_intervals=0),
         ], style={'backgroundColor': '#f5f5f5', 'fontFamily': 'Arial'})
@@ -82,14 +81,13 @@ class ProductManagementApp:
     def setup_callbacks(self):
         @self.app.callback(
             [Output('product-strat-metrics', 'children'),
-             Output('orders-recap', 'children'),
              Output('positions-recap', 'children'),
              Output('product-strat-value-graph', 'children'),
              Output('product-strat-vs-bench-graph', 'children')],
-            [Input('update-data-button', 'n_clicks'),
-             Input('interval-component', 'n_intervals')]
+             Output('orders-recap', 'children'),
+            [Input('interval-component', 'n_intervals')]
         )
-        def update_data(n_clicks, n_intervals):
+        def update_data(n_intervals):
             try:
                 orders_data = self.platform.get_symbol_orders(self.broker_symbol)
                 try:
@@ -113,11 +111,11 @@ class ProductManagementApp:
                 positions_table = ProductDashboard.create_data_table(positions_data)
 
                 return (
-                    html.Div([html.H3("Product Traded Metrics"), product_strat_metrics_table]),
-                    html.Div([html.H3("Orders Recap"), orders_table]),
-                    html.Div([html.H3("Positions Recap"), positions_table]),
-                    html.Div([html.H3("Product Traded Value Graph"), dcc.Graph(figure=value_graph)]),
-                    html.Div([html.H3("Product Strat vs Bench Graph"), dcc.Graph(figure=creturns_graph)])
+                    html.Div([html.H3("Key Metrics"), product_strat_metrics_table]),
+                    html.Div([html.H3("Positions"), positions_table]),
+                    html.Div([html.H3("Product Value"), dcc.Graph(figure=value_graph)]),
+                    html.Div([html.H3("Cumulative Returns"), dcc.Graph(figure=creturns_graph)]),
+                    html.Div([html.H3("Orders"), orders_table])
                 )
             except Exception as e:
                 logging.error(f"An error occurred: {str(e)}")

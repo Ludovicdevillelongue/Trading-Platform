@@ -21,7 +21,7 @@ from single_asset_trader.signal_generator.signal_sender import LiveStrategyRunne
 
 class MultiSymbolTrader:
     def __init__(self, symbols, invested_amount, contract_multiplier, iterations, predictive_strat, data_provider,
-                 broker):
+                 broker, strat_type):
         self.symbols = symbols
         self.invested_amount = invested_amount
         self.contract_multiplier = contract_multiplier
@@ -29,6 +29,7 @@ class MultiSymbolTrader:
         self.predictive_strat = predictive_strat
         self.data_provider = data_provider
         self.broker = broker
+        self.strat_type=strat_type
 
         self.strategies = {
             'SMA': SMAVectorBacktester,
@@ -46,7 +47,7 @@ class MultiSymbolTrader:
 
         with open(r'../trading_platform/config/strat_type_pos.yml') as file:
             self.strat_type_pos_yaml = yaml.safe_load(file)
-        self.strat_type_pos = float(self.strat_type_pos_yaml['long_only'])
+        self.strat_type_pos = float(self.strat_type_pos_yaml[self.strat_type])
 
         self.risk_free_rate = RiskFreeRate().get_metric()
         self.start_date = '2023-11-15 00:00:00'
@@ -69,10 +70,11 @@ class MultiSymbolTrader:
         thread = threading.Thread(target=run_continuously)
         thread.start()
         return thread
+
     def run(self):
         threads = []
         data=self.download_data(self.symbols)
-        base_port = 8080
+        base_port = 8100
         for i, symbol in enumerate(self.symbols):
             symbol_data=data.xs(symbol, level=1, axis=1)
             t = threading.Thread(target=self.run_for_symbol, args=(symbol,symbol_data,  base_port + i))
@@ -130,11 +132,12 @@ if __name__ == '__main__':
     symbols = ['TSLA', 'MSFT']
     invested_amount = 100000
     contract_multiplier = 2
-    iterations = 5
+    iterations = 10
     predictive_strat = False
     data_provider = 'yfinance'
     broker = 'alpaca'
+    strat_type='long_short'
 
     trader = MultiSymbolTrader(symbols, invested_amount, contract_multiplier, iterations, predictive_strat,
-                               data_provider, broker)
+                               data_provider, broker, strat_type)
     trader.run()

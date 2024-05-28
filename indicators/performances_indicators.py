@@ -180,3 +180,56 @@ class Beta:
             return 0
         else:
             return beta
+
+
+class TreynorRatio:
+    def __init__(self, risk_free_rate):
+        self.risk_free_rate = risk_free_rate
+
+    def calculate(self, portfolio_returns, beta):
+        excess_returns = portfolio_returns - self.risk_free_rate
+        mean_excess_return = np.mean(excess_returns)
+        return mean_excess_return / beta if beta != 0 else 0
+
+
+class InformationRatio:
+    def calculate(self, portfolio_returns, benchmark_returns):
+        active_returns = portfolio_returns - benchmark_returns
+        mean_active_return = np.mean(active_returns)
+        tracking_error = np.std(active_returns)
+        return mean_active_return / tracking_error if tracking_error != 0 else 0
+
+
+class TrackingError:
+    @staticmethod
+    def calculate(portfolio_returns, benchmark_returns):
+        active_returns = portfolio_returns - benchmark_returns
+        return np.std(active_returns)
+
+class ValueAtRisk:
+    @staticmethod
+    def calculate(returns, confidence_level=0.95):
+        sorted_returns = np.sort(returns)
+        index = int((1 - confidence_level) * len(sorted_returns))
+        return sorted_returns[index]
+
+class ConditionalValueAtRisk:
+    @staticmethod
+    def calculate(returns, confidence_level=0.95):
+        var = ValueAtRisk.calculate(returns, confidence_level)
+        return np.mean(returns[returns <= var])
+
+class JensensAlpha:
+    def __init__(self, frequency, risk_free_rate):
+        self.frequency = frequency
+        self.risk_free_rate = risk_free_rate
+
+    def calculate(self, portfolio_returns, benchmark_returns, beta):
+        portfolio_total_return = np.prod(1 + portfolio_returns) - 1
+        benchmark_total_return = np.prod(1 + benchmark_returns) - 1
+
+        expected_portfolio_return = (self.risk_free_rate / self.frequency['annualized_coefficient']) + beta * \
+                                    (benchmark_total_return - (self.risk_free_rate / self.frequency['annualized_coefficient']))
+
+        alpha = portfolio_total_return - expected_portfolio_return
+        return alpha if not np.isnan(alpha) else 0
