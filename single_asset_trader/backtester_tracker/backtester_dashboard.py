@@ -85,8 +85,5 @@ class BacktestApp:
                 return {}, [], []
 
     def run_server(self):
-        serve(self.app.server, host='0.0.0.0', port=self.port)
-
-    def open_browser(self):
-        sleep(1)
         webbrowser.open(f"http://127.0.0.1:{self.port}")
+        serve(self.app.server, host='0.0.0.0', port=self.port)

@@ -61,17 +61,17 @@ class LiveStrategyTracker():
         total_asset_history['creturns'] = CumulativeReturns().get_metric(1, total_asset_history['returns'])
         total_asset_history['strategy'] = (total_asset_history['position'].shift(1) * total_asset_history['returns']).fillna(0)
         total_asset_history['cstrategy'] = CumulativeReturns().get_metric(1, total_asset_history['strategy'])
-        total_asset_history['p&l'] = 0
-        # add p&l of last position to historical p&l
+        total_asset_history['pnl'] = 0
+        # add pnl of last position to historical pnl
         position_changes = total_asset_history['position'].diff().fillna(1) != 0
         position_changes.iloc[0] = True
         for position_date in position_changes[position_changes].index:
             mask = total_asset_history.index >= position_date
-            total_asset_history.loc[mask, 'p&l'] += ((total_asset_history.loc[mask, 'close'] -
+            total_asset_history.loc[mask, 'pnl'] += ((total_asset_history.loc[mask, 'close'] -
                                                       total_asset_history.at[position_date, 'close']) *
                                                      total_asset_history.at[position_date, 'order'])
 
-        total_asset_history['product_value']= total_asset_history['p&l']
+        total_asset_history['product_value']= total_asset_history['pnl']
         total_asset_history.dropna(axis=0)
         total_asset_history.to_csv(self.strat_equity_ret_csv, mode='w', header=True, index=True)
         return total_asset_history

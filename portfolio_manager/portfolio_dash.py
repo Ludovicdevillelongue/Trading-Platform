@@ -1,17 +1,20 @@
+import threading
+from datetime import datetime
+
 import pandas as pd
+import pytz
 import yaml
 import sys
 import os
 sys.path.append('C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python\\trading_platform')
-
-import time
+from datetime import time
+import time as counter
 from broker_interaction.broker_metrics import AlpacaPlatform
 from broker_interaction.broker_order import GetBrokersConfig
 from indicators.performances_indicators import RiskFreeRate
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
-import plotly.express as px
 import plotly.graph_objs as go
 from waitress import serve
 import webbrowser
@@ -133,20 +136,33 @@ class PortfolioDashboard:
         return app
 
     def run_server(self):
-        serve(self.app.server, host='0.0.0.0', port=8070)
-
-    def open_browser(self):
         Timer(1, lambda: webbrowser.open("http://127.0.0.1:8070")).start()
+        serve(self.app.server, host='0.0.0.0', port=8070)
 
 
 if __name__ == '__main__':
-    data_provider = 'yfinance'
-    with open(r'C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python/trading_platform/config/data_frequency.yml') as file:
-        frequency_yaml = yaml.safe_load(file)
-    frequency = frequency_yaml[data_provider]['minute']
-    broker_config = GetBrokersConfig.key_secret_tc_url()
-    initial_amount = 100000
-    dashboard = PortfolioDashboard(broker_config, initial_amount, frequency)
+    dashboard_open = False  # Correct the spelling
+    stop_time = time(11, 10, 0)
 
-    dashboard.open_browser()
-    dashboard.run_server()
+    while datetime.now(pytz.timezone('Europe/Paris')).time() < stop_time:
+        if not dashboard_open:
+            # Proceed with starting the dashboard only once
+            data_provider = 'yfinance'
+            with open(
+                    r'C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python/trading_platform/config/data_frequency.yml') as file:
+                frequency_yaml = yaml.safe_load(file)
+            frequency = frequency_yaml[data_provider]['minute']
+            broker_config = GetBrokersConfig.key_secret_tc_url()
+            initial_amount = 100000
+
+            dashboard = PortfolioDashboard(broker_config, initial_amount, frequency)
+
+            dashboard_run_server = threading.Thread(target=dashboard.run_server)
+            dashboard_run_server.daemon = True  # Ensures the thread exits when the main program stops
+            dashboard_run_server.start()
+
+            dashboard_open = True  # Set to True to ensure the dashboard is only opened once
+
+        counter.sleep(60)  # Sleep for a period before checking the time again to avoid looping too quickly
+
+    exit(0)

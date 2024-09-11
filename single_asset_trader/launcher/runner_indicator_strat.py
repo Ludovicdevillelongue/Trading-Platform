@@ -112,7 +112,6 @@ class MultiSymbolTrader:
 
         thread = threading.Thread(target=run_continuously)
         thread.start()
-        return thread
 
     def run(self):
         threads = []
@@ -126,6 +125,7 @@ class MultiSymbolTrader:
 
         for t in threads:
             t.join()
+        exit(0)
 
     def download_data(self, symbols):
         if self.data_provider=='yfinance':
@@ -158,8 +158,10 @@ class MultiSymbolTrader:
         print(f"Running and comparing trading strategies for {symbol}...")
         best_strats, comparison_data = runner.run_and_compare_strategies()
         app = BacktestApp(best_strats, comparison_data, symbol, port)
-        threading.Thread(target=app.run_server).start()
-        threading.Thread(target=app.open_browser).start()
+        bt_dashboard_run_server = threading.Thread(
+            target=lambda: app.run_server())
+        bt_dashboard_run_server.daemon = True  # Ensures the thread is killed when the main program exits
+        bt_dashboard_run_server.start()
         best_strat = max(best_strats, key=lambda k: best_strats[k]['results']['sharpe_ratio'])
         strat_run = LiveStrategyRunner(best_strat, self.strategies[best_strat],
                                        self.strat_type_pos, optimization_results,
