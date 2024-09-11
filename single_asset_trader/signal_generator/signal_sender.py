@@ -138,15 +138,11 @@ class LiveStrategyRunner:
         if not self.dashboard_open:
             product_management_port = self.dash_port + 1000
             product_manager_app = ProductManagementApp(self.trading_platform, self.symbol, self.frequency, product_management_port)
-            product_server_thread = threading.Thread(target=product_manager_app.run_server)
-            product_server_thread.start()
-            self.threads.append(product_server_thread)
-            product_browser_thread = threading.Thread(target=product_manager_app.open_browser)
-            product_browser_thread.start()
-            self.threads.append(product_browser_thread)
+            prod_manager_run_server = threading.Thread(
+                target=lambda: product_manager_app.run_server())
+            prod_manager_run_server.daemon = True  # Ensures the thread is killed when the main program exits
+            prod_manager_run_server.start()
             self.dashboard_open = True
-
-
 
     def run_once(self, downloaded_data):
         self.update_returns_data(downloaded_data)

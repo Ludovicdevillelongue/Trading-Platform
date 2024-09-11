@@ -204,8 +204,8 @@ class StrategyOptimizer:
             alpha, beta = strategy_tester.run_strategy()
         # Record the parameter performance
         strat_test_recap={}
-        strat_test_recap['strat_name']=str(self.strategy_class).split(".")[2].split("'>")[0]
-        strat_test_recap['opti']=str(type(self.optimization_algorithm)).split('.')[2].split("'>")[0]
+        strat_test_recap['strat_name']=str(self.strategy_class).split(".")[3].split("'>")[0]
+        strat_test_recap['opti']=str(self.optimization_algorithm.__class__.__name__).replace('Algorithm', '')
         strat_test_recap['params_strat']=strategy_params
         strat_test_recap['sharpe']=sharpe_ratio
         strat_test_recap=pd.DataFrame.from_dict(strat_test_recap, orient='index').T

@@ -12,7 +12,8 @@ import yaml
 from data_loader.data_retriever import DataManager
 from indicators.performances_indicators import RiskFreeRate
 from broker_interaction.broker_order import GetBrokersConfig
-from single_asset_trader.trading_strategies.strat_optimizer import RandomSearchAlgorithm
+from single_asset_trader.trading_strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm, \
+    SimulatedAnnealingAlgorithm, GeneticAlgorithm
 from single_asset_trader.trading_strategies.indicator_strat_creator import SMAVectorBacktester
 from single_asset_trader.trading_strategies.strat_comparator import StrategyRunner
 from single_asset_trader.backtester_tracker.backtester_dashboard import BacktestApp
@@ -38,7 +39,7 @@ class MultiSymbolTrader:
         self.param_grids = {
             'SMA': {'sma_short': (1, 10), 'sma_long': (10, 30), 'reg_method': self.regression_methods},
         }
-        self.opti_algo = [RandomSearchAlgorithm()]
+        self.opti_algo = [RandomSearchAlgorithm(), GridSearchAlgorithm(), SimulatedAnnealingAlgorithm(), GeneticAlgorithm()]
         self.broker_config = GetBrokersConfig.key_secret_tc_url()
 
         with open(r'../trading_platform/config/data_frequency.yml') as file:
@@ -66,10 +67,9 @@ class MultiSymbolTrader:
                 symbol_data = data_download.xs(symbol, level=1, axis=1)
                 strat_run.run_once(symbol_data)
                 counter.sleep(interval)
-
         thread = threading.Thread(target=run_continuously)
         thread.start()
-        return thread
+
 
     def run(self):
         threads = []
@@ -83,6 +83,7 @@ class MultiSymbolTrader:
 
         for t in threads:
             t.join()
+        exit(0)
 
     def download_data(self, symbols):
         if self.data_provider=='yfinance':
@@ -115,8 +116,10 @@ class MultiSymbolTrader:
         print(f"Running and comparing trading strategies for {symbol}...")
         best_strats, comparison_data = runner.run_and_compare_strategies()
         app = BacktestApp(best_strats, comparison_data, symbol, port)
-        threading.Thread(target=app.run_server).start()
-        threading.Thread(target=app.open_browser).start()
+        bt_dashboard_run_server = threading.Thread(
+            target=lambda: app.run_server())
+        bt_dashboard_run_server.daemon = True  # Ensures the thread is killed when the main program exits
+        bt_dashboard_run_server.start()
         best_strat = max(best_strats, key=lambda k: best_strats[k]['results']['sharpe_ratio'])
         strat_run = LiveStrategyRunner(best_strat, self.strategies[best_strat],
                                        self.strat_type_pos, optimization_results,
@@ -132,7 +135,7 @@ if __name__ == '__main__':
     symbols = ['TSLA', 'MSFT']
     invested_amount = 100000
     contract_multiplier = 2
-    iterations = 10
+    iterations = 5
     predictive_strat = False
     data_provider = 'yfinance'
     broker = 'alpaca'
