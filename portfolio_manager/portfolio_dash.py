@@ -141,12 +141,10 @@ class PortfolioDashboard:
 
 
 if __name__ == '__main__':
-    dashboard_open = False  # Correct the spelling
-    stop_time = time(11, 10, 0)
-
+    dashboard_open = False
+    stop_time = time(22, 00, 0)
     while datetime.now(pytz.timezone('Europe/Paris')).time() < stop_time:
         if not dashboard_open:
-            # Proceed with starting the dashboard only once
             data_provider = 'yfinance'
             with open(
                     r'C:\\Users\\Admin\\Documents\\Pro\\projets_code\\python/trading_platform/config/data_frequency.yml') as file:
@@ -154,15 +152,10 @@ if __name__ == '__main__':
             frequency = frequency_yaml[data_provider]['minute']
             broker_config = GetBrokersConfig.key_secret_tc_url()
             initial_amount = 100000
-
             dashboard = PortfolioDashboard(broker_config, initial_amount, frequency)
-
             dashboard_run_server = threading.Thread(target=dashboard.run_server)
             dashboard_run_server.daemon = True  # Ensures the thread exits when the main program stops
             dashboard_run_server.start()
-
-            dashboard_open = True  # Set to True to ensure the dashboard is only opened once
-
-        counter.sleep(60)  # Sleep for a period before checking the time again to avoid looping too quickly
-
+            dashboard_open = True
+        counter.sleep(60)
     exit(0)
