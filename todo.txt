@@ -1,3 +1,0 @@
--> reduce order when usd balance not sufficient
--> adjust annualised values by number of datapoints instead of a fixed values (252 days or 98280 minutes)
--> get returns of each weighted asset dict_returns[symbol]['strategy'] to input cov matrix and calculate portfolio sharpe ratio (new formula, do not use classic one)

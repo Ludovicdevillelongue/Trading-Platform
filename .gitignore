@@ -1,7 +1,4 @@
-config/broker_config.yml
-config/data_provider_config.yml
-config/data_frequency.yml
-config/strat_type_pos.yml
-portfolio_manager/runner_pm.bat
-single_asset_trader/launcher/error_log.txt
-single_asset_trader/launcher/runner_strat.bat
+*.yml
+*.csv
+*.bat
+*.txt
