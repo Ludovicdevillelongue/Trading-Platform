@@ -4,4 +4,4 @@ SET "SCRIPT_PATH=C:\Users\Admin\Documents\Pro\projets_code\python\trading_platfo
 
 CALL "%VENV_PATH%\Scripts\activate.bat"
 CALL "%VENV_PATH%\Scripts\python.exe" "%SCRIPT_PATH%" error_log.txt 2>&1 || pause
-pause
+exit 0

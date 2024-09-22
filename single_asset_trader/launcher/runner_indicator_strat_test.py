@@ -136,7 +136,7 @@ if __name__ == '__main__':
     invested_amount = 100000
     contract_multiplier = 2
     iterations = 5
-    predictive_strat = False
+    predictive_strat = True
     data_provider = 'yfinance'
     broker = 'alpaca'
     strat_type='long_short'
